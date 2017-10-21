@@ -1,7 +1,7 @@
 /.idea
 /nimbus-jose-jwt.iml
 nimbus-jose-jwt-*.jar
-TEST*
+TEST.*
 *.class
 *~
 .classpath
@@ -11,5 +11,3 @@ target
 *asc
 .settings
 release.properties
-
-
