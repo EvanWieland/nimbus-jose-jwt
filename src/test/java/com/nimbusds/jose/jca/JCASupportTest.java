@@ -21,12 +21,12 @@ package com.nimbusds.jose.jca;
 import java.security.Provider;
 import java.security.Security;
 
-import junit.framework.TestCase;
-
+import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
+import junit.framework.TestCase;
 
 
 /**
@@ -291,5 +291,121 @@ public class JCASupportTest extends TestCase {
 	public void testAlgNoneAlwaysSupported() {
 		
 		assertTrue(JCASupport.isSupported(new JWSAlgorithm("none")));
+	}
+	
+	
+	public void testJOSEAlgorithmSupport_Default_Java_8() {
+		
+		if (! System.getProperty("java.version").startsWith("1.8")) {
+			return;
+		}
+		
+		// JWS
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.HS256));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.HS384));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.HS512));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.RS256));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.RS384));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.RS512));
+		assertFalse(JCASupport.isSupported((Algorithm) JWSAlgorithm.PS512));
+		assertFalse(JCASupport.isSupported((Algorithm) JWSAlgorithm.PS256));
+		assertFalse(JCASupport.isSupported((Algorithm) JWSAlgorithm.PS384));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.ES256));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.ES384));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.ES512));
+		
+		// JWE alg
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.RSA1_5));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.RSA_OAEP));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.RSA_OAEP_256));
+		
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.A128KW));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.A192KW));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.A256KW));
+		
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.PBES2_HS256_A128KW));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.PBES2_HS384_A192KW));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.PBES2_HS512_A256KW));
+		
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.ECDH_ES));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.ECDH_ES_A128KW));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.ECDH_ES_A192KW));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.ECDH_ES_A256KW));
+		
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.A128GCMKW));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.A192GCMKW));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.A256GCMKW));
+		
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.DIR));
+		
+		// JWE enc
+		assertTrue(JCASupport.isSupported((Algorithm) EncryptionMethod.A128CBC_HS256));
+		assertTrue(JCASupport.isSupported((Algorithm) EncryptionMethod.A192CBC_HS384));
+		assertTrue(JCASupport.isSupported((Algorithm) EncryptionMethod.A256CBC_HS512));
+		assertTrue(JCASupport.isSupported((Algorithm) EncryptionMethod.A128GCM));
+		assertTrue(JCASupport.isSupported((Algorithm) EncryptionMethod.A192GCM));
+		assertTrue(JCASupport.isSupported((Algorithm) EncryptionMethod.A256GCM));
+	}
+	
+	
+	public void testJOSEAlgorithmSupport_SUN_Java8() {
+		
+		if (! System.getProperty("java.version").startsWith("1.8")) {
+			return;
+		}
+		
+		// JWS
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.HS256, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.HS384, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.HS512, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.RS256, Security.getProvider("SunRsaSign")));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.RS384, Security.getProvider("SunRsaSign")));
+		assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.RS512, Security.getProvider("SunRsaSign")));
+		assertFalse(JCASupport.isSupported((Algorithm) JWSAlgorithm.PS512, Security.getProvider("SunRsaSign")));
+		assertFalse(JCASupport.isSupported((Algorithm) JWSAlgorithm.PS256, Security.getProvider("SunRsaSign")));
+		assertFalse(JCASupport.isSupported((Algorithm) JWSAlgorithm.PS384, Security.getProvider("SunRsaSign")));
+		
+		if (Security.getProvider("SunEC") != null) {
+			// Not supported on OpenJDK
+			assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.ES256, Security.getProvider("SunEC")));
+			assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.ES384, Security.getProvider("SunEC")));
+			assertTrue(JCASupport.isSupported((Algorithm) JWSAlgorithm.ES512, Security.getProvider("SunEC")));
+		}
+		
+		// JWE alg
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.RSA1_5, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.RSA_OAEP, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.RSA_OAEP_256, Security.getProvider("SunJCE")));
+		
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.A128KW, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.A192KW, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.A256KW, Security.getProvider("SunJCE")));
+		
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.PBES2_HS256_A128KW, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.PBES2_HS384_A192KW, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.PBES2_HS512_A256KW, Security.getProvider("SunJCE")));
+		
+		if (Security.getProvider("SunEC") != null) {
+			// Not supported on OpenJDK
+			assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.ECDH_ES, Security.getProvider("SunEC")));
+			assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.ECDH_ES_A128KW, Security.getProvider("SunEC")));
+			assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.ECDH_ES_A192KW, Security.getProvider("SunEC")));
+			assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.ECDH_ES_A256KW, Security.getProvider("SunEC")));
+		}
+		
+		assertFalse(JCASupport.isSupported((Algorithm) JWEAlgorithm.A128GCMKW, Security.getProvider("SUN")));
+		assertFalse(JCASupport.isSupported((Algorithm) JWEAlgorithm.A192GCMKW, Security.getProvider("SUN")));
+		assertFalse(JCASupport.isSupported((Algorithm) JWEAlgorithm.A256GCMKW, Security.getProvider("SUN")));
+		
+		assertTrue(JCASupport.isSupported((Algorithm) JWEAlgorithm.DIR, Security.getProvider("SUN")));
+		
+		// JWE enc
+		assertTrue(JCASupport.isSupported((Algorithm) EncryptionMethod.A128CBC_HS256, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) EncryptionMethod.A192CBC_HS384, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) EncryptionMethod.A256CBC_HS512, Security.getProvider("SunJCE")));
+		
+		assertTrue(JCASupport.isSupported((Algorithm) EncryptionMethod.A128GCM, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) EncryptionMethod.A192GCM, Security.getProvider("SunJCE")));
+		assertTrue(JCASupport.isSupported((Algorithm) EncryptionMethod.A256GCM, Security.getProvider("SunJCE")));
 	}
 }

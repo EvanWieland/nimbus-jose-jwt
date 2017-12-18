@@ -56,6 +56,55 @@ public final class JCASupport {
 			return false;
 		}
 	}
+	
+	
+	/**
+	 * Checks if the specified JOSE algorithm is supported by the default
+	 * system JCA provider(s).
+	 *
+	 * @param alg The JOSE algorithm. Must not be {@code null}.
+	 *
+	 * @return {@code true} if the JOSE algorithm is supported, else
+	 *         {@code false}.
+	 */
+	public static boolean isSupported(final Algorithm alg) {
+		
+		if (alg instanceof JWSAlgorithm) {
+			return isSupported((JWSAlgorithm)alg);
+		}
+		if (alg instanceof JWEAlgorithm) {
+			return isSupported((JWEAlgorithm)alg);
+		}
+		if (alg instanceof EncryptionMethod) {
+			return isSupported((EncryptionMethod)alg);
+		}
+		throw new IllegalArgumentException("Unexpected algorithm class: " + alg.getClass().getCanonicalName());
+	}
+	
+	
+	/**
+	 * Checks if a JOSE algorithm is supported by the the specified JCA
+	 * provider.
+	 *
+	 * @param alg      The JOSE algorithm. Must not be {@code null}.
+	 * @param provider The JCA provider. Must not be {@code null}.
+	 *
+	 * @return {@code true} if the JOSE algorithm is supported, else
+	 *         {@code false}.
+	 */
+	public static boolean isSupported(final Algorithm alg, final Provider provider) {
+		
+		if (alg instanceof JWSAlgorithm) {
+			return isSupported((JWSAlgorithm)alg, provider);
+		}
+		if (alg instanceof JWEAlgorithm) {
+			return isSupported((JWEAlgorithm)alg, provider);
+		}
+		if (alg instanceof EncryptionMethod) {
+			return isSupported((EncryptionMethod)alg, provider);
+		}
+		throw new IllegalArgumentException("Unexpected algorithm class: " + alg.getClass().getCanonicalName());
+	}
 
 
 	/**
