@@ -771,9 +771,7 @@ version 5.1 (2017-08-25)
       IllegalArgumentException if the curve is not Ed25519, Ed448, X25519 or
       X448.
 
-version 5.1.1 (2017-10-21)
-    * Fixes .gitignore ignoring src/test on case-insensitive systems.
-
 version 5.2 (2017-12-18)
     * Adds JCASupport.isSupported(Algorithm) and
       JCASupport.isSupported(Algorithm, Provider) methods.
+    * Fixes .gitignore ignoring src/test on case-insensitive systems.
