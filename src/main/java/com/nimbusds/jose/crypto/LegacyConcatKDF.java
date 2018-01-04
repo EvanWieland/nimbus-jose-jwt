@@ -28,6 +28,7 @@ import javax.crypto.spec.SecretKeySpec;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.util.IntegerUtils;
+import com.nimbusds.jose.util.StandardCharset;
 
 
 /**
@@ -42,7 +43,7 @@ import com.nimbusds.jose.util.IntegerUtils;
  * <p>See NIST.800-56A.
  *
  * @author Vladimir Dzhuvinov
- * @version 2015-05-12
+ * @version 2018-01-04
  */
 class LegacyConcatKDF {
 
@@ -118,7 +119,7 @@ class LegacyConcatKDF {
 			baos.write(cekBitLengthBytes);
 
 			// Append the encryption method value, e.g. "A128CBC+HS256"
-			byte[] encBytes = enc.toString().getBytes();
+			byte[] encBytes = enc.toString().getBytes(StandardCharset.UTF_8);
 			baos.write(encBytes);
 
 			// Append encryption PartyUInfo=Datalen || Data
@@ -214,7 +215,7 @@ class LegacyConcatKDF {
 			baos.write(cikBitLengthBytes);
 
 			// Append the encryption method value, e.g. "A128CBC+HS256"
-			byte[] encBytes = enc.toString().getBytes();
+			byte[] encBytes = enc.toString().getBytes(StandardCharset.UTF_8);
 			baos.write(encBytes);
 
 			// Append encryption PartyUInfo=Datalen || Data

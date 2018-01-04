@@ -775,3 +775,11 @@ version 5.2 (2017-12-18)
     * Adds JCASupport.isSupported(Algorithm) and
       JCASupport.isSupported(Algorithm, Provider) methods.
     * Fixes .gitignore ignoring src/test on case-insensitive systems.
+
+version 5.2.1 (2018-01-04)
+    * Fixes the string-to-byte conversion for the HMAC computation in
+      AES/CBC/PKCS5Padding/HMAC-SHA2 to use explicitly UTF-8 instead of relying
+      on the default system character set (iss #249).
+    * Fixes the string-to-byte conversion for the CIK generation in legacy
+      concat KDF to use explicitly UTF-8 instead of relying on the default
+      system character set (iss #249).

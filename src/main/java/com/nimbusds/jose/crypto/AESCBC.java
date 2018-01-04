@@ -32,6 +32,7 @@ import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.crypto.utils.ConstantTimeUtils;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.ByteUtils;
+import com.nimbusds.jose.util.StandardCharset;
 import net.jcip.annotations.ThreadSafe;
 
 
@@ -46,7 +47,7 @@ import net.jcip.annotations.ThreadSafe;
  *
  * @author Vladimir Dzhuvinov
  * @author Axel Nennker
- * @version 2017-05-30
+ * @version 2018-01-04
  */
 @ThreadSafe
 class AESCBC {
@@ -260,7 +261,7 @@ class AESCBC {
 			Base64URL.encode(iv).toString() + "." +
 			Base64URL.encode(cipherText);
 
-		byte[] mac = HMAC.compute(cik, macInput.getBytes(), macProvider);
+		byte[] mac = HMAC.compute(cik, macInput.getBytes(StandardCharset.UTF_8), macProvider);
 
 		return new AuthenticatedCipherText(cipherText, mac);
 	}
@@ -411,7 +412,7 @@ class AESCBC {
 			iv.toString() + "." +
 			cipherText.toString();
 		
-		byte[] mac = HMAC.compute(cik, macInput.getBytes(), macProvider);
+		byte[] mac = HMAC.compute(cik, macInput.getBytes(StandardCharset.UTF_8), macProvider);
 		
 		if (! ConstantTimeUtils.areEqual(authTag.decode(), mac)) {
 			throw new JOSEException("MAC check failed");

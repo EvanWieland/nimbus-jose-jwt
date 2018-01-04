@@ -33,7 +33,7 @@ import net.jcip.annotations.Immutable;
  * </ul>
  *
  * @author Vladimir Dzhuvinov
- * @version 2013-05-16
+ * @version 2018-01-04
  */
 @Immutable
 public class Base64URL extends Base64 {
@@ -105,6 +105,6 @@ public class Base64URL extends Base64 {
 	 */
 	public static Base64URL encode(final String text) {
 
-		return encode(text.getBytes(CHARSET));
+		return encode(text.getBytes(StandardCharset.UTF_8));
 	}
 }

@@ -19,11 +19,9 @@ package com.nimbusds.jose.util;
 
 
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.math.BigInteger;
 
 import net.jcip.annotations.Immutable;
-
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONValue;
 
@@ -38,12 +36,6 @@ public class Base64 implements JSONAware, Serializable {
 
 
 	private static final long serialVersionUID = 1L;
-
-
-	/**
-	 * UTF-8 is the required character set for all JOSE + JWT objects.
-	 */
-	public static final Charset CHARSET = Charset.forName("UTF-8");
 
 
 	/**
@@ -101,7 +93,7 @@ public class Base64 implements JSONAware, Serializable {
 	 */
 	public String decodeToString() {
 
-		return new String(decode(), CHARSET);
+		return new String(decode(), StandardCharset.UTF_8);
 	}
 
 
@@ -196,6 +188,6 @@ public class Base64 implements JSONAware, Serializable {
 	 */
 	public static Base64 encode(final String text) {
 
-		return encode(text.getBytes(CHARSET));
+		return encode(text.getBytes(StandardCharset.UTF_8));
 	}
 }
