@@ -45,6 +45,7 @@ public class DefaultResourceRetrieverTest {
 		assertEquals(0, resourceRetriever.getConnectTimeout());
 		assertEquals(0, resourceRetriever.getReadTimeout());
 		assertEquals(0, resourceRetriever.getSizeLimit());
+		assertTrue(resourceRetriever.disconnectsAfterUse());
 	}
 
 
@@ -64,6 +65,9 @@ public class DefaultResourceRetrieverTest {
 
 		resourceRetriever.setSizeLimit(300);
 		assertEquals(300, resourceRetriever.getSizeLimit());
+		
+		resourceRetriever.setDisconnectsAfterUse(false);
+		assertFalse(resourceRetriever.disconnectsAfterUse());
 	}
 
 
@@ -74,16 +78,29 @@ public class DefaultResourceRetrieverTest {
 		assertEquals(100, resourceRetriever.getConnectTimeout());
 		assertEquals(200, resourceRetriever.getReadTimeout());
 		assertEquals(0, resourceRetriever.getSizeLimit());
+		assertTrue(resourceRetriever.disconnectsAfterUse());
+	}
+
+
+	@Test
+	public void testTimeoutConstructorAndSizeLimitConstructor() {
+
+		DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(100, 200, 300);
+		assertEquals(100, resourceRetriever.getConnectTimeout());
+		assertEquals(200, resourceRetriever.getReadTimeout());
+		assertEquals(300, resourceRetriever.getSizeLimit());
+		assertTrue(resourceRetriever.disconnectsAfterUse());
 	}
 
 
 	@Test
 	public void testFullConstructor() {
 
-		DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(100, 200, 300);
+		DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(100, 200, 300, false);
 		assertEquals(100, resourceRetriever.getConnectTimeout());
 		assertEquals(200, resourceRetriever.getReadTimeout());
 		assertEquals(300, resourceRetriever.getSizeLimit());
+		assertFalse(resourceRetriever.disconnectsAfterUse());
 	}
 
 
@@ -119,6 +136,55 @@ public class DefaultResourceRetrieverTest {
 		assertEquals("application/json", resource.getContentType());
 		jsonObject = JSONObjectUtils.parse(resource.getContent());
 		assertEquals("B", jsonObject.get("A"));
+	}
+
+
+	@Test
+	public void testRetrieveOK_noDisconnectAfterUse()
+		throws Exception {
+
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("A", "B");
+
+		onRequest()
+			.havingMethodEqualTo("GET")
+			.havingPathEqualTo("/c2id/jwks.json")
+			.respond()
+			.withStatus(200)
+			.withHeader("Content-Type", "application/json")
+			.withBody(jsonObject.toJSONString());
+
+		RestrictedResourceRetriever resourceRetriever = new DefaultResourceRetriever(0, 0, 0, false);
+		Resource resource = resourceRetriever.retrieveResource(new URL("http://localhost:" + port() + "/c2id/jwks.json"));
+		assertEquals("application/json", resource.getContentType());
+		jsonObject = JSONObjectUtils.parse(resource.getContent());
+		assertEquals("B", jsonObject.get("A"));
+	}
+
+
+	@Test
+	public void testRetrieveOK_noDisconnectAfterUse_loop()
+		throws Exception {
+
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("A", "B");
+
+		onRequest()
+			.havingMethodEqualTo("GET")
+			.havingPathEqualTo("/c2id/jwks.json")
+			.respond()
+			.withStatus(200)
+			.withHeader("Content-Type", "application/json")
+			.withBody(jsonObject.toJSONString());
+
+		RestrictedResourceRetriever resourceRetriever = new DefaultResourceRetriever(0, 0, 0, false);
+		
+		for (int i=0; i<100; i++) {
+			Resource resource = resourceRetriever.retrieveResource(new URL("http://localhost:" + port() + "/c2id/jwks.json"));
+			assertEquals("application/json", resource.getContentType());
+			jsonObject = JSONObjectUtils.parse(resource.getContent());
+			assertEquals("B", jsonObject.get("A"));
+		}
 	}
 
 

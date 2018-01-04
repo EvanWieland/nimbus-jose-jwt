@@ -33,10 +33,17 @@ import net.jcip.annotations.ThreadSafe;
  * entity. Caching header directives are not honoured.
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-11-28
+ * @version 2018-01-04
  */
 @ThreadSafe
 public class DefaultResourceRetriever extends AbstractRestrictedResourceRetriever implements RestrictedResourceRetriever {
+	
+	
+	/**
+	 * If {@code true} the disconnect method of the underlying
+	 * HttpURLConnection is called after a successful or failed retrieval.
+	 */
+	private boolean disconnectAfterUse;
 	
 	
 	/**
@@ -76,7 +83,70 @@ public class DefaultResourceRetriever extends AbstractRestrictedResourceRetrieve
 	 */
 	public DefaultResourceRetriever(final int connectTimeout, final int readTimeout, final int sizeLimit) {
 	
+		this(connectTimeout, readTimeout, sizeLimit, true);
+	}
+
+
+	/**
+	 * Creates a new resource retriever.
+	 *
+	 * @param connectTimeout     The HTTP connects timeout, in
+	 *                           milliseconds, zero for infinite. Must not
+	 *                           be negative.
+	 * @param readTimeout        The HTTP read timeout, in milliseconds,
+	 *                           zero for infinite. Must not be negative.
+	 * @param sizeLimit          The HTTP entity size limit, in bytes, zero
+	 *                           for infinite. Must not be negative.
+	 * @param disconnectAfterUse If {@code true} the disconnect method of
+	 *                           the underlying {@link HttpURLConnection}
+	 *                           will be called after trying to retrieve
+	 *                           the resource. Whether the TCP socket is
+	 *                           actually closed or reused depends on the
+	 *                           underlying HTTP implementation and the
+	 *                           setting of the {@code keep.alive} system
+	 *                           property.
+	 */
+	public DefaultResourceRetriever(final int connectTimeout,
+					final int readTimeout,
+					final int sizeLimit,
+					final boolean disconnectAfterUse) {
+	
 		super(connectTimeout, readTimeout, sizeLimit);
+		this.disconnectAfterUse = disconnectAfterUse;
+	}
+	
+	
+	/**
+	 * Returns {@code true} if the disconnect method of the underlying
+	 * {@link HttpURLConnection} will be called after trying to retrieve
+	 * the resource. Whether the TCP socket is actually closed or reused
+	 * depends on the underlying HTTP implementation and the setting of the
+	 * {@code keep.alive} system property.
+	 *
+	 * @return If {@code true} the disconnect method of the underlying
+	 *         {@link HttpURLConnection} will be called after trying to
+	 *         retrieve the resource.
+	 */
+	public boolean disconnectsAfterUse() {
+		
+		return disconnectAfterUse;
+	}
+	
+	
+	/**
+	 * Controls calling of the disconnect method the underlying
+	 * {@link HttpURLConnection} after trying to retrieve the resource.
+	 * Whether the TCP socket is actually closed or reused depends on the
+	 * underlying HTTP implementation and the setting of the
+	 * {@code keep.alive} system property.
+	 *
+	 * @return If {@code true} the disconnect method of the underlying
+	 *         {@link HttpURLConnection} will be called after trying to
+	 *         retrieve the resource.
+	 */
+	public void setDisconnectsAfterUse(final boolean disconnectAfterUse) {
+		
+		this.disconnectAfterUse = disconnectAfterUse;
 	}
 
 
@@ -84,38 +154,44 @@ public class DefaultResourceRetriever extends AbstractRestrictedResourceRetrieve
 	public Resource retrieveResource(final URL url)
 		throws IOException {
 		
-		HttpURLConnection con;
+		HttpURLConnection con = null;
 		try {
 			con = (HttpURLConnection)url.openConnection();
+			
+			con.setConnectTimeout(getConnectTimeout());
+			con.setReadTimeout(getReadTimeout());
+			
+			final String content;
+			
+			InputStream inputStream = con.getInputStream();
+			try {
+				if (getSizeLimit() > 0) {
+					inputStream = new BoundedInputStream(inputStream, getSizeLimit());
+				}
+				
+				content = IOUtils.readInputStreamToString(inputStream, Charset.forName("UTF-8"));
+				
+			} finally {
+				inputStream.close();
+			}
+	
+			// Check HTTP code + message
+			final int statusCode = con.getResponseCode();
+			final String statusMessage = con.getResponseMessage();
+	
+			// Ensure 2xx status code
+			if (statusCode > 299 || statusCode < 200) {
+				throw new IOException("HTTP " + statusCode + ": " + statusMessage);
+			}
+	
+			return new Resource(content, con.getContentType());
+		
 		} catch (ClassCastException e) {
 			throw new IOException("Couldn't open HTTP(S) connection: " + e.getMessage(), e);
-		}
-
-		con.setConnectTimeout(getConnectTimeout());
-		con.setReadTimeout(getReadTimeout());
-
-		InputStream inputStream = con.getInputStream();
-
-		if (getSizeLimit() > 0) {
-			inputStream = new BoundedInputStream(inputStream, getSizeLimit());
-		}
-		
-		final String content;
-		try {
-			content = IOUtils.readInputStreamToString(inputStream, Charset.forName("UTF-8"));
 		} finally {
-			inputStream.close();
+			if (disconnectAfterUse && con != null) {
+				con.disconnect();
+			}
 		}
-
-		// Check HTTP code + message
-		final int statusCode = con.getResponseCode();
-		final String statusMessage = con.getResponseMessage();
-
-		// Ensure 2xx status code
-		if (statusCode > 299 || statusCode < 200) {
-			throw new IOException("HTTP " + statusCode + ": " + statusMessage);
-		}
-
-		return new Resource(content, con.getContentType());
 	}
 }
