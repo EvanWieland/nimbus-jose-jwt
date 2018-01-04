@@ -18,7 +18,6 @@
 package com.nimbusds.jose.util;
 
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URL;
@@ -27,10 +26,6 @@ import java.util.concurrent.TimeUnit;
 import static net.jadler.Jadler.*;
 import static org.junit.Assert.*;
 
-import com.nimbusds.jose.util.DefaultResourceRetriever;
-import com.nimbusds.jose.util.JSONObjectUtils;
-import com.nimbusds.jose.util.Resource;
-import com.nimbusds.jose.util.RestrictedResourceRetriever;
 import net.minidev.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
