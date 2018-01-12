@@ -21,9 +21,12 @@ package com.nimbusds.jwt.proc;
 import java.net.URL;
 import java.security.*;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.KeySpec;
 import java.util.*;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.nimbusds.jose.*;
@@ -43,17 +46,14 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.RemoteJWKSet;
 import com.nimbusds.jose.proc.*;
 import com.nimbusds.jose.util.Base64URL;
-import com.nimbusds.jwt.EncryptedJWT;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.PlainJWT;
-import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.jwt.*;
 import junit.framework.TestCase;
 
 
 /**
  * Tests the default JWT processor.
  *
- * @version 2017-05-05
+ * @version 2018-01-11
  */
 public class DefaultJWTProcessorTest extends TestCase {
 
@@ -1108,5 +1108,67 @@ public class DefaultJWTProcessorTest extends TestCase {
 		} catch (BadJWTException e) {
 			assertEquals("The payload is not a nested signed JWT", e.getMessage());
 		}
+	}
+	
+	
+	// issue https://bitbucket.org/connect2id/nimbus-jose-jwt/issues/250/error-on-jwe-decryption-wrong-algorithm
+	public void testJCAKeyAlgAccepted()
+		throws Exception {
+		
+		String hostId = "subject";
+		
+		String sharedSecret = "SharedSecret";
+		byte[] salt = new byte[8];
+		new SecureRandom().nextBytes(salt);
+		
+		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+		KeySpec spec = new PBEKeySpec(sharedSecret.toCharArray(), salt, 65536, 256);
+		SecretKey tmp = factory.generateSecret(spec);
+		SecretKey secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
+
+		// create the JWT
+		
+		JWSSigner signer = new MACSigner(secretKey.getEncoded());
+		
+		JWTClaimsSet inputClaimsSet = new JWTClaimsSet.Builder()
+			.subject(hostId)
+			.expirationTime(new Date(new Date().getTime() + 60*1000L))
+			.build();
+		
+		SignedJWT hmacJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), inputClaimsSet);
+		
+		hmacJWT.sign(signer);
+		
+		JWEObject jweObject = new JWEObject(
+			new JWEHeader.Builder(JWEAlgorithm.DIR, EncryptionMethod.A256GCM)
+				.contentType("JWT")
+				.build(),
+			new Payload(hmacJWT)
+		);
+		
+		jweObject.encrypt(new DirectEncrypter(secretKey.getEncoded()));
+		
+		String jweString = jweObject.serialize();
+
+		// parse the JWT
+		
+		JWT jwt = JWTParser.parse(jweString);
+		
+		if (!(jwt instanceof EncryptedJWT)) {
+			throw new RuntimeException("encrypted JWT required");
+		}
+		
+		ImmutableSecret secret = new ImmutableSecret(secretKey);
+		ConfigurableJWTProcessor jwtProcessor = new DefaultJWTProcessor();
+		
+		JWEKeySelector jweKeySelector = new JWEDecryptionKeySelector(JWEAlgorithm.DIR, EncryptionMethod.A256GCM, secret);
+		jwtProcessor.setJWEKeySelector(jweKeySelector);
+		
+		JWSKeySelector jwsKeySelector = new JWSVerificationKeySelector(JWSAlgorithm.HS256, secret);
+		jwtProcessor.setJWSKeySelector(jwsKeySelector);
+		
+		JWTClaimsSet outputClaimsSet = jwtProcessor.process((EncryptedJWT) jwt, null);
+		
+		assertEquals(hostId, outputClaimsSet.getSubject());
 	}
 }

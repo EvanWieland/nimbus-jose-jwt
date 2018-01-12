@@ -37,7 +37,7 @@ import com.nimbusds.jose.jwk.OctetSequenceKey;
  * Tests direct JWE encryption and decryption.
  *
  * @author Vladimir Dzhuvinov
- * @version 2015-09-18
+ * @version 2018-01-11
  */
 public class DirectCryptoTest extends TestCase {
 
@@ -612,5 +612,43 @@ public class DirectCryptoTest extends TestCase {
 			
 			assertEquals("The \"A128CBC-HS256\" encryption method or key size is not supported by the JWE encrypter: Supported methods: [A128GCM]", e.getMessage());
 		}
+	}
+	
+	
+	public void testAcceptAnySecretKeyAlg()
+		throws Exception {
+		
+		String plainText = "Hello, world!";
+		
+		// 128 bit
+		SecretKey secretKey = new SecretKeySpec(key128, "NONE");
+		JWEObject jweObject = new JWEObject(new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), new Payload(plainText));
+		jweObject.encrypt(new DirectEncrypter(secretKey));
+		jweObject = JWEObject.parse(jweObject.serialize());
+		jweObject.decrypt(new DirectDecrypter(secretKey));
+		assertEquals(plainText, jweObject.getPayload().toString());
+		
+		// 192 bit
+		secretKey = new SecretKeySpec(key192, "NONE");
+		jweObject = new JWEObject(new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A192GCM), new Payload(plainText));
+		jweObject.encrypt(new DirectEncrypter(secretKey));
+		jweObject = JWEObject.parse(jweObject.serialize());
+		jweObject.decrypt(new DirectDecrypter(secretKey));
+		assertEquals(plainText, jweObject.getPayload().toString());
+		
+		// 256 bit
+		secretKey = new SecretKeySpec(key256, "NONE");
+		jweObject = new JWEObject(new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128CBC_HS256), new Payload(plainText));
+		jweObject.encrypt(new DirectEncrypter(secretKey));
+		jweObject = JWEObject.parse(jweObject.serialize());
+		jweObject.decrypt(new DirectDecrypter(secretKey));
+		assertEquals(plainText, jweObject.getPayload().toString());
+		
+		secretKey = new SecretKeySpec(key256, "NONE");
+		jweObject = new JWEObject(new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A256GCM), new Payload(plainText));
+		jweObject.encrypt(new DirectEncrypter(secretKey));
+		jweObject = JWEObject.parse(jweObject.serialize());
+		jweObject.decrypt(new DirectDecrypter(secretKey));
+		assertEquals(plainText, jweObject.getPayload().toString());
 	}
 }

@@ -26,6 +26,7 @@ import javax.crypto.spec.GCMParameterSpec;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.util.ByteUtils;
 import com.nimbusds.jose.util.Container;
+import com.nimbusds.jose.util.KeyUtils;
 import net.jcip.annotations.ThreadSafe;
 
 
@@ -38,7 +39,7 @@ import net.jcip.annotations.ThreadSafe;
  * @author Vladimir Dzhuvinov
  * @author Axel Nennker
  * @author Dimitar A. Stoikov
- * @version 2017-06-01
+ * @version 2018-01-11
  */
 @ThreadSafe
 class AESGCM {
@@ -102,6 +103,9 @@ class AESGCM {
 		                                      final Provider provider)
 		throws JOSEException {
 
+		// Key alg must be "AES"
+		final SecretKey aesKey = KeyUtils.toAESKey(secretKey);
+		
 		Cipher cipher;
 
 		byte[] iv = ivContainer.get();
@@ -114,7 +118,7 @@ class AESGCM {
 			}
 
 			GCMParameterSpec gcmSpec = new GCMParameterSpec(AUTH_TAG_BIT_LENGTH, iv);
-			cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmSpec);
+			cipher.init(Cipher.ENCRYPT_MODE, aesKey, gcmSpec);
 
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | InvalidAlgorithmParameterException e) {
 
@@ -123,7 +127,7 @@ class AESGCM {
 		} catch (NoClassDefFoundError e) {
 			// We have Java 6, GCMParameterSpec not available,
 			// switch to BouncyCastle API
-			return LegacyAESGCM.encrypt(secretKey, iv, plainText, authData);
+			return LegacyAESGCM.encrypt(aesKey, iv, plainText, authData);
 		}
 
 		cipher.updateAAD(authData);
@@ -261,7 +265,10 @@ class AESGCM {
 		                     final byte[] authTag,
 		                     final Provider provider)
 		throws JOSEException {
-
+		
+		// Key alg must be "AES"
+		final SecretKey aesKey = KeyUtils.toAESKey(secretKey);
+		
 		Cipher cipher;
 
 		try {
@@ -272,7 +279,7 @@ class AESGCM {
 			}
 
 			GCMParameterSpec gcmSpec = new GCMParameterSpec(AUTH_TAG_BIT_LENGTH, iv);
-			cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmSpec);
+			cipher.init(Cipher.DECRYPT_MODE, aesKey, gcmSpec);
 
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | InvalidAlgorithmParameterException e) {
 
@@ -281,7 +288,7 @@ class AESGCM {
 		} catch (NoClassDefFoundError e) {
 			// We have Java 6, GCMParameterSpec not available,
 			// switch to BouncyCastle API
-			return LegacyAESGCM.decrypt(secretKey, iv, cipherText, authData, authTag);
+			return LegacyAESGCM.decrypt(aesKey, iv, cipherText, authData, authTag);
 		}
 
 		cipher.updateAAD(authData);
