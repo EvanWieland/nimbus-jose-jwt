@@ -74,7 +74,7 @@ public class DirectDecrypter extends DirectCryptoProvider implements JWEDecrypte
 	/**
 	 * Creates a new direct decrypter.
 	 *
-	 * @param key The symmetric key. Its algorithm must be "AES". Must be
+	 * @param key The symmetric key. Its algorithm should be "AES". Must be
 	 *            128 bits (16 bytes), 192 bits (24 bytes), 256 bits (32
 	 *            bytes), 384 bits (48 bytes) or 512 bits (64 bytes) long.
 	 *            Must not be {@code null}.
@@ -128,7 +128,7 @@ public class DirectDecrypter extends DirectCryptoProvider implements JWEDecrypte
 	/**
 	 * Creates a new direct decrypter.
 	 *
-	 * @param key            The symmetric key. Its algorithm must be
+	 * @param key            The symmetric key. Its algorithm should be
 	 *                       "AES". Must be 128 bits (16 bytes), 192 bits
 	 *                       (24 bytes), 256 bits (32 bytes), 384 bits (48
 	 *                       bytes) or 512 bits (64 bytes) long. Must not
