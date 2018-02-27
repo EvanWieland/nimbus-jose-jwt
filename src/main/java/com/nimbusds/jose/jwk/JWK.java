@@ -205,6 +205,10 @@ public abstract class JWK implements JSONAware, Serializable {
 		this.x5u = x5u;
 		this.x5t = x5t;
 		this.x5t256 = x5t256;
+		
+		if (x5c != null && x5c.isEmpty()) {
+			throw new IllegalArgumentException("The X.509 certificate chian \"x5c\" must not be empty");
+		}
 		this.x5c = x5c;
 		
 		try {

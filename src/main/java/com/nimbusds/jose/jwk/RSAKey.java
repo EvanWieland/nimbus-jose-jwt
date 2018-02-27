@@ -1332,16 +1332,28 @@ public final class RSAKey extends JWK implements AssymetricJWK {
 		if (n == null) {
 			throw new IllegalArgumentException("The modulus value must not be null");
 		}
-
 		this.n = n;
 
 
 		if (e == null) {
 			throw new IllegalArgumentException("The public exponent value must not be null");
 		}
-
 		this.e = e;
 
+		if (getParsedX509CertChain() != null) {
+			RSAPublicKey certRSAKey;
+			try {
+				certRSAKey = (RSAPublicKey) getParsedX509CertChain().get(0).getPublicKey();
+			} catch (ClassCastException ex) {
+				throw new IllegalArgumentException("The public key of the X.509 certificate is not RSA");
+			}
+			if (! e.equals(Base64URL.encode(certRSAKey.getPublicExponent()))) {
+				throw new IllegalArgumentException("The public exponent of the public RSA key of the X.509 certificate doesn't match");
+			}
+			if (! n.equals(Base64URL.encode(certRSAKey.getModulus()))) {
+				throw new IllegalArgumentException("The modulus of the public RSA key of the X.509 certificate doesn't match");
+			}
+		}
 
 		// Private params, 1st representation
 
@@ -2109,8 +2121,7 @@ public final class RSAKey extends JWK implements AssymetricJWK {
 				null);
 		
 		} catch (IllegalArgumentException ex) {
-
-			// Inconsistent 2nd spec, conflicting 'use' and 'key_ops'
+			// Inconsistent 2nd spec, conflicting 'use' and 'key_ops', etc.
 			throw new ParseException(ex.getMessage(), 0);
 		}
 	}
