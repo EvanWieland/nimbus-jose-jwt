@@ -1334,14 +1334,14 @@ public class RSAKeyTest extends TestCase {
 	public void testX509CertificateChain_algDoesntMatch()
 		throws Exception {
 		
-		// Generate key pair
+		// Generate EC key pair
 		KeyPairGenerator gen = KeyPairGenerator.getInstance("EC");
 		gen.initialize(Curve.P_521.toECParameterSpec());
 		KeyPair kp = gen.generateKeyPair();
 		ECPublicKey publicKey = (ECPublicKey)kp.getPublic();
 		ECPrivateKey privateKey = (ECPrivateKey)kp.getPrivate();
 		
-		// Generate certificate
+		// Generate EC certificate
 		X500Name issuer = new X500Name("cn=c2id");
 		BigInteger serialNumber = new BigInteger(64, new SecureRandom());
 		Date now = new Date();
