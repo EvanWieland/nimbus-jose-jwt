@@ -214,7 +214,7 @@ final class JWKMetadata {
 		throws ParseException {
 
 		if (o.containsKey("x5c")) {
-			return X509CertChainUtils.parseX509CertChain(JSONObjectUtils.getJSONArray(o, "x5c"));
+			return X509CertChainUtils.toBase64List(JSONObjectUtils.getJSONArray(o, "x5c"));
 		} else {
 			return null;
 		}

@@ -22,7 +22,6 @@ import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.nimbusds.jose.util.Base64;
 import net.minidev.json.JSONArray;
 
 
@@ -30,21 +29,22 @@ import net.minidev.json.JSONArray;
  * X.509 certificate chain utilities.
  *
  * @author Vladimir Dzhuvinov
- * @version 2013-05-29
+ * @version 2018-02-27
  */
 public class X509CertChainUtils {
 
+	
 	/**
-	 * Parses an X.509 certificate chain from the specified JSON array.
+	 * Converts the specified JSON array of strings to a list of Base64
+	 * encoded objects.
 	 *
 	 * @param jsonArray The JSON array to parse. Must not be {@code null}.
 	 *
-	 * @return The X.509 certificate chain.
+	 * @return The Base64 list.
 	 *
-	 * @throws ParseException If the X.509 certificate chain couldn't be
-	 *                        parsed.
+	 * @throws ParseException If parsing failed.
 	 */
-	public static List<Base64> parseX509CertChain(final JSONArray jsonArray)
+	public static List<Base64> toBase64List(final JSONArray jsonArray)
 		throws ParseException {
 
 		List<Base64> chain = new LinkedList<>();
@@ -67,6 +67,7 @@ public class X509CertChainUtils {
 		return chain;
 	}
 
+	
 	/**
 	 * Prevents public instantiation.
 	 */
