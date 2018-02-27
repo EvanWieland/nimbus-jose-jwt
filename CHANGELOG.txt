@@ -800,5 +800,6 @@ version 5.4 (2018-01-11)
 version 5.5 (2018-02-27)
     * Adds RSAKey check for X.509 certificate key type, modulus "n" and public
       exponent "e" to ensure they match the JWK values (iss #237).
+    * JWKMetadata.parseX509CertChain checks for non-empty chain.
     * Adds new static X509CertChainUtils.parse(List<Base64>) method.
     * Adds new JWK.getParsedX509CertChain() method.

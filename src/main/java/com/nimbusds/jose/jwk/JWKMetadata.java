@@ -23,20 +23,19 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Set;
 
-import net.minidev.json.JSONObject;
-
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.JSONObjectUtils;
 import com.nimbusds.jose.util.X509CertChainUtils;
+import net.minidev.json.JSONObject;
 
 
 /**
  * JSON Web Key (JWK) metadata.
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-04-08
+ * @version 2018-02-26
  */
 final class JWKMetadata {
 
@@ -205,8 +204,9 @@ final class JWKMetadata {
 	 *
 	 * @param o The JSON object to parse. Must not be {@code null}.
 	 *
-	 * @return The X.509 certificate chain as a unmodifiable list,
-	 *         {@code null} if not specified.
+	 * @return The X.509 certificate chain (containing at least one
+	 *         certificate) as a unmodifiable list, {@code null} if not
+	 *         specified.
 	 *
 	 * @throws ParseException If parsing failed.
 	 */
@@ -214,7 +214,14 @@ final class JWKMetadata {
 		throws ParseException {
 
 		if (o.containsKey("x5c")) {
-			return X509CertChainUtils.toBase64List(JSONObjectUtils.getJSONArray(o, "x5c"));
+			List<Base64> chain = X509CertChainUtils.toBase64List(JSONObjectUtils.getJSONArray(o, "x5c"));
+			
+			if (chain.isEmpty()) {
+				throw new ParseException("The X.509 certificate chain \"x5c\" must not be empty", 0);
+			}
+			
+			return chain;
+			
 		} else {
 			return null;
 		}
