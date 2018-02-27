@@ -55,8 +55,8 @@ public class KeyConverter {
 		List<Key> out = new LinkedList<>();
 		for (JWK jwk: jwkList) {
 			try {
-				if (jwk instanceof AssymetricJWK) {
-					KeyPair keyPair = ((AssymetricJWK)jwk).toKeyPair();
+				if (jwk instanceof AsymmetricJWK) {
+					KeyPair keyPair = ((AsymmetricJWK)jwk).toKeyPair();
 					out.add(keyPair.getPublic()); // add public
 					if (keyPair.getPrivate() != null) {
 						out.add(keyPair.getPrivate()); // add private if present

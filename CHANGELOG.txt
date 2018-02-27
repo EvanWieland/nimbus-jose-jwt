@@ -798,8 +798,14 @@ version 5.4 (2018-01-11)
       to make sure the algorithm of the passed SecretKey is "AES" (iss #250).
 
 version 5.5 (2018-02-27)
-    * Adds RSAKey check for X.509 certificate key type, modulus "n" and public
-      exponent "e" to ensure they match the JWK values (iss #237).
-    * JWKMetadata.parseX509CertChain checks for non-empty chain.
+    * Adds required JWK constructor check of the first certificate in the X.509
+      certificate chain parameter ("x5c") to ensure its public subject key info
+      matches the JWK type and public parameters ("n" and "e" for an RSA JWK,
+      "x" and "y" for an EC JWK) (iss #237).
+    * Adds new AsymmetricJWK.matches(X509certificate) interface method to check
+      if the JWK type and public key parameters match the public subject key
+      info of the specified X.509 certificate.
+    * JWKMetadata.parseX509CertChain adds check for non-empty chain.
     * Adds new static X509CertChainUtils.parse(List<Base64>) method.
     * Adds new JWK.getParsedX509CertChain() method.
+    * Fixes typo in AsymmetricJWK interface name.

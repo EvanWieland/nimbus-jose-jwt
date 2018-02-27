@@ -23,6 +23,7 @@ import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.*;
 
@@ -84,10 +85,10 @@ import net.minidev.json.JSONObject;
  * </pre>
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-08-25
+ * @version 2018-02-27
  */
 @Immutable
-public class OctetKeyPair extends JWK implements AssymetricJWK, CurveBasedJWK {
+public class OctetKeyPair extends JWK implements AsymmetricJWK, CurveBasedJWK {
 	
 	
 	private static final long serialVersionUID = 1L;
@@ -641,6 +642,13 @@ public class OctetKeyPair extends JWK implements AssymetricJWK, CurveBasedJWK {
 		throws JOSEException {
 		
 		throw new JOSEException("Export to java.security.KeyPair not supported");
+	}
+	
+	
+	@Override
+	public boolean matches(final X509Certificate cert) {
+		// X.509 certs don't support OKP yet
+		return false;
 	}
 	
 	

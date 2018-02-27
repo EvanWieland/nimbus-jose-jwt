@@ -21,6 +21,7 @@ package com.nimbusds.jose.jwk;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 
 import com.nimbusds.jose.JOSEException;
 
@@ -29,9 +30,9 @@ import com.nimbusds.jose.JOSEException;
  * Asymmetric (pair) JSON Web Key (JWK).
  *
  * @author Vladimir Dzhuvinov
- * @version 2015-12-08
+ * @version 2018-02-27
  */
-public interface AssymetricJWK {
+public interface AsymmetricJWK {
 	
 
 	/**
@@ -66,4 +67,17 @@ public interface AssymetricJWK {
 	 */
 	KeyPair toKeyPair()
 		throws JOSEException;
+	
+	
+	/**
+	 * Returns {@code true} if the public key material of this JWK matches
+	 * the public subject key info of the specified X.509 certificate.
+	 *
+	 * @param cert The X.509 certificate. Must not be {@code null}.
+	 *
+	 * @return {@code true} if the public key material of this JWK matches
+	 *         the public subject key info of the specified X.509
+	 *         certificate, else {@code false}.
+	 */
+	boolean matches(X509Certificate cert);
 }

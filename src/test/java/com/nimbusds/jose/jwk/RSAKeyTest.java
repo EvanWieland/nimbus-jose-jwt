@@ -685,7 +685,7 @@ public class RSAKeyTest extends TestCase {
 			null, null, null, null,
 			null, null, null, null, null);
 
-		assertTrue(key instanceof AssymetricJWK);
+		assertTrue(key instanceof AsymmetricJWK);
 
 		// Public key export
 		RSAPublicKey pubKey = (RSAPublicKey) key.toPublicKey();
@@ -711,7 +711,7 @@ public class RSAKeyTest extends TestCase {
 			KeyUse.SIGNATURE, null, JWSAlgorithm.RS256, "1",
 			null, null, null, null);
 
-		assertTrue(key instanceof AssymetricJWK);
+		assertTrue(key instanceof AsymmetricJWK);
 
 		// Private key export with CRT (2nd form)
 		RSAPrivateKey privKey = (RSAPrivateKey ) key.toPrivateKey();
@@ -1331,46 +1331,16 @@ public class RSAKeyTest extends TestCase {
 	}
 	
 	
-	public void testX509CertificateChain_algDoesntMatch()
-		throws Exception {
-		
-		// Generate EC key pair
-		KeyPairGenerator gen = KeyPairGenerator.getInstance("EC");
-		gen.initialize(Curve.P_521.toECParameterSpec());
-		KeyPair kp = gen.generateKeyPair();
-		ECPublicKey publicKey = (ECPublicKey)kp.getPublic();
-		ECPrivateKey privateKey = (ECPrivateKey)kp.getPrivate();
-		
-		// Generate EC certificate
-		X500Name issuer = new X500Name("cn=c2id");
-		BigInteger serialNumber = new BigInteger(64, new SecureRandom());
-		Date now = new Date();
-		Date nbf = new Date(now.getTime() - 1000L);
-		Date exp = new Date(now.getTime() + 365*24*60*60*1000L); // in 1 year
-		X500Name subject = new X500Name("cn=c2id");
-		JcaX509v3CertificateBuilder x509certBuilder = new JcaX509v3CertificateBuilder(
-			issuer,
-			serialNumber,
-			nbf,
-			exp,
-			subject,
-			publicKey
-		);
-		KeyUsage keyUsage = new KeyUsage(KeyUsage.nonRepudiation);
-		x509certBuilder.addExtension(Extension.keyUsage, true, keyUsage);
-		JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder("SHA256withECDSA");
-		X509CertificateHolder certHolder = x509certBuilder.build(signerBuilder.build(privateKey));
-		X509Certificate cert = X509CertUtils.parse(certHolder.getEncoded());
-		
+	public void testX509CertificateChain_algDoesntMatch() {
 		try {
 			new RSAKey.Builder(
 				new Base64URL(n),
 				new Base64URL(e)
 			)
-			.x509CertChain(Collections.singletonList(Base64.encode(cert.getEncoded())))
+			.x509CertChain(SampleCertificates.SAMPLE_X5C_EC)
 			.build();
 		} catch (IllegalStateException e) {
-			assertEquals("The public key of the X.509 certificate is not RSA", e.getMessage());
+			assertEquals("The public subject key info of the first X.509 certificate in the chain must match the JWK type and public parameters", e.getMessage());
 		}
 	}
 	
@@ -1390,7 +1360,7 @@ public class RSAKeyTest extends TestCase {
 			.x509CertChain(SampleCertificates.SAMPLE_X5C_RSA)
 			.build();
 		} catch (IllegalStateException e) {
-			assertEquals("The modulus of the public RSA key of the X.509 certificate doesn't match", e.getMessage());
+			assertEquals("The public subject key info of the first X.509 certificate in the chain must match the JWK type and public parameters", e.getMessage());
 		}
 	}
 	
@@ -1410,7 +1380,7 @@ public class RSAKeyTest extends TestCase {
 			.x509CertChain(SampleCertificates.SAMPLE_X5C_RSA)
 			.build();
 		} catch (IllegalStateException e) {
-			assertEquals("The public exponent of the public RSA key of the X.509 certificate doesn't match", e.getMessage());
+			assertEquals("The public subject key info of the first X.509 certificate in the chain must match the JWK type and public parameters", e.getMessage());
 		}
 	}
 	

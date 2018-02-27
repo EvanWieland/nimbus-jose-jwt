@@ -104,10 +104,10 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
  *
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
- * @version 2018-08-25
+ * @version 2018-02-27
  */
 @Immutable
-public final class ECKey extends JWK implements AssymetricJWK, CurveBasedJWK {
+public final class ECKey extends JWK implements AsymmetricJWK, CurveBasedJWK {
 
 
 	private static final long serialVersionUID = 1L;
@@ -718,6 +718,8 @@ public final class ECKey extends JWK implements AssymetricJWK, CurveBasedJWK {
 		this.y = y;
 		
 		ensurePublicCoordinatesOnCurve(crv, x, y);
+		
+		ensureMatches(getParsedX509CertChain());
 
 		this.d = null;
 		
@@ -786,6 +788,8 @@ public final class ECKey extends JWK implements AssymetricJWK, CurveBasedJWK {
 		
 		ensurePublicCoordinatesOnCurve(crv, x, y);
 		
+		ensureMatches(getParsedX509CertChain());
+		
 		if (d == null) {
 			throw new IllegalArgumentException("The 'd' coordinate must not be null");
 		}
@@ -853,6 +857,8 @@ public final class ECKey extends JWK implements AssymetricJWK, CurveBasedJWK {
 		this.y = y;
 		
 		ensurePublicCoordinatesOnCurve(crv, x, y);
+		
+		ensureMatches(getParsedX509CertChain());
 		
 		d = null;
 		
@@ -1225,8 +1231,50 @@ public final class ECKey extends JWK implements AssymetricJWK, CurveBasedJWK {
 			return new KeyPair(toECPublicKey(provider), toECPrivateKey(provider));
 		}
 	}
-
-
+	
+	
+	@Override
+	public boolean matches(final X509Certificate cert) {
+		
+		ECPublicKey certECKey;
+		try {
+			certECKey = (ECPublicKey) getParsedX509CertChain().get(0).getPublicKey();
+		} catch (ClassCastException ex) {
+			return false;
+		}
+		// Compare Big Ints, base64url encoding may have padding!
+		// https://tools.ietf.org/html/rfc7518#section-6.2.1.2
+		if (! getX().decodeToBigInteger().equals(certECKey.getW().getAffineX())) {
+			return false;
+		}
+		if (! getY().decodeToBigInteger().equals(certECKey.getW().getAffineY())) {
+			return false;
+		}
+		return true;
+	}
+	
+	
+	/**
+	 * Calls {@link #matches(X509Certificate)} for the first X.509
+	 * certificate in the specified chain.
+	 *
+	 * @param chain The X.509 certificate chain, {@code null} if not
+	 *              specified.
+	 *
+	 * @throws IllegalArgumentException If a certificate chain is specified
+	 *                                  and the first certificate in it
+	 *                                  doesn't match.
+	 */
+	private void ensureMatches(final List<X509Certificate> chain) {
+		
+		if (chain == null)
+			return;
+		
+		if (! matches(chain.get(0)))
+			throw new IllegalArgumentException("The public subject key info of the first X.509 certificate in the chain must match the JWK type and public parameters");
+	}
+	
+	
 	@Override
 	public LinkedHashMap<String,?> getRequiredParams() {
 

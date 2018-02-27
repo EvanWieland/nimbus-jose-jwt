@@ -18,15 +18,31 @@
 package com.nimbusds.jose.jwk;
 
 
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import com.nimbusds.jose.util.Base64;
+import com.nimbusds.jose.util.X509CertUtils;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 
 public class SampleCertificates {
 	
-	
+	// Real world sample cert chain for oracle.com web site
 	public static final List<Base64> SAMPLE_X5C_RSA = Arrays.asList(
 		new Base64(
 		"MIIJcTCCCFmgAwIBAgIQCa4884BqoV7BKWdHq2qgOTANBgkqhkiG9w0BAQsFADBe" +
@@ -130,4 +146,44 @@ public class SampleCertificates {
 		"YSEY1QSteDwsOoBrp+uvFRTp2InBuThs4pFsiv9kuXclVzDAGySj4dzp30d8tbQk" +
 		"CAUw7C29C79Fv1C5qfPrmAESrciIxpg0X40KPMbp1ZWVbd4=")
 	);
+	
+	
+	// Sample cert chain of size one, EC key
+	public static final List<Base64> SAMPLE_X5C_EC;
+	
+	static {
+		
+		try {
+			// Generate EC key pair
+			KeyPairGenerator gen = KeyPairGenerator.getInstance("EC");
+			gen.initialize(Curve.P_256.toECParameterSpec());
+			KeyPair kp = gen.generateKeyPair();
+			ECPublicKey publicKey = (ECPublicKey)kp.getPublic();
+			ECPrivateKey privateKey = (ECPrivateKey)kp.getPrivate();
+			
+			// Generate EC certificate
+			X500Name issuer = new X500Name("cn=c2id");
+			BigInteger serialNumber = new BigInteger(64, new SecureRandom());
+			Date now = new Date();
+			Date nbf = new Date(now.getTime() - 1000L);
+			Date exp = new Date(now.getTime() + 365*24*60*60*1000L); // in 1 year
+			X500Name subject = new X500Name("cn=c2id");
+			JcaX509v3CertificateBuilder x509certBuilder = new JcaX509v3CertificateBuilder(
+				issuer,
+				serialNumber,
+				nbf,
+				exp,
+				subject,
+				publicKey
+			);
+			KeyUsage keyUsage = new KeyUsage(KeyUsage.nonRepudiation);
+			x509certBuilder.addExtension(Extension.keyUsage, true, keyUsage);
+			JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder("SHA256withECDSA");
+			X509CertificateHolder certHolder = x509certBuilder.build(signerBuilder.build(privateKey));
+			X509Certificate cert = X509CertUtils.parse(certHolder.getEncoded());
+			SAMPLE_X5C_EC = Collections.unmodifiableList(Collections.singletonList(Base64.encode(cert.getEncoded())));
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

@@ -131,10 +131,10 @@ import net.minidev.json.JSONObject;
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
  * @author Cedric Staub
- * @version 2017-06-01
+ * @version 2018-02-27
  */
 @Immutable
-public final class RSAKey extends JWK implements AssymetricJWK {
+public final class RSAKey extends JWK implements AsymmetricJWK {
 
 
 	private static final long serialVersionUID = 1L;
@@ -1341,18 +1341,8 @@ public final class RSAKey extends JWK implements AssymetricJWK {
 		this.e = e;
 
 		if (getParsedX509CertChain() != null) {
-			RSAPublicKey certRSAKey;
-			try {
-				certRSAKey = (RSAPublicKey) getParsedX509CertChain().get(0).getPublicKey();
-			} catch (ClassCastException ex) {
-				throw new IllegalArgumentException("The public key of the X.509 certificate is not RSA");
-			}
-			if (! e.equals(Base64URL.encode(certRSAKey.getPublicExponent()))) {
-				throw new IllegalArgumentException("The public exponent of the public RSA key of the X.509 certificate doesn't match");
-			}
-			if (! n.equals(Base64URL.encode(certRSAKey.getModulus()))) {
-				throw new IllegalArgumentException("The modulus of the public RSA key of the X.509 certificate doesn't match");
-			}
+			if (! matches(getParsedX509CertChain().get(0)))
+				throw new IllegalArgumentException("The public subject key info of the first X.509 certificate in the chain must match the JWK type and public parameters");
 		}
 
 		// Private params, 1st representation
@@ -1918,8 +1908,27 @@ public final class RSAKey extends JWK implements AssymetricJWK {
 		
 		return new KeyPair(toRSAPublicKey(), toPrivateKey());
 	}
-
-
+	
+	
+	@Override
+	public boolean matches(final X509Certificate cert) {
+		
+		RSAPublicKey certRSAKey;
+		try {
+			certRSAKey = (RSAPublicKey) getParsedX509CertChain().get(0).getPublicKey();
+		} catch (ClassCastException ex) {
+			return false;
+		}
+		if (! e.decodeToBigInteger().equals(certRSAKey.getPublicExponent())) {
+			return false;
+		}
+		if (! n.decodeToBigInteger().equals(certRSAKey.getModulus())) {
+			return false;
+		}
+		return true;
+	}
+	
+	
 	@Override
 	public LinkedHashMap<String,?> getRequiredParams() {
 

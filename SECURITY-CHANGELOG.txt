@@ -27,3 +27,9 @@ version 4.39 (2017-06-02)
       attacks that can cause the HMAC check to be bypassed. Affected is JWE
       decryption with A128CBC-HS256, A192CBC-HS384 and A256CBC-HS512 encryption
       method (issue #224). Allocated CVE-2017-12972.
+
+version 5.5 (2018-02-27)
+    * Adds required JWK constructor check of the first certificate in the X.509
+      certificate chain parameter ("x5c") to ensure its public subject key info
+      matches the JWK type and public parameters ("n" and "e" for an RSA JWK,
+      "x" and "y" for an EC JWK) (iss #237).

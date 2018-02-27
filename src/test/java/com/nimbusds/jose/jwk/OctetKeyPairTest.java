@@ -148,7 +148,7 @@ public class OctetKeyPairTest extends TestCase {
 		OctetKeyPair key = new OctetKeyPair(EXAMPLE_OKP_ED25519.CRV, EXAMPLE_OKP_ED25519.X, EXAMPLE_OKP_ED25519.D,
 			KeyUse.SIGNATURE, ops, JWSAlgorithm.EdDSA, "1", x5u, x5t, x5t256, x5c, keyStore);
 		
-		assertTrue(key instanceof AssymetricJWK);
+		assertTrue(key instanceof AsymmetricJWK);
 		assertTrue(key instanceof CurveBasedJWK);
 		
 		// Test getters
@@ -227,7 +227,7 @@ public class OctetKeyPairTest extends TestCase {
 		OctetKeyPair key = new OctetKeyPair(EXAMPLE_OKP_ED25519.CRV, EXAMPLE_OKP_ED25519.X, 
 			KeyUse.SIGNATURE, ops, JWSAlgorithm.EdDSA, "1", x5u, x5t, x5t256, x5c, keyStore);
 		
-		assertTrue(key instanceof AssymetricJWK);
+		assertTrue(key instanceof AsymmetricJWK);
 		assertTrue(key instanceof CurveBasedJWK);
 		
 		// Test getters
