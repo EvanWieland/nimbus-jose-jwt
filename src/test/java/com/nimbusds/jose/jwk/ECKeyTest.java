@@ -53,7 +53,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
  * Tests the EC JWK class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-08-25
+ * @version 2018-02-27
  */
 public class ECKeyTest extends TestCase {
 
@@ -182,8 +182,7 @@ public class ECKeyTest extends TestCase {
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
 		Base64URL x5t256 = new Base64URL("abc256");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 
 		Set<KeyOperation> ops = null;
 		
@@ -262,8 +261,7 @@ public class ECKeyTest extends TestCase {
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
 		Base64URL x5t256 = new Base64URL("abc256");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 
 		KeyUse use = null;
 		Set<KeyOperation> ops = new LinkedHashSet<>(Arrays.asList(KeyOperation.SIGN, KeyOperation.VERIFY));
@@ -343,8 +341,7 @@ public class ECKeyTest extends TestCase {
 
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 		
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 
@@ -420,8 +417,7 @@ public class ECKeyTest extends TestCase {
 
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 		
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 

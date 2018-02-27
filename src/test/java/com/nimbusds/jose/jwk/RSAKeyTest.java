@@ -51,7 +51,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
  * Tests the RSA JWK class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-06-20
+ * @version 2018-02-27
  */
 public class RSAKeyTest extends TestCase {
 
@@ -116,8 +116,7 @@ public class RSAKeyTest extends TestCase {
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
 		Base64URL x5t256 = new Base64URL("abc256");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 		
 		// Recreate PrivateKey
 		KeyFactory factory = KeyFactory.getInstance("RSA");
@@ -143,6 +142,7 @@ public class RSAKeyTest extends TestCase {
 		assertEquals(x5t.toString(), key.getX509CertThumbprint().toString());
 		assertEquals(x5t256.toString(), key.getX509CertSHA256Thumbprint().toString());
 		assertEquals(x5c.size(), key.getX509CertChain().size());
+		assertEquals(x5c.size(), key.getParsedX509CertChain().size());
 		assertEquals(keyStore, key.getKeyStore());
 
 		assertEquals(new Base64URL(n), key.getModulus());
@@ -179,6 +179,7 @@ public class RSAKeyTest extends TestCase {
 		assertEquals(x5t.toString(), key.getX509CertThumbprint().toString());
 		assertEquals(x5t256.toString(), key.getX509CertSHA256Thumbprint().toString());
 		assertEquals(x5c.size(), key.getX509CertChain().size());
+		assertEquals(x5c.size(), key.getParsedX509CertChain().size());
 
 		assertEquals(new Base64URL(n), key.getModulus());
 		assertEquals(new Base64URL(e), key.getPublicExponent());
@@ -231,8 +232,7 @@ public class RSAKeyTest extends TestCase {
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
 		Base64URL x5t256 = new Base64URL("abc256");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 
 		RSAKey key = new RSAKey(new Base64URL(n), new Base64URL(e), new Base64URL(d),
 			new Base64URL(p), new Base64URL(q),
@@ -250,6 +250,7 @@ public class RSAKeyTest extends TestCase {
 		assertEquals(x5t.toString(), key.getX509CertThumbprint().toString());
 		assertEquals(x5t256.toString(), key.getX509CertSHA256Thumbprint().toString());
 		assertEquals(x5c.size(), key.getX509CertChain().size());
+		assertEquals(x5c.size(), key.getParsedX509CertChain().size());
 
 		assertEquals(new Base64URL(n), key.getModulus());
 		assertEquals(new Base64URL(e), key.getPublicExponent());
@@ -282,6 +283,7 @@ public class RSAKeyTest extends TestCase {
 		assertEquals(x5t.toString(), key.getX509CertThumbprint().toString());
 		assertEquals(x5t256.toString(), key.getX509CertSHA256Thumbprint().toString());
 		assertEquals(x5c.size(), key.getX509CertChain().size());
+		assertEquals(x5c.size(), key.getParsedX509CertChain().size());
 
 		assertEquals(new Base64URL(n), key.getModulus());
 		assertEquals(new Base64URL(e), key.getPublicExponent());
@@ -334,8 +336,7 @@ public class RSAKeyTest extends TestCase {
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
 		Base64URL x5t256 = new Base64URL("abc");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 
 		RSAKey key = new RSAKey.Builder(new Base64URL(n), new Base64URL(e))
 			.privateExponent(new Base64URL(d))
@@ -362,6 +363,7 @@ public class RSAKeyTest extends TestCase {
 		assertEquals(x5t.toString(), key.getX509CertThumbprint().toString());
 		assertEquals(x5t256.toString(), key.getX509CertSHA256Thumbprint().toString());
 		assertEquals(x5c.size(), key.getX509CertChain().size());
+		assertEquals(x5c.size(), key.getParsedX509CertChain().size());
 		assertNull(key.getKeyStore());
 
 		assertEquals(new Base64URL(n), key.getModulus());
@@ -395,6 +397,7 @@ public class RSAKeyTest extends TestCase {
 		assertEquals(x5t.toString(), key.getX509CertThumbprint().toString());
 		assertEquals(x5t256.toString(), key.getX509CertSHA256Thumbprint().toString());
 		assertEquals(x5c.size(), key.getX509CertChain().size());
+		assertEquals(x5c.size(), key.getParsedX509CertChain().size());
 
 		assertEquals(new Base64URL(n), key.getModulus());
 		assertEquals(new Base64URL(e), key.getPublicExponent());
@@ -421,8 +424,7 @@ public class RSAKeyTest extends TestCase {
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
 		Base64URL x5t256 = new Base64URL("abc256");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 
 		Set<KeyOperation> ops = new LinkedHashSet<>(Arrays.asList(KeyOperation.SIGN, KeyOperation.VERIFY));
 
@@ -458,6 +460,7 @@ public class RSAKeyTest extends TestCase {
 		assertEquals(x5t.toString(), key.getX509CertThumbprint().toString());
 		assertEquals(x5t256.toString(), key.getX509CertSHA256Thumbprint().toString());
 		assertEquals(x5c.size(), key.getX509CertChain().size());
+		assertEquals(x5c.size(), key.getParsedX509CertChain().size());
 		assertEquals(keyStore, key.getKeyStore());
 
 		assertTrue(publicKey.getModulus().equals(key.getModulus().decodeToBigInteger()));
@@ -485,6 +488,7 @@ public class RSAKeyTest extends TestCase {
 		assertEquals(x5t.toString(), key.getX509CertThumbprint().toString());
 		assertEquals(x5t256.toString(), key.getX509CertSHA256Thumbprint().toString());
 		assertEquals(x5c.size(), key.getX509CertChain().size());
+		assertEquals(x5c.size(), key.getParsedX509CertChain().size());
 		assertNull(key.getKeyStore());
 
 		assertTrue(publicKey.getModulus().equals(key.getModulus().decodeToBigInteger()));
@@ -504,8 +508,7 @@ public class RSAKeyTest extends TestCase {
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
 		Base64URL x5t256 = new Base64URL("abc256");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 		
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 		
@@ -538,6 +541,7 @@ public class RSAKeyTest extends TestCase {
 		assertEquals(x5t.toString(), key.getX509CertThumbprint().toString());
 		assertEquals(x5t256.toString(), key.getX509CertSHA256Thumbprint().toString());
 		assertEquals(x5c.size(), key.getX509CertChain().size());
+		assertEquals(x5c.size(), key.getParsedX509CertChain().size());
 		assertEquals(keyStore, key.getKeyStore());
 		
 		assertEquals(new Base64URL(n), key.getModulus());
@@ -1370,6 +1374,7 @@ public class RSAKeyTest extends TestCase {
 		assertEquals(KeyUse.ENCRYPTION, rsaKey.getKeyUse());
 		assertEquals("1", rsaKey.getKeyID());
 		assertEquals(1, rsaKey.getX509CertChain().size());
+		assertEquals(1, rsaKey.getParsedX509CertChain().size());
 		assertNull(rsaKey.getX509CertThumbprint());
 		assertNotNull(rsaKey.getX509CertSHA256Thumbprint());
 		assertFalse(rsaKey.isPrivate());

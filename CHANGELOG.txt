@@ -796,3 +796,7 @@ version 5.4 (2018-01-11)
     * Adds new KeyUtils class.
     * Fixes the AES/GCM/NoPadding content encryption / decryption helper class
       to make sure the algorithm of the passed SecretKey is "AES" (iss #250).
+
+version 5.5 (2018-02-27)
+    * Adds new static X509CertChainUtils.parse(List<Base64>) method.
+    * Adds new JWK.getParsedX509CertChain() method.

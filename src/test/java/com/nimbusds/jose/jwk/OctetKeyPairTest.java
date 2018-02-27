@@ -140,8 +140,7 @@ public class OctetKeyPairTest extends TestCase {
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
 		Base64URL x5t256 = new Base64URL("abc256");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 		Set<KeyOperation> ops = null;
 		
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -220,8 +219,7 @@ public class OctetKeyPairTest extends TestCase {
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
 		Base64URL x5t256 = new Base64URL("abc256");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 		Set<KeyOperation> ops = null;
 		
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -279,8 +277,7 @@ public class OctetKeyPairTest extends TestCase {
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
 		Base64URL x5tS256 = new Base64URL("ghi");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 		
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 		
@@ -360,8 +357,7 @@ public class OctetKeyPairTest extends TestCase {
 		URI x5u = new URI("http://example.com/jwk.json");
 		Base64URL x5t = new Base64URL("abc");
 		Base64URL x5tS256 = new Base64URL("ghi");
-		List<Base64> x5c = new LinkedList<>();
-		x5c.add(new Base64("def"));
+		List<Base64> x5c = SampleCertificates.SAMPLE_X5C_RSA;
 		
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 		

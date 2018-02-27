@@ -33,6 +33,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.JSONObjectUtils;
+import com.nimbusds.jose.util.X509CertChainUtils;
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONObject;
 
@@ -70,7 +71,7 @@ import net.minidev.json.JSONObject;
  *
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
- * @version 2017-06-20
+ * @version 2018-02-27
  */
 public abstract class JWK implements JSONAware, Serializable {
 
@@ -141,6 +142,12 @@ public abstract class JWK implements JSONAware, Serializable {
 	
 	
 	/**
+	 * The parsed X.509 certificate chain, optional.
+	 */
+	private final List<X509Certificate> parsedX5c;
+	
+	
+	/**
 	 * Reference to the underlying key store, {@code null} if none.
 	 */
 	private final KeyStore keyStore;
@@ -199,6 +206,12 @@ public abstract class JWK implements JSONAware, Serializable {
 		this.x5t = x5t;
 		this.x5t256 = x5t256;
 		this.x5c = x5c;
+		
+		try {
+			parsedX5c = X509CertChainUtils.parse(x5c);
+		} catch (ParseException e) {
+			throw new IllegalArgumentException("Invalid X.509 certificate chain \"x5c\": " + e.getMessage(), e);
+		}
 		
 		this.keyStore = ks;
 	}
@@ -314,6 +327,22 @@ public abstract class JWK implements JSONAware, Serializable {
 		}
 
 		return Collections.unmodifiableList(x5c);
+	}
+	
+	
+	/**
+	 * Gets the parsed X.509 certificate chain ({@code x5c}) of this JWK.
+	 *
+	 * @return The X.509 certificate chain as a unmodifiable list,
+	 *         {@code null} if not specified.
+	 */
+	public List<X509Certificate> getParsedX509CertChain() {
+		
+		if (parsedX5c == null) {
+			return null;
+		}
+		
+		return Collections.unmodifiableList(parsedX5c);
 	}
 	
 	

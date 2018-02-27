@@ -18,6 +18,7 @@
 package com.nimbusds.jose.util;
 
 
+import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,6 +66,42 @@ public class X509CertChainUtils {
 		}
 
 		return chain;
+	}
+	
+	
+	/**
+	 * Parses a X.509 certificate chain from the specified Base64-encoded
+	 * DER-encoded representation.
+	 *
+	 * @param b64List The Base64-encoded DER-encoded X.509 certificate
+	 *                chain, {@code null} if not specified.
+	 *
+	 * @return The X.509 certificate chain, {@code null} if not specified.
+	 *
+	 * @throws ParseException If parsing failed.
+	 */
+	public static List<X509Certificate> parse(final List<Base64> b64List)
+		throws ParseException {
+		
+		if (b64List == null)
+			return null;
+		
+		List<X509Certificate> out = new LinkedList<>();
+		
+		for (int i=0; i < b64List.size(); i++) {
+			
+			if (b64List.get(i)== null) continue; // skip
+			
+			X509Certificate cert = X509CertUtils.parse(b64List.get(i).decode());
+			
+			if (cert == null) {
+				throw new ParseException("Invalid X.509 certificate at position " + i, 0);
+			}
+			
+			out.add(cert);
+		}
+		
+		return out;
 	}
 
 	
