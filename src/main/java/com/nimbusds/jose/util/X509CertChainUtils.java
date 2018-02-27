@@ -39,14 +39,18 @@ public class X509CertChainUtils {
 	 * Converts the specified JSON array of strings to a list of Base64
 	 * encoded objects.
 	 *
-	 * @param jsonArray The JSON array to parse. Must not be {@code null}.
+	 * @param jsonArray The JSON array of string, {@code null} if not
+	 *                  specified.
 	 *
-	 * @return The Base64 list.
+	 * @return The Base64 list, {@code null} if not specified.
 	 *
 	 * @throws ParseException If parsing failed.
 	 */
 	public static List<Base64> toBase64List(final JSONArray jsonArray)
 		throws ParseException {
+		
+		if (jsonArray == null)
+			return null;
 
 		List<Base64> chain = new LinkedList<>();
 

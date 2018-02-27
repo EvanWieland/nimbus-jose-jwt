@@ -29,6 +29,13 @@ import junit.framework.TestCase;
 public class X509CertChainUtilsTest extends TestCase {
 	
 	
+	public void testToBase64List_nullSafe()
+		throws ParseException {
+		
+		assertNull(X509CertChainUtils.toBase64List(null));
+	}
+	
+	
 	public void testParseSample()
 		throws ParseException {
 		
