@@ -791,27 +791,44 @@ public final class JWTClaimsSet implements Serializable {
 
 	/**
 	 * Returns the JSON object representation of the claims set. The claims
-	 * are serialised according to their insertion order.
+	 * are serialised according to their insertion order. Claims with
+	 * {@code null} values are not output.
 	 *
 	 * @return The JSON object representation.
 	 */
 	public JSONObject toJSONObject() {
 
+		return toJSONObject(false);
+	}
+	
+	
+	/**
+	 * Returns the JSON object representation of the claims set. The claims
+	 * are serialised according to their insertion order.
+	 *
+	 * @param includeClaimsWithNullValues If {@code true} claims with
+	 *                                    {@code null} values will also be
+	 *                                    output.
+	 *
+	 * @return The JSON object representation.
+	 */
+	public JSONObject toJSONObject(final boolean includeClaimsWithNullValues) {
+		
 		JSONObject o = new JSONObject();
-
+		
 		for (Map.Entry<String,Object> claim: claims.entrySet()) {
-
+			
 			if (claim.getValue() instanceof Date) {
-
+				
 				// Transform dates to Unix timestamps
 				Date dateValue = (Date) claim.getValue();
 				o.put(claim.getKey(), DateUtils.toSecondsSinceEpoch(dateValue));
-
+				
 			} else if (AUDIENCE_CLAIM.equals(claim.getKey())) {
-
+				
 				// Serialise single audience list and string
 				List<String> audList = getAudience();
-
+				
 				if (audList != null && ! audList.isEmpty()) {
 					if (audList.size() == 1) {
 						o.put(AUDIENCE_CLAIM, audList.get(0));
@@ -820,14 +837,17 @@ public final class JWTClaimsSet implements Serializable {
 						audArray.addAll(audList);
 						o.put(AUDIENCE_CLAIM, audArray);
 					}
+				} else if (includeClaimsWithNullValues) {
+					o.put(AUDIENCE_CLAIM, null);
 				}
-
+				
 			} else if (claim.getValue() != null) {
-				// Do not output claims with null values!
 				o.put(claim.getKey(), claim.getValue());
+			} else if (includeClaimsWithNullValues) {
+				o.put(claim.getKey(), null);
 			}
 		}
-
+		
 		return o;
 	}
 
@@ -891,6 +911,8 @@ public final class JWTClaimsSet implements Serializable {
 					builder.audience(singleAud);
 				} else if (audValue instanceof List) {
 					builder.audience(JSONObjectUtils.getStringList(json, AUDIENCE_CLAIM));
+				} else if (audValue == null) {
+					builder.audience((String)null);
 				}
 
 			} else if (name.equals(EXPIRATION_TIME_CLAIM)) {

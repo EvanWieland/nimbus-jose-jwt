@@ -33,7 +33,7 @@ import net.minidev.json.JSONObject;
  *
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
- * @version 2018-08-23
+ * @version 2018-03-05
  */
 public class JWTClaimsSetTest extends TestCase {
 
@@ -871,5 +871,56 @@ public class JWTClaimsSetTest extends TestCase {
 		JSONObject jsonObject = claimsSet.toJSONObject();
 		assertEquals("1", jsonObject.get("aud"));
 		assertEquals(1, jsonObject.size());
+	}
+	
+	
+	// https://bitbucket.org/connect2id/nimbus-jose-jwt/issues/252/respect-explicit-set-of-null-claims
+	public void testToJSONObject_includeClaimsWithNullValues()
+		throws Exception {
+		
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+			.claim("myclaim", null)
+			.build();
+		
+		assertNull(claimsSet.getClaim("myclaim"));
+		assertTrue(claimsSet.getClaims().containsKey("myclaim"));
+		
+		JSONObject jsonObject = claimsSet.toJSONObject(true);
+
+		assertTrue(jsonObject.containsKey("myclaim"));
+		assertNull(jsonObject.get("myclaim"));
+		
+		// null claim preserved on parse back
+		claimsSet = JWTClaimsSet.parse(jsonObject.toJSONString());
+		
+		assertNull(claimsSet.getClaim("myclaim"));
+		assertTrue(claimsSet.getClaims().containsKey("myclaim"));
+		assertEquals(1, claimsSet.getClaims().size());
+	}
+	
+	
+	// / https://bitbucket.org/connect2id/nimbus-jose-jwt/issues/252/respect-explicit-set-of-null-claims
+	// audience has special treatment
+	public void testToJSONObject_includeClaimsWithNullValues_audience()
+		throws Exception {
+		
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+			.audience((String)null)
+			.build();
+		
+		assertTrue(claimsSet.getAudience().isEmpty());
+		assertTrue(claimsSet.getClaims().containsKey("aud"));
+		
+		JSONObject jsonObject = claimsSet.toJSONObject(true);
+
+		assertTrue(jsonObject.containsKey("aud"));
+		assertNull(jsonObject.get("aud"));
+		
+		// null aud claim preserved on parse back
+		claimsSet = JWTClaimsSet.parse(jsonObject.toJSONString());
+		
+		assertTrue(claimsSet.getAudience().isEmpty());
+		assertTrue(claimsSet.getClaims().containsKey("aud"));
+		assertEquals(1, claimsSet.getClaims().size());
 	}
 }
