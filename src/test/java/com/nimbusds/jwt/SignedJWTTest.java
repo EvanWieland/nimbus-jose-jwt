@@ -143,4 +143,34 @@ public class SignedJWTTest extends TestCase {
 		jwt = SignedJWT.parse(jwtString);
 		assertTrue(jwt.verify(new MACVerifier(secret)));
 	}
+	
+	
+	// https://bitbucket.org/connect2id/nimbus-jose-jwt/issues/252/respect-explicit-set-of-null-claims
+	public void testSignedJWTWithNullClaimValue()
+		throws Exception {
+		
+		byte[] secret = new byte[32];
+		new SecureRandom().nextBytes(secret);
+		
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+			.subject("alice")
+			.claim("myclaim", null)
+			.build();
+		
+		JWSObject jwsObject = new JWSObject(
+			new JWSHeader(JWSAlgorithm.HS256),
+			new Payload(claimsSet.toJSONObject(true))
+		);
+		
+		jwsObject.sign(new MACSigner(secret));
+		
+		SignedJWT jwt = SignedJWT.parse(jwsObject.serialize());
+		assertTrue(jwt.verify(new MACVerifier(secret)));
+		
+		claimsSet = jwt.getJWTClaimsSet();
+		assertEquals("alice", claimsSet.getSubject());
+		assertNull(claimsSet.getClaim("myclaim"));
+		assertTrue(claimsSet.getClaims().containsKey("myclaim"));
+		assertEquals(2, claimsSet.getClaims().size());
+	}
 }

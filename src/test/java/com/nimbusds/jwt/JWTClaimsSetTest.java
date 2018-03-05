@@ -899,13 +899,39 @@ public class JWTClaimsSetTest extends TestCase {
 	}
 	
 	
-	// / https://bitbucket.org/connect2id/nimbus-jose-jwt/issues/252/respect-explicit-set-of-null-claims
+	// https://bitbucket.org/connect2id/nimbus-jose-jwt/issues/252/respect-explicit-set-of-null-claims
 	// audience has special treatment
 	public void testToJSONObject_includeClaimsWithNullValues_audience()
 		throws Exception {
 		
 		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
 			.audience((String)null)
+			.build();
+		
+		assertTrue(claimsSet.getAudience().isEmpty());
+		assertTrue(claimsSet.getClaims().containsKey("aud"));
+		
+		JSONObject jsonObject = claimsSet.toJSONObject(true);
+
+		assertTrue(jsonObject.containsKey("aud"));
+		assertNull(jsonObject.get("aud"));
+		
+		// null aud claim preserved on parse back
+		claimsSet = JWTClaimsSet.parse(jsonObject.toJSONString());
+		
+		assertTrue(claimsSet.getAudience().isEmpty());
+		assertTrue(claimsSet.getClaims().containsKey("aud"));
+		assertEquals(1, claimsSet.getClaims().size());
+	}
+	
+	
+	// https://bitbucket.org/connect2id/nimbus-jose-jwt/issues/252/respect-explicit-set-of-null-claims
+	// audience has special treatment
+	public void testToJSONObject_includeClaimsWithNullValues_audienceList()
+		throws Exception {
+		
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+			.audience((List<String>)null)
 			.build();
 		
 		assertTrue(claimsSet.getAudience().isEmpty());
