@@ -810,7 +810,6 @@ version 5.5 (2018-02-27)
     * Adds new JWK.getParsedX509CertChain() method.
     * Fixes typo in AsymmetricJWK interface name.
 
-
 version 5.6 (2018-03-05)
     * Adds new JWTClaimsSet.toJSONObject(boolean) method to enable output of
       claims with null values (iss #252).
