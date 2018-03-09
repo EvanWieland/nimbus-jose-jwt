@@ -1171,4 +1171,45 @@ public class DefaultJWTProcessorTest extends TestCase {
 		
 		assertEquals(hostId, outputClaimsSet.getSubject());
 	}
+	
+	
+	// https://bitbucket.org/connect2id/nimbus-jose-jwt/issues/257/error-on-jwe-decryption-with-aeskw
+	public void testJCAKeyAlgAccepted_AES_KW()
+		throws Exception {
+		
+		KeyGenerator gen = KeyGenerator.getInstance("AES");
+		gen.init(128);
+		OctetSequenceKey aesKey = new OctetSequenceKey.Builder(gen.generateKey().getEncoded()).build();
+
+		// create the JWT
+		
+		JWTClaimsSet inputClaimsSet = new JWTClaimsSet.Builder()
+			.subject("alice")
+			.expirationTime(new Date(new Date().getTime() + 60*1000L))
+			.build();
+		
+		EncryptedJWT encryptedJWT = new EncryptedJWT(
+			new JWEHeader.Builder(JWEAlgorithm.A128KW, EncryptionMethod.A256GCM).build(),
+			inputClaimsSet
+		);
+		
+		encryptedJWT.encrypt(new AESEncrypter(aesKey));
+		
+		String jweString = encryptedJWT.serialize();
+
+		JWT jwt = JWTParser.parse(jweString);
+		
+		if (!(jwt instanceof EncryptedJWT)) {
+			throw new RuntimeException("encrypted JWT required");
+		}
+		
+		ConfigurableJWTProcessor jwtProcessor = new DefaultJWTProcessor();
+		
+		JWEKeySelector jweKeySelector = new JWEDecryptionKeySelector(JWEAlgorithm.A128KW, EncryptionMethod.A256GCM, new ImmutableJWKSet(new JWKSet(aesKey)));
+		jwtProcessor.setJWEKeySelector(jweKeySelector);
+		
+		JWTClaimsSet outputClaimsSet = jwtProcessor.process((EncryptedJWT) jwt, null);
+		
+		assertEquals("alice", outputClaimsSet.getSubject());
+	}
 }

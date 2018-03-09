@@ -26,6 +26,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import com.nimbusds.jose.util.KeyUtils;
 import net.jcip.annotations.ThreadSafe;
 
 import com.nimbusds.jose.JOSEException;
@@ -39,7 +40,7 @@ import com.nimbusds.jose.JOSEException;
  *
  * @author Melisa Halsband
  * @author Vladimir Dzhuvinov
- * @version 2015-06-07
+ * @version 2018-03-09
  */
 @ThreadSafe
 class AESKW {
@@ -110,7 +111,7 @@ class AESKW {
 				cipher = Cipher.getInstance("AESWrap");
 			}
 
-			cipher.init(Cipher.UNWRAP_MODE, kek);
+			cipher.init(Cipher.UNWRAP_MODE, KeyUtils.toAESKey(kek)); // Make sure key alg is "AES"
 			return (SecretKey)cipher.unwrap(encryptedCEK, "AES", Cipher.SECRET_KEY);
 
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
