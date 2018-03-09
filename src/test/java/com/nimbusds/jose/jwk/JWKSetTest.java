@@ -37,10 +37,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECParameterSpec;
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
@@ -64,9 +61,28 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
  * Tests JSON Web Key (JWK) set parsing and serialisation.
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-04-19
+ * @version 2018-03-09
  */
 public class JWKSetTest extends TestCase {
+	
+	
+	public void testEmptyConstructor()
+		throws ParseException {
+		
+		JWKSet jwkSet = new JWKSet();
+		
+		assertTrue(jwkSet.getKeys().isEmpty());
+		assertTrue(jwkSet.getAdditionalMembers().isEmpty());
+		
+		String json = jwkSet.toJSONObject().toJSONString();
+		
+		assertEquals("{\"keys\":[]}" ,json);
+		
+		jwkSet = JWKSet.parse(json);
+		
+		assertTrue(jwkSet.getKeys().isEmpty());
+		assertTrue(jwkSet.getAdditionalMembers().isEmpty());
+	}
 
 
 	public void testParsePublicJWKSet()
@@ -158,23 +174,18 @@ public class JWKSetTest extends TestCase {
 			.algorithm(JWSAlgorithm.RS256)
 			.keyID("5678")
 			.build();
-
-		JWKSet keySet = new JWKSet();
-
-		keySet.getKeys().add(ecKey);
-		keySet.getKeys().add(rsaKey);
-
-		assertEquals(0, keySet.getAdditionalMembers().size());
-
-		keySet.getAdditionalMembers().put("setID", "xyz123");
-
+		
+		Map<String, Object> additionalMembers = new HashMap<>();
+		additionalMembers.put("setID", "xyz123");
+		
+		JWKSet keySet = new JWKSet(Arrays.asList((JWK)ecKey, (JWK) rsaKey), additionalMembers);
+		assertEquals(2, keySet.getKeys().size());
 		assertEquals(1, keySet.getAdditionalMembers().size());
-
+		
 		String s = keySet.toString();
 		
 		keySet = JWKSet.parse(s);
-
-		assertNotNull(keySet);
+		
 		assertEquals(2, keySet.getKeys().size());
 
 		// Check first EC key
@@ -886,5 +897,33 @@ public class JWKSetTest extends TestCase {
 		assertEquals(keyStore, ecKey.getKeyStore());
 		
 		assertEquals(3, jwkSet.getKeys().size());
+	}
+	
+	
+	public void testImmutableKeyList() {
+		
+		JWKSet jwkSet = new JWKSet();
+		
+		try {
+			jwkSet.getKeys().add(new RSAKey.Builder(new Base64URL("abc"), new Base64URL("def"))
+				.keyUse(KeyUse.SIGNATURE)
+				.algorithm(JWSAlgorithm.RS256)
+				.keyID("5678")
+				.build());
+		} catch (UnsupportedOperationException e) {
+			assertNull(e.getMessage());
+		}
+	}
+	
+	
+	public void testImmutableAdditionalTopLevelParams() {
+		
+		JWKSet jwkSet = new JWKSet();
+		
+		try {
+			jwkSet.getAdditionalMembers().put("key", "value");
+		} catch (UnsupportedOperationException e) {
+			assertNull(e.getMessage());
+		}
 	}
 }

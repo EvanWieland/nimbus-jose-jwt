@@ -32,6 +32,7 @@ import java.util.*;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.util.*;
+import net.jcip.annotations.Immutable;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
@@ -66,8 +67,9 @@ import net.minidev.json.JSONObject;
  * </pre>
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-12-06
+ * @version 2018-03-09
  */
+@Immutable
 public class JWKSet {
 
 
@@ -81,13 +83,13 @@ public class JWKSet {
 	/**
 	 * The JWK list.
 	 */
-	private final List<JWK> keys = new LinkedList<>();
+	private final List<JWK> keys;
 
 
 	/**
 	 * Additional custom members.
 	 */
-	private final Map<String,Object> customMembers = new HashMap<>();
+	private final Map<String,Object> customMembers;
 
 
 	/**
@@ -95,7 +97,7 @@ public class JWKSet {
 	 */
 	public JWKSet() {
 
-		// Nothing to do
+		this(Collections.<JWK>emptyList());
 	}
 
 
@@ -105,12 +107,12 @@ public class JWKSet {
 	 * @param key The JWK. Must not be {@code null}.
 	 */
 	public JWKSet(final JWK key) {
-
+		
+		this(Collections.singletonList(key));
+		
 		if (key == null) {
 			throw new IllegalArgumentException("The JWK must not be null");
 		}
-
-		keys.add(key);
 	}
 
 
@@ -121,11 +123,7 @@ public class JWKSet {
 	 */
 	public JWKSet(final List<JWK> keys) {
 
-		if (keys == null) {
-			throw new IllegalArgumentException("The JWK list must not be null");
-		}
-
-		this.keys.addAll(keys);
+		this(keys, Collections.<String, Object>emptyMap());
 	}
 
 
@@ -143,9 +141,9 @@ public class JWKSet {
 			throw new IllegalArgumentException("The JWK list must not be null");
 		}
 
-		this.keys.addAll(keys);
+		this.keys = Collections.unmodifiableList(keys);
 
-		this.customMembers.putAll(customMembers);
+		this.customMembers = Collections.unmodifiableMap(customMembers);
 	}
 
 
@@ -341,18 +339,17 @@ public class JWKSet {
 		}
 
 		// Parse additional custom members
-		JWKSet jwkSet = new JWKSet(keys);
-
+		Map<String, Object> additionalMembers = new HashMap<>();
 		for (Map.Entry<String,Object> entry: json.entrySet()) {
-
+			
 			if (entry.getKey() == null || entry.getKey().equals("keys")) {
 				continue;
 			}
-
-			jwkSet.getAdditionalMembers().put(entry.getKey(), entry.getValue());
+			
+			additionalMembers.put(entry.getKey(), entry.getValue());
 		}
-
-		return jwkSet;
+		
+		return new JWKSet(keys, additionalMembers);
 	}
 
 
