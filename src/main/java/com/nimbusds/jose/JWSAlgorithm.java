@@ -98,6 +98,11 @@ public final class JWSAlgorithm extends Algorithm {
 	 */
 	public static final JWSAlgorithm ES256 = new JWSAlgorithm("ES256", Requirement.RECOMMENDED);
 
+	/**
+	 * ECDSA using P-256K curve and SHA-256 hash algorithm (recommended).
+	 */
+	public static final JWSAlgorithm ES256K = new JWSAlgorithm("ES256K", Requirement.RECOMMENDED);
+
 
 	/**
 	 * ECDSA using P-384 curve and SHA-384 hash algorithm (optional).
@@ -244,6 +249,8 @@ public final class JWSAlgorithm extends Algorithm {
 			return RS512;
 		} else if (s.equals(ES256.getName())) {
 			return ES256;
+		} else if (s.equals(ES256K.getName())) {
+			return ES256K;
 		} else if (s.equals(ES384.getName())) {
 			return ES384;
 		} else if (s.equals(ES512.getName())) {

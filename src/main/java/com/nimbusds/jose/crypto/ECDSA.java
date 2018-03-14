@@ -73,6 +73,8 @@ class ECDSA {
 			throw new JOSEException("The EC key curve is not supported, must be P-256, P-384 or P-521");
 		} else if (Curve.P_256.equals(curve)) {
 			return JWSAlgorithm.ES256;
+		} else if (Curve.P_256K.equals(curve)) {
+			return JWSAlgorithm.ES256K;
 		} else if (Curve.P_384.equals(curve)) {
 			return JWSAlgorithm.ES384;
 		} else if (Curve.P_521.equals(curve)) {
@@ -102,6 +104,8 @@ class ECDSA {
 		String jcaAlg;
 
 		if (alg.equals(JWSAlgorithm.ES256)) {
+			jcaAlg = "SHA256withECDSA";
+		} else if (alg.equals(JWSAlgorithm.ES256K)) {
 			jcaAlg = "SHA256withECDSA";
 		} else if (alg.equals(JWSAlgorithm.ES384)) {
 			jcaAlg = "SHA384withECDSA";
@@ -141,6 +145,10 @@ class ECDSA {
 		throws JOSEException {
 
 		if (alg.equals(JWSAlgorithm.ES256)) {
+
+			return 64;
+
+		} else if (alg.equals(JWSAlgorithm.ES256K)) {
 
 			return 64;
 

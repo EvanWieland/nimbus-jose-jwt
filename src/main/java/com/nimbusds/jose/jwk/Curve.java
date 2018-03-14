@@ -64,6 +64,11 @@ public final class Curve implements Serializable {
 	
 	
 	/**
+	 * P-256K curve (secp256k1, OID = 1.3.132.0.10).
+	 */
+	public static final Curve P_256K = new Curve("P-256K", "secp256k1", "1.3.132.0.10");
+
+	/**
 	 * P-256 curve (secp256r1, also called prime256v1, OID =
 	 * 1.2.840.10045.3.1.7).
 	 */
@@ -242,6 +247,8 @@ public final class Curve implements Serializable {
 		
 		if (s.equals(P_256.getName())) {
 			return P_256;
+		} else if (s.equals(P_256K.getName())) {
+			return P_256K;
 		} else if (s.equals(P_384.getName())) {
 			return P_384;
 		} else if (s.equals(P_521.getName())) {
@@ -271,6 +278,8 @@ public final class Curve implements Serializable {
 	public static Curve forStdName(final String stdName) {
 		if( "secp256r1".equals(stdName) || "prime256v1".equals(stdName)) {
 			return P_256;
+		} else if("secp256k1".equals(stdName)) {
+			return P_256K;
 		} else if("secp384r1".equals(stdName)) {
 			return P_384;
 		} else if("secp521r1".equals(stdName)) {
@@ -301,6 +310,8 @@ public final class Curve implements Serializable {
 		
 		if (P_256.getOID().equals(oid)) {
 			return P_256;
+		} else if (P_256K.getOID().equals(oid)) {
+			return P_256K;
 		} else if (P_384.getOID().equals(oid)) {
 			return P_384;
 		} else if (P_521.getOID().equals(oid)) {
@@ -323,6 +334,8 @@ public final class Curve implements Serializable {
 		
 		if (JWSAlgorithm.ES256.equals(alg)) {
 			return Collections.singleton(P_256);
+		} else if (JWSAlgorithm.ES256K.equals(alg)) {
+            return Collections.singleton(P_256K);
 		} else if (JWSAlgorithm.ES384.equals(alg)) {
 			return Collections.singleton(P_384);
 		} else if (JWSAlgorithm.ES512.equals(alg)) {

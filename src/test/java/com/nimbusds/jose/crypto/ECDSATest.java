@@ -40,6 +40,7 @@ public class ECDSATest extends TestCase {
 		throws JOSEException {
 
 		assertEquals(JWSAlgorithm.ES256, ECDSA.resolveAlgorithm(Curve.P_256));
+		assertEquals(JWSAlgorithm.ES256K, ECDSA.resolveAlgorithm(Curve.P_256K));
 		assertEquals(JWSAlgorithm.ES384, ECDSA.resolveAlgorithm(Curve.P_384));
 		assertEquals(JWSAlgorithm.ES512, ECDSA.resolveAlgorithm(Curve.P_521));
 
@@ -61,6 +62,18 @@ public class ECDSATest extends TestCase {
 
 		assertEquals(JWSAlgorithm.ES256, ECDSA.resolveAlgorithm(publicKey));
 		assertEquals(JWSAlgorithm.ES256, ECDSA.resolveAlgorithm(privateKey));
+	}
+
+
+	public void testResolveAlgFromECKey_P256K()
+		throws Exception {
+
+		KeyPair keyPair = ECDSARoundTripTest.createECKeyPair(ECDSARoundTripTest.EC256KSPEC);
+		ECPublicKey publicKey = (ECPublicKey) keyPair.getPublic();
+		ECPrivateKey privateKey = (ECPrivateKey) keyPair.getPrivate();
+
+		assertEquals(JWSAlgorithm.ES256K, ECDSA.resolveAlgorithm(publicKey));
+		assertEquals(JWSAlgorithm.ES256K, ECDSA.resolveAlgorithm(privateKey));
 	}
 
 

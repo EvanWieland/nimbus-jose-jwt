@@ -33,6 +33,7 @@ import com.nimbusds.jose.JWSAlgorithm;
  *
  * <ul>
  *     <li>{@link com.nimbusds.jose.JWSAlgorithm#ES256}
+ *     <li>{@link com.nimbusds.jose.JWSAlgorithm#ES256K}
  *     <li>{@link com.nimbusds.jose.JWSAlgorithm#ES384}
  *     <li>{@link com.nimbusds.jose.JWSAlgorithm#ES512}
  * </ul>
@@ -53,6 +54,7 @@ abstract class ECDSAProvider extends BaseJWSProvider {
 	static {
 		Set<JWSAlgorithm> algs = new LinkedHashSet<>();
 		algs.add(JWSAlgorithm.ES256);
+		algs.add(JWSAlgorithm.ES256K);
 		algs.add(JWSAlgorithm.ES384);
 		algs.add(JWSAlgorithm.ES512);
 		SUPPORTED_ALGORITHMS = Collections.unmodifiableSet(algs);
