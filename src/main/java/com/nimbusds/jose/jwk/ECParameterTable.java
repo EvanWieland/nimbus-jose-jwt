@@ -47,6 +47,12 @@ class ECParameterTable {
 
 	/**
 	 * The parameter spec for a
+	 * {@link com.nimbusds.jose.jwk.Curve#P_256K} curve.
+	 */
+	private static final ECParameterSpec P_256K_SPEC;
+
+	/**
+	 * The parameter spec for a
 	 * {@link com.nimbusds.jose.jwk.Curve#P_384} curve.
 	 */
 	private static final ECParameterSpec P_384_SPEC;
@@ -102,6 +108,17 @@ class ECParameterTable {
 			new BigInteger("115792089210356248762697446949407573529996955224135760342422259061068512044369"),
 			1);
 
+		P_256K_SPEC = new ECParameterSpec(
+			new EllipticCurve(
+				new ECFieldFp(new BigInteger("115792089237316195423570985008687907853269984665640564039457584007908834671663")),
+				new BigInteger("0"),
+				new BigInteger("7")),
+			new ECPoint(
+				new BigInteger("55066263022277343669578718895168534326250603453777594175500187360389116729240"),
+				new BigInteger("32670510020758816978083085130507043184471273380659243275938904335757337482424")),
+			new BigInteger("115792089237316195423570985008687907852837564279074904382605163141518161494337"),
+			1);
+
 		P_384_SPEC = new ECParameterSpec(
 			new EllipticCurve(
 				new ECFieldFp(new BigInteger("39402006196394479212279040100143613805079739270465446667948293404245721771496870329047266088258938001861606973112319")),
@@ -138,6 +155,8 @@ class ECParameterTable {
 
 		if (Curve.P_256.equals(curve)) {
 			return P_256_SPEC;
+		} else if (Curve.P_256K.equals(curve)) {
+			return P_256K_SPEC;
 		} else if (Curve.P_384.equals(curve)) {
 			return P_384_SPEC;
 		} else if (Curve.P_521.equals(curve)) {
@@ -172,6 +191,16 @@ class ECParameterTable {
 			spec.getCofactor() == P_256_SPEC.getCofactor()) {
 
 			return Curve.P_256;
+
+		} else if (spec.getCurve().getField().getFieldSize() == P_256K_SPEC.getCurve().getField().getFieldSize() &&
+			spec.getCurve().getA().equals(P_256K_SPEC.getCurve().getA()) &&
+			spec.getCurve().getB().equals(P_256K_SPEC.getCurve().getB()) &&
+			spec.getGenerator().getAffineX().equals(P_256K_SPEC.getGenerator().getAffineX()) &&
+			spec.getGenerator().getAffineY().equals(P_256K_SPEC.getGenerator().getAffineY()) &&
+			spec.getOrder().equals(P_256K_SPEC.getOrder()) &&
+			spec.getCofactor() == P_256K_SPEC.getCofactor()) {
+
+			return Curve.P_256K;
 
 		} else if (spec.getCurve().getField().getFieldSize() == P_384_SPEC.getCurve().getField().getFieldSize() &&
 			spec.getCurve().getA().equals(P_384_SPEC.getCurve().getA()) &&
