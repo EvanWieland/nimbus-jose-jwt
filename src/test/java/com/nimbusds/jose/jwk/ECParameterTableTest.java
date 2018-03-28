@@ -19,6 +19,7 @@ package com.nimbusds.jose.jwk;
 
 
 import java.security.spec.ECParameterSpec;
+import java.util.Arrays;
 
 import junit.framework.TestCase;
 import org.bouncycastle.jce.ECNamedCurveTable;
@@ -33,104 +34,32 @@ import org.bouncycastle.jce.spec.ECNamedCurveSpec;
  * @version 2018-03-28
  */
 public class ECParameterTableTest extends TestCase {
-
-
-	public void testP256() {
-
-		ECNamedCurveParameterSpec curveParams = ECNamedCurveTable.getParameterSpec(Curve.P_256.getStdName());
-
-		ECParameterSpec expectedSpec = new ECNamedCurveSpec(curveParams.getName(),
-			curveParams.getCurve(),
-			curveParams.getG(),
-			curveParams.getN());
-
-		// Lookup
-		ECParameterSpec spec = ECParameterTable.get(Curve.P_256);
-
-		assertEquals(expectedSpec.getCurve().getField().getFieldSize(), spec.getCurve().getField().getFieldSize());
-		assertEquals(expectedSpec.getCurve().getA(), spec.getCurve().getA());
-		assertEquals(expectedSpec.getCurve().getB(), spec.getCurve().getB());
-		assertEquals(expectedSpec.getGenerator().getAffineX(), spec.getGenerator().getAffineX());
-		assertEquals(expectedSpec.getGenerator().getAffineY(), spec.getGenerator().getAffineY());
-		assertEquals(expectedSpec.getOrder(), spec.getOrder());
-		assertEquals(expectedSpec.getCofactor(), spec.getCofactor());
-
-		// Reverse lookup
-		assertEquals(Curve.P_256, ECParameterTable.get(expectedSpec));
-	}
-
-
-	public void testP256K() {
-
-		ECNamedCurveParameterSpec curveParams = ECNamedCurveTable.getParameterSpec(Curve.P_256K.getStdName());
-
-		ECParameterSpec expectedSpec = new ECNamedCurveSpec(curveParams.getName(),
-			curveParams.getCurve(),
-			curveParams.getG(),
-			curveParams.getN());
-
-		// Lookup
-		ECParameterSpec spec = ECParameterTable.get(Curve.P_256K);
-
-		assertEquals(expectedSpec.getCurve().getField().getFieldSize(), spec.getCurve().getField().getFieldSize());
-		assertEquals(expectedSpec.getCurve().getA(), spec.getCurve().getA());
-		assertEquals(expectedSpec.getCurve().getB(), spec.getCurve().getB());
-		assertEquals(expectedSpec.getGenerator().getAffineX(), spec.getGenerator().getAffineX());
-		assertEquals(expectedSpec.getGenerator().getAffineY(), spec.getGenerator().getAffineY());
-		assertEquals(expectedSpec.getOrder(), spec.getOrder());
-		assertEquals(expectedSpec.getCofactor(), spec.getCofactor());
-
-		// Reverse lookup
-		assertEquals(Curve.P_256K, ECParameterTable.get(expectedSpec));
-	}
-
-
-	public void testP384() {
-
-		ECNamedCurveParameterSpec curveParams = ECNamedCurveTable.getParameterSpec(Curve.P_384.getStdName());
-
-		ECParameterSpec expectedSpec = new ECNamedCurveSpec(curveParams.getName(),
-			curveParams.getCurve(),
-			curveParams.getG(),
-			curveParams.getN());
-
-		// Lookup
-		ECParameterSpec spec = ECParameterTable.get(Curve.P_384);
-
-		assertEquals(expectedSpec.getCurve().getField().getFieldSize(), spec.getCurve().getField().getFieldSize());
-		assertEquals(expectedSpec.getCurve().getA(), spec.getCurve().getA());
-		assertEquals(expectedSpec.getCurve().getB(), spec.getCurve().getB());
-		assertEquals(expectedSpec.getGenerator().getAffineX(), spec.getGenerator().getAffineX());
-		assertEquals(expectedSpec.getGenerator().getAffineY(), spec.getGenerator().getAffineY());
-		assertEquals(expectedSpec.getOrder(), spec.getOrder());
-		assertEquals(expectedSpec.getCofactor(), spec.getCofactor());
-
-		// Reverse lookup
-		assertEquals(Curve.P_384, ECParameterTable.get(expectedSpec));
-	}
-
-
-	public void testP521() {
-
-		ECNamedCurveParameterSpec curveParams = ECNamedCurveTable.getParameterSpec(Curve.P_521.getStdName());
-
-		ECParameterSpec expectedSpec = new ECNamedCurveSpec(curveParams.getName(),
-			curveParams.getCurve(),
-			curveParams.getG(),
-			curveParams.getN());
-
-		// Lookup
-		ECParameterSpec spec = ECParameterTable.get(Curve.P_521);
-
-		assertEquals(expectedSpec.getCurve().getField().getFieldSize(), spec.getCurve().getField().getFieldSize());
-		assertEquals(expectedSpec.getCurve().getA(), spec.getCurve().getA());
-		assertEquals(expectedSpec.getCurve().getB(), spec.getCurve().getB());
-		assertEquals(expectedSpec.getGenerator().getAffineX(), spec.getGenerator().getAffineX());
-		assertEquals(expectedSpec.getGenerator().getAffineY(), spec.getGenerator().getAffineY());
-		assertEquals(expectedSpec.getOrder(), spec.getOrder());
-		assertEquals(expectedSpec.getCofactor(), spec.getCofactor());
-
-		// Reverse lookup
-		assertEquals(Curve.P_521, ECParameterTable.get(expectedSpec));
+	
+	
+	public void testParametersAgainstBouncyCastle() {
+		
+		for (Curve crv: Arrays.asList(Curve.P_256, Curve.P_256K, Curve.P_384, Curve.P_521)) {
+			
+			ECNamedCurveParameterSpec curveParams = ECNamedCurveTable.getParameterSpec(crv.getStdName());
+			
+			ECParameterSpec expectedSpec = new ECNamedCurveSpec(curveParams.getName(),
+				curveParams.getCurve(),
+				curveParams.getG(),
+				curveParams.getN());
+			
+			// Lookup
+			ECParameterSpec spec = ECParameterTable.get(crv);
+			
+			assertEquals(expectedSpec.getCurve().getField().getFieldSize(), spec.getCurve().getField().getFieldSize());
+			assertEquals(expectedSpec.getCurve().getA(), spec.getCurve().getA());
+			assertEquals(expectedSpec.getCurve().getB(), spec.getCurve().getB());
+			assertEquals(expectedSpec.getGenerator().getAffineX(), spec.getGenerator().getAffineX());
+			assertEquals(expectedSpec.getGenerator().getAffineY(), spec.getGenerator().getAffineY());
+			assertEquals(expectedSpec.getOrder(), spec.getOrder());
+			assertEquals(expectedSpec.getCofactor(), spec.getCofactor());
+			
+			// Reverse lookup
+			assertEquals(crv, ECParameterTable.get(expectedSpec));
+		}
 	}
 }
