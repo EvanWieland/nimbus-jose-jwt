@@ -43,12 +43,13 @@ import net.jcip.annotations.Immutable;
  *     <li>{@link #PS384}
  *     <li>{@link #PS512}
  *     <li>{@link #EdDSA}
+ *     <li>{@link #ES256K}
  * </ul>
  *
  * <p>Additional JWS algorithm names can be defined using the constructors.
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-08-22
+ * @version 2018-03-28
  */
 @Immutable
 public final class JWSAlgorithm extends Algorithm {
@@ -94,14 +95,17 @@ public final class JWSAlgorithm extends Algorithm {
 
 
 	/**
-	 * ECDSA using P-256 curve and SHA-256 hash algorithm (recommended).
+	 * ECDSA using P-256 (secp256r1) curve and SHA-256 hash algorithm
+	 * (recommended).
 	 */
 	public static final JWSAlgorithm ES256 = new JWSAlgorithm("ES256", Requirement.RECOMMENDED);
 
+	
 	/**
-	 * ECDSA using P-256K curve and SHA-256 hash algorithm (recommended).
+	 * ECDSA using P-256K (secp256k1) curve and SHA-256 hash algorithm
+	 * (optional).
 	 */
-	public static final JWSAlgorithm ES256K = new JWSAlgorithm("ES256K", Requirement.RECOMMENDED);
+	public static final JWSAlgorithm ES256K = new JWSAlgorithm("ES256K", Requirement.OPTIONAL);
 
 
 	/**
@@ -168,7 +172,7 @@ public final class JWSAlgorithm extends Algorithm {
 		/**
 		 * Elliptic Curve signature (ECDSA) using a SHA-2 hash.
 		 */
-		public static final Family EC = new Family(ES256, ES384, ES512);
+		public static final Family EC = new Family(ES256, ES256K, ES384, ES512);
 		
 		
 		/**
