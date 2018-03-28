@@ -1,8 +1,9 @@
 # Nimbus JOSE + JWT
 
 * The most popular and robust Java library for JSON Web Tokens (JWT)
-* Supports all standard signature (JWS) and encryption (JWE) algorithms
-* Open source Apache 2.0 licence
+* All standard signature (JWS) and encryption (JWE) algorithms are supported,
+  including *secp256k1* used in Bitcoin and Ethereum
+* Open source Apache 2.0 license
 
 Check out the [library homepage](http://connect2id.com/products/nimbus-jose-jwt) 
 for more info and examples.
@@ -28,7 +29,7 @@ The library can handle all standard JOSE algorithms:
 * HMAC integrity protection: HS256, HS384 and HS512
 * RSASSA-PKCS1-V1_5 signatures: RS256, RS384 and RS512
 * RSASSA-PSS signatures: PS256, PS384 and PS512
-* EC signatures: ES256, ES384 and ES512
+* EC signatures: ES256, ES256K, ES384 and ES512
 * Key encryption with RSAES-PKCS1-V1_5: RSA1_5 (deprecated)
 * Key encryption with RSAES OAEP: RSA-OAEP and RSA-OAEP-256
 * Key encryption with AES key wrap: A128KW, A192KW and A256KW
