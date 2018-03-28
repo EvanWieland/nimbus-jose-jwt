@@ -34,10 +34,11 @@ import junit.framework.TestCase;
 
 
 /**
- * Tests round-trip ES256, EC384 and EC512 JWS signing and verification.
+ * Tests round-trip ES256, ES256K, ES384 and ES512 JWS signing and
+ * verification.
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-11-30
+ * @version 2018-03-28
  */
 public class ECDSARoundTripTest extends TestCase {
 

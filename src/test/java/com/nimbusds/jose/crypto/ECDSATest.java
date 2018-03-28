@@ -31,7 +31,7 @@ import junit.framework.TestCase;
 /**
  * Tests the static ECDSA utilities.
  *
- * @version 2018-08-24
+ * @version 2018-03-28
  */
 public class ECDSATest extends TestCase {
 
