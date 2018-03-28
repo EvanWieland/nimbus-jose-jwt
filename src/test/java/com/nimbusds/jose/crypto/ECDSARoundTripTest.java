@@ -30,6 +30,8 @@ import java.util.HashSet;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import junit.framework.TestCase;
 
 
@@ -372,5 +374,33 @@ public class ECDSARoundTripTest extends TestCase {
 		assertFalse("Verified signature", verified);
 
 		assertEquals("State check", JWSObject.State.SIGNED, jwsObject.getState());
+	}
+	
+	
+	public void testES256KWithGen()
+		throws Exception {
+		
+		KeyPairGenerator gen = KeyPairGenerator.getInstance("EC");
+		gen.initialize(Curve.P_256K.toECParameterSpec());
+		KeyPair kp = gen.generateKeyPair();
+		
+		ECPublicKey publicKey = (ECPublicKey)kp.getPublic();
+		ECPrivateKey privateKey = (ECPrivateKey)kp.getPrivate();
+		
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+			.subject("alice")
+			.build();
+		
+		SignedJWT jwt = new SignedJWT(new JWSHeader(JWSAlgorithm.ES256K), claimsSet);
+		
+		jwt.sign(new ECDSASigner(privateKey));
+		
+		String out = jwt.serialize();
+		
+		jwt = SignedJWT.parse(out);
+		
+		assertTrue(jwt.verify(new ECDSAVerifier(publicKey)));
+		
+		assertEquals("alice", jwt.getJWTClaimsSet().getSubject());
 	}
 }

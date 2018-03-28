@@ -824,3 +824,6 @@ version 5.8 (2018-03-28)
       Note that the "ES256P" algorithm name and "P-256K" curve name are not
       registered in the JSON Web Signature and Encryption Algorithms Registry
       (see RFC 7518, section 7).
+
+version 5.9 (2018-03-28)
+    * Adds missing EC point check for P-256K curve.

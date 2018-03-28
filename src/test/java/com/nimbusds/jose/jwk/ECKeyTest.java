@@ -51,7 +51,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
  * Tests the EC JWK class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-02-27
+ * @version 2018-03-28
  */
 public class ECKeyTest extends TestCase {
 
@@ -127,9 +127,10 @@ public class ECKeyTest extends TestCase {
 	public void testSupportedCurvesConstant() {
 		
 		assertTrue(ECKey.SUPPORTED_CURVES.contains(Curve.P_256));
+		assertTrue(ECKey.SUPPORTED_CURVES.contains(Curve.P_256K));
 		assertTrue(ECKey.SUPPORTED_CURVES.contains(Curve.P_384));
 		assertTrue(ECKey.SUPPORTED_CURVES.contains(Curve.P_521));
-		assertEquals(3, ECKey.SUPPORTED_CURVES.size());
+		assertEquals(4, ECKey.SUPPORTED_CURVES.size());
 	}
 
 
