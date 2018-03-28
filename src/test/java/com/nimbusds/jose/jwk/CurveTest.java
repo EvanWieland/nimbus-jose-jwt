@@ -36,6 +36,10 @@ public class CurveTest extends TestCase {
 		assertEquals("secp256r1", Curve.P_256.getStdName());
 		assertEquals("1.2.840.10045.3.1.7", Curve.P_256.getOID());
 		
+		assertEquals("P-256K", Curve.P_256K.getName());
+		assertEquals("secp256k1", Curve.P_256K.getStdName());
+		assertEquals("1.3.132.0.10", Curve.P_256K.getOID());
+		
 		assertEquals("P-384", Curve.P_384.getName());
 		assertEquals("secp384r1", Curve.P_384.getStdName());
 		assertEquals("1.3.132.0.34", Curve.P_384.getOID());
@@ -76,6 +80,10 @@ public class CurveTest extends TestCase {
 		assertNotNull(ecParameterSpec);
 		assertEquals(Curve.P_256, Curve.forECParameterSpec(ecParameterSpec));
 		
+		ecParameterSpec = Curve.P_256K.toECParameterSpec();
+		assertNotNull(ecParameterSpec);
+		assertEquals(Curve.P_256K, Curve.forECParameterSpec(ecParameterSpec));
+		
 		ecParameterSpec = Curve.P_384.toECParameterSpec();
 		assertNotNull(ecParameterSpec);
 		assertEquals(Curve.P_384, Curve.forECParameterSpec(ecParameterSpec));
@@ -97,6 +105,8 @@ public class CurveTest extends TestCase {
 		assertEquals(Curve.P_256, Curve.forStdName("secp256r1"));
 		assertEquals(Curve.P_256, Curve.forStdName("prime256v1"));
 		
+		assertEquals(Curve.P_256K, Curve.forStdName("secp256k1"));
+		
 		assertEquals(Curve.P_384, Curve.forStdName("secp384r1"));
 		
 		assertEquals(Curve.P_521, Curve.forStdName("secp521r1"));
@@ -114,6 +124,7 @@ public class CurveTest extends TestCase {
 	public void testCurveForOID() {
 		
 		assertEquals(Curve.P_256, Curve.forOID(Curve.P_256.getOID()));
+		assertEquals(Curve.P_256K, Curve.forOID(Curve.P_256K.getOID()));
 		assertEquals(Curve.P_384, Curve.forOID(Curve.P_384.getOID()));
 		assertEquals(Curve.P_521, Curve.forOID(Curve.P_521.getOID()));
 	}
@@ -123,6 +134,7 @@ public class CurveTest extends TestCase {
 	public void testCurveForJWSAlgorithm() {
 		
 		assertEquals(Collections.singleton(Curve.P_256), Curve.forJWSAlgorithm(JWSAlgorithm.ES256));
+		assertEquals(Collections.singleton(Curve.P_256K), Curve.forJWSAlgorithm(JWSAlgorithm.ES256K));
 		assertEquals(Collections.singleton(Curve.P_384), Curve.forJWSAlgorithm(JWSAlgorithm.ES384));
 		assertEquals(Collections.singleton(Curve.P_521), Curve.forJWSAlgorithm(JWSAlgorithm.ES512));
 		assertEquals(new HashSet<>(Arrays.asList(Curve.Ed25519, Curve.Ed448)), Curve.forJWSAlgorithm(JWSAlgorithm.EdDSA));

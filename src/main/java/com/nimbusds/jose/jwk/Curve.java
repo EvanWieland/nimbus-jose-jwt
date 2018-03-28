@@ -54,7 +54,7 @@ import net.jcip.annotations.Immutable;
  * </ul>
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-08-23
+ * @version 2013-03-28
  */
 @Immutable
 public final class Curve implements Serializable {
@@ -64,15 +64,16 @@ public final class Curve implements Serializable {
 	
 	
 	/**
-	 * P-256K curve (secp256k1, OID = 1.3.132.0.10).
-	 */
-	public static final Curve P_256K = new Curve("P-256K", "secp256k1", "1.3.132.0.10");
-
-	/**
 	 * P-256 curve (secp256r1, also called prime256v1, OID =
 	 * 1.2.840.10045.3.1.7).
 	 */
 	public static final Curve P_256 = new Curve("P-256", "secp256r1", "1.2.840.10045.3.1.7");
+	
+	
+	/**
+	 * P-256K curve (secp256k1, OID = 1.3.132.0.10).
+	 */
+	public static final Curve P_256K = new Curve("P-256K", "secp256k1", "1.3.132.0.10");
 	
 	
 	/**
