@@ -818,3 +818,9 @@ version 5.7 (2018-03-09)
     * Makes JWKSet immutable (iss #256).
     * Fixes the AESKW.unwrapCEK helper to normalise the KEK algorithm to "AES"
       (iss #257).
+
+version 5.8 (2018-03-28)
+    * Adds "ES256P" JWS algorithm based on the "secp256k1" curve ("P-256K").
+      Note that the "ES256P" algorithm name and "P-256K" curve name are not
+      registered in the JSON Web Signature and Encryption Algorithms Registry
+      (see RFC 7518, section 7).
