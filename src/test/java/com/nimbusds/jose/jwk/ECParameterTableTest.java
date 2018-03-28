@@ -30,13 +30,12 @@ import org.bouncycastle.jce.spec.ECNamedCurveSpec;
  * Tests the EC parameter table.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-08-23
+ * @version 2018-03-28
  */
 public class ECParameterTableTest extends TestCase {
 
 
-	public void testP256()
-		throws Exception {
+	public void testP256() {
 
 		ECNamedCurveParameterSpec curveParams = ECNamedCurveTable.getParameterSpec(Curve.P_256.getStdName());
 
@@ -61,8 +60,32 @@ public class ECParameterTableTest extends TestCase {
 	}
 
 
-	public void testP384()
-		throws Exception {
+	public void testP256K() {
+
+		ECNamedCurveParameterSpec curveParams = ECNamedCurveTable.getParameterSpec(Curve.P_256K.getStdName());
+
+		ECParameterSpec expectedSpec = new ECNamedCurveSpec(curveParams.getName(),
+			curveParams.getCurve(),
+			curveParams.getG(),
+			curveParams.getN());
+
+		// Lookup
+		ECParameterSpec spec = ECParameterTable.get(Curve.P_256K);
+
+		assertEquals(expectedSpec.getCurve().getField().getFieldSize(), spec.getCurve().getField().getFieldSize());
+		assertEquals(expectedSpec.getCurve().getA(), spec.getCurve().getA());
+		assertEquals(expectedSpec.getCurve().getB(), spec.getCurve().getB());
+		assertEquals(expectedSpec.getGenerator().getAffineX(), spec.getGenerator().getAffineX());
+		assertEquals(expectedSpec.getGenerator().getAffineY(), spec.getGenerator().getAffineY());
+		assertEquals(expectedSpec.getOrder(), spec.getOrder());
+		assertEquals(expectedSpec.getCofactor(), spec.getCofactor());
+
+		// Reverse lookup
+		assertEquals(Curve.P_256K, ECParameterTable.get(expectedSpec));
+	}
+
+
+	public void testP384() {
 
 		ECNamedCurveParameterSpec curveParams = ECNamedCurveTable.getParameterSpec(Curve.P_384.getStdName());
 
@@ -87,8 +110,7 @@ public class ECParameterTableTest extends TestCase {
 	}
 
 
-	public void testP521()
-		throws Exception {
+	public void testP521() {
 
 		ECNamedCurveParameterSpec curveParams = ECNamedCurveTable.getParameterSpec(Curve.P_521.getStdName());
 
