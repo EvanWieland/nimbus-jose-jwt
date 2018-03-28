@@ -43,12 +43,13 @@ import net.jcip.annotations.Immutable;
  *     <li>{@link #PS384}
  *     <li>{@link #PS512}
  *     <li>{@link #EdDSA}
- *     <li>{@link #ES256K}
+ *     <li>{@link #ES256K} (non-standard)
  * </ul>
  *
  * <p>Additional JWS algorithm names can be defined using the constructors.
  *
  * @author Vladimir Dzhuvinov
+ * @author Aleksei Doroganov
  * @version 2018-03-28
  */
 @Immutable

@@ -36,6 +36,7 @@ import net.jcip.annotations.Immutable;
  *
  * <ul>
  *     <li>{@link #P_256}
+ *     <li>{@link #P_256K}
  *     <li>{@link #P_384}
  *     <li>{@link #P_521}
  *     <li>{@link #Ed25519}
@@ -54,6 +55,7 @@ import net.jcip.annotations.Immutable;
  * </ul>
  *
  * @author Vladimir Dzhuvinov
+ * @author Aleksei Doroganov
  * @version 2013-03-28
  */
 @Immutable

@@ -29,12 +29,14 @@ import java.security.spec.*;
  *
  * <ul>
  *     <li>{@link com.nimbusds.jose.jwk.Curve#P_256}
+ *     <li>{@link com.nimbusds.jose.jwk.Curve#P_256K}
  *     <li>{@link com.nimbusds.jose.jwk.Curve#P_384}
  *     <li>{@link com.nimbusds.jose.jwk.Curve#P_521}
  * </ul>
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-08-23
+ * @author Aleksei Doroganov
+ * @version 2018-03-28
  */
 class ECParameterTable {
 
@@ -44,6 +46,7 @@ class ECParameterTable {
 	 * {@link com.nimbusds.jose.jwk.Curve#P_256} curve.
 	 */
 	private static final ECParameterSpec P_256_SPEC;
+	
 
 	/**
 	 * The parameter spec for a
@@ -51,12 +54,14 @@ class ECParameterTable {
 	 */
 	private static final ECParameterSpec P_256K_SPEC;
 
+	
 	/**
 	 * The parameter spec for a
 	 * {@link com.nimbusds.jose.jwk.Curve#P_384} curve.
 	 */
 	private static final ECParameterSpec P_384_SPEC;
 
+	
 	/**
 	 * The parameter spec for a
 	 * {@link com.nimbusds.jose.jwk.Curve#P_521} curve.
