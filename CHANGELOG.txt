@@ -827,3 +827,7 @@ version 5.8 (2018-03-28)
 
 version 5.9 (2018-03-28)
     * Adds missing EC point check for P-256K curve.
+
+version 5.10 (2018-04-26)
+    * Adds capability to load JWKSet from InputStream, see
+      JWKSet.load(InputStream).
