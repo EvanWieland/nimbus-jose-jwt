@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2018, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -18,7 +18,9 @@
 package com.nimbusds.jose.jwk;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigInteger;
@@ -61,7 +63,8 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
  * Tests JSON Web Key (JWK) set parsing and serialisation.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-03-09
+ * @author Vedran Pavic
+ * @version 2018-04-26
  */
 public class JWKSetTest extends TestCase {
 	
@@ -615,6 +618,75 @@ public class JWKSetTest extends TestCase {
 	public void testMIMEType() {
 
 		assertEquals("application/jwk-set+json; charset=UTF-8", JWKSet.MIME_TYPE);
+	}
+
+
+	public void testLoadFromInputStream()
+		throws Exception {
+
+		// The string is from the JWK spec
+		String s = "{\"keys\":" +
+				"[" +
+				"{\"kty\":\"EC\"," +
+				"\"crv\":\"P-256\"," +
+				"\"x\":\"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\"," +
+				"\"y\":\"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\"," +
+				"\"use\":\"enc\"," +
+				"\"kid\":\"1\"}," +
+				" " +
+				"{\"kty\":\"RSA\"," +
+				"\"n\": \"0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx" +
+				"4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMs" +
+				"tn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2" +
+				"QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbI" +
+				"SD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqb" +
+				"w0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw\"," +
+				"\"e\":\"AQAB\"," +
+				"\"alg\":\"RS256\"," +
+				"\"kid\":\"2011-04-29\"}" +
+				"]" +
+				"}";
+
+		ByteArrayInputStream inputStream = new ByteArrayInputStream(s.getBytes());
+
+		JWKSet keySet = JWKSet.load(inputStream);
+
+
+		List<JWK> keyList = keySet.getKeys();
+		assertEquals(2, keyList.size());
+
+
+		// Check first EC key
+		JWK key = keyList.get(0);
+
+		assertTrue(key instanceof ECKey);
+		assertEquals("1", key.getKeyID());
+		assertEquals(KeyUse.ENCRYPTION, key.getKeyUse());
+
+		ECKey ecKey = (ECKey)key;
+		assertEquals(Curve.P_256, ecKey.getCurve());
+		assertEquals("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4", ecKey.getX().toString());
+		assertEquals("4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM", ecKey.getY().toString());
+		assertFalse(key.isPrivate());
+
+
+		// Check second RSA key
+		key = keyList.get(1);
+		assertTrue(key instanceof RSAKey);
+		assertEquals("2011-04-29", key.getKeyID());
+		assertNull(key.getKeyUse());
+		assertEquals(JWSAlgorithm.RS256, key.getAlgorithm());
+
+		RSAKey rsaKey = (RSAKey)key;
+		assertEquals("0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx" +
+				"4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMs" +
+				"tn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2" +
+				"QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbI" +
+				"SD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqb" +
+				"w0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
+			rsaKey.getModulus().toString());
+		assertEquals("AQAB", rsaKey.getPublicExponent().toString());
+		assertFalse(key.isPrivate());
 	}
 
 

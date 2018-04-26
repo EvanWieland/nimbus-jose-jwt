@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2018, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -20,6 +20,7 @@ package com.nimbusds.jose.jwk;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.KeyStore;
@@ -67,7 +68,8 @@ import net.minidev.json.JSONObject;
  * </pre>
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-03-09
+ * @author Vedran Pavic
+ * @version 2018-04-26
  */
 @Immutable
 public class JWKSet {
@@ -350,6 +352,24 @@ public class JWKSet {
 		}
 		
 		return new JWKSet(keys, additionalMembers);
+	}
+
+
+	/**
+	 * Loads a JSON Web Key (JWK) set from the specified input stream.
+	 *
+	 * @param inputStream The JWK set input stream. Must not be {@code null}.
+	 *
+	 * @return The JWK set.
+	 *
+	 * @throws IOException    If the input stream couldn't be read.
+	 * @throws ParseException If the input stream couldn't be parsed to a valid
+	 *                        JSON Web Key (JWK) set.
+	 */
+	public static JWKSet load(final InputStream inputStream)
+		throws IOException, ParseException {
+
+		return parse(IOUtils.readInputStreamToString(inputStream, Charset.forName("UTF-8")));
 	}
 
 
