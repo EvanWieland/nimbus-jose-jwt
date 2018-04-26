@@ -903,7 +903,7 @@ public class RSAKeyTest extends TestCase {
 				.x509CertChain(Collections.<Base64>emptyList())
 				.build();
 		} catch (IllegalStateException e) {
-			assertEquals("The X.509 certificate chian \"x5c\" must not be empty", e.getMessage());
+			assertEquals("The X.509 certificate chain \"x5c\" must not be empty", e.getMessage());
 		}
 	}
 
