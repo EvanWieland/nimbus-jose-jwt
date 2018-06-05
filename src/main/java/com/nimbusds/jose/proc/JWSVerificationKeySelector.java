@@ -30,6 +30,7 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.KeySourceException;
 import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.util.Base64;
 import net.jcip.annotations.ThreadSafe;
 
 
@@ -97,6 +98,7 @@ public class JWSVerificationKeySelector<C extends SecurityContext> extends Abstr
 					.keyID(jwsHeader.getKeyID())
 					.keyUses(KeyUse.SIGNATURE, null)
 					.algorithms(getExpectedJWSAlgorithm(), null)
+					.thumbprint(jwsHeader.getX509CertSHA256Thumbprint())
 					.build();
 		} else if (JWSAlgorithm.Family.HMAC_SHA.contains(getExpectedJWSAlgorithm())) {
 			// HMAC secret matcher

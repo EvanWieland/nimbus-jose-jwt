@@ -21,6 +21,7 @@ package com.nimbusds.jose.proc;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
@@ -30,6 +31,7 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.nimbusds.jose.util.Base64URL;
 import junit.framework.TestCase;
 import org.junit.Assert;
 
@@ -45,10 +47,16 @@ public class JWSVerificationKeySelectorTest extends TestCase {
 
 		KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-		RSAKey rsaJWK1 = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
+		Key rsa1 = keyPair.getPublic();
+		MessageDigest md = MessageDigest.getInstance("SHA-256");
+		md.update(rsa1.getEncoded());
+		Base64URL thumbprint = Base64URL.encode(md.digest());
+
+		RSAKey rsaJWK1 = new RSAKey.Builder((RSAPublicKey) rsa1)
 			.keyID("1")
 			.keyUse(KeyUse.SIGNATURE)
 			.algorithm(JWSAlgorithm.RS256)
+			.x509CertSHA256Thumbprint(thumbprint)
 			.build();
 
 		keyPair = keyPairGenerator.generateKeyPair();
@@ -105,6 +113,10 @@ public class JWSVerificationKeySelectorTest extends TestCase {
 		// Select for header with unexpected JWS alg
 		candidates = keySelector.selectJWSKeys(new JWSHeader.Builder(JWSAlgorithm.RS384).keyID("1").build(), null);
 		assertTrue(candidates.isEmpty());
+
+		// Select for header with SHA-256 Thumbprint
+		candidates = keySelector.selectJWSKeys(new JWSHeader.Builder(JWSAlgorithm.RS256).x509CertSHA256Thumbprint(thumbprint).build(), null);
+		assertEquals(1, candidates.size());
 	}
 
 
