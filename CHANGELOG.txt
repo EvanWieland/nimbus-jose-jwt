@@ -831,3 +831,8 @@ version 5.9 (2018-03-28)
 version 5.10 (2018-04-26)
     * Adds capability to load JWKSet from InputStream, see
       JWKSet.load(InputStream).
+
+version 5.11 (2018-06-07)
+    * Adds X509CertUtils.toPEMString(X509Certificate, boolean) method which
+      enables controls output of line breaks in string representing the
+      PEM-encoded certificate.

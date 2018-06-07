@@ -28,7 +28,7 @@ import java.security.cert.*;
  *  X.509 certificate utilities.
  *
  *  @author Vladimir Dzhuvinov
- *  @version 2017-08-02
+ *  @version 2018-06-07
  */
 public class X509CertUtils {
 
@@ -121,16 +121,37 @@ public class X509CertUtils {
 	 */
 	public static String toPEMString(final X509Certificate cert) {
 	
+		return toPEMString(cert, true);
+	}
+	
+	
+	/**
+	 * Returns the specified X.509 certificate as PEM-encoded string.
+	 *
+	 * @param cert           The X.509 certificate. Must not be
+	 *                       {@code null}.
+	 * @param withLineBreaks {@code false} to suppress line breaks.
+	 *
+	 * @return The PEM-encoded X.509 certificate, {@code null} if encoding
+	 *         failed.
+	 */
+	public static String toPEMString(final X509Certificate cert, final boolean withLineBreaks) {
+	
 		StringBuilder sb = new StringBuilder();
 		sb.append(PEM_BEGIN_MARKER);
-		sb.append('\n');
+		
+		if (withLineBreaks)
+			sb.append('\n');
 		
 		try {
 			sb.append(Base64.encode(cert.getEncoded()).toString());
 		} catch (CertificateEncodingException e) {
 			return null;
 		}
-		sb.append('\n');
+		
+		if (withLineBreaks)
+			sb.append('\n');
+		
 		sb.append(PEM_END_MARKER);
 		return sb.toString();
 	}

@@ -199,7 +199,20 @@ public class X509CertUtilsTest extends TestCase {
 		
 		X509Certificate cert = X509CertUtils.parse(PEM_CERT);
 		String pemString = X509CertUtils.toPEMString(cert);
-//		System.out.println(pemString);
+		String[] lines = pemString.split("\\n");
+		assertEquals("-----BEGIN CERTIFICATE-----", lines[0]);
+		assertEquals("-----END CERTIFICATE-----", lines[2]);
+		assertEquals(3, lines.length);
+		assertEquals(cert.getSubjectDN(), X509CertUtils.parse(pemString).getSubjectDN());
+	}
+	
+	
+	public void testPEMRoundTrip_noLineBreaks() {
+		
+		X509Certificate cert = X509CertUtils.parse(PEM_CERT);
+		String pemString = X509CertUtils.toPEMString(cert, false);
+		assertNotNull(pemString);
+		assertEquals(-1, pemString.indexOf("\n"));
 		assertEquals(cert.getSubjectDN(), X509CertUtils.parse(pemString).getSubjectDN());
 	}
 }
