@@ -18,13 +18,17 @@
 package com.nimbusds.jose.proc;
 
 
+import java.math.BigInteger;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import com.nimbusds.jose.JWSAlgorithm;
@@ -32,11 +36,47 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jose.util.X509CertUtils;
 import junit.framework.TestCase;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.Assert;
 
 
 public class JWSVerificationKeySelectorTest extends TestCase {
+	
+	
+	static X509Certificate generateCertificate(final String issuer,
+						   final String subject,
+						   final RSAPublicKey publicKey,
+						   final RSAPrivateKey privateKey) {
+		
+		X500Name certIssuer = new X500Name("cn=" + issuer);
+		BigInteger serialNumber = new BigInteger(64, new SecureRandom());
+		Date now = new Date();
+		Date nbf = new Date(now.getTime() - 1000L);
+		Date exp = new Date(now.getTime() + 365*24*60*60*1000L); // in 1 year
+		X500Name certSubject = new X500Name("cn=" + subject);
+		JcaX509v3CertificateBuilder x509certBuilder = new JcaX509v3CertificateBuilder(
+			certIssuer,
+			serialNumber,
+			nbf,
+			exp,
+			certSubject,
+			publicKey
+		);
+		
+		JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder("SHA256withRSA");
+		
+		try {
+			X509CertificateHolder certHolder = x509certBuilder.build(signerBuilder.build(privateKey));
+			return X509CertUtils.parse(certHolder.getEncoded());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 	
 
 	public void testForRS256()
@@ -48,15 +88,23 @@ public class JWSVerificationKeySelectorTest extends TestCase {
 		KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
 		Key rsa1 = keyPair.getPublic();
+		
+		X509Certificate cert = generateCertificate(
+			"alice",
+			"bob",
+			(RSAPublicKey) keyPair.getPublic(),
+			(RSAPrivateKey) keyPair.getPrivate()
+		);
+		
 		MessageDigest md = MessageDigest.getInstance("SHA-256");
-		md.update(rsa1.getEncoded());
-		Base64URL thumbprint = Base64URL.encode(md.digest());
+		md.update(cert.getEncoded());
+		Base64URL x5tS256 = Base64URL.encode(md.digest());
 
 		RSAKey rsaJWK1 = new RSAKey.Builder((RSAPublicKey) rsa1)
 			.keyID("1")
 			.keyUse(KeyUse.SIGNATURE)
 			.algorithm(JWSAlgorithm.RS256)
-			.x509CertSHA256Thumbprint(thumbprint)
+			.x509CertSHA256Thumbprint(x5tS256)
 			.build();
 
 		keyPair = keyPairGenerator.generateKeyPair();
@@ -114,8 +162,8 @@ public class JWSVerificationKeySelectorTest extends TestCase {
 		candidates = keySelector.selectJWSKeys(new JWSHeader.Builder(JWSAlgorithm.RS384).keyID("1").build(), null);
 		assertTrue(candidates.isEmpty());
 
-		// Select for header with SHA-256 Thumbprint
-		candidates = keySelector.selectJWSKeys(new JWSHeader.Builder(JWSAlgorithm.RS256).x509CertSHA256Thumbprint(thumbprint).build(), null);
+		// Select for header with certificate SHA-256 Thumbprint
+		candidates = keySelector.selectJWSKeys(new JWSHeader.Builder(JWSAlgorithm.RS256).x509CertSHA256Thumbprint(x5tS256).build(), null);
 		assertEquals(1, candidates.size());
 	}
 
