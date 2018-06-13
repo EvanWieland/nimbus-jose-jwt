@@ -28,6 +28,7 @@ import java.util.*;
 import javax.crypto.KeyGenerator;
 
 import com.nimbusds.jose.Algorithm;
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.ByteUtils;
@@ -253,7 +254,7 @@ public class JWKMatcherTest extends TestCase {
 	}
 
 
-	public void testAllSetConstructor() {
+	public void testAllSetConstructor() throws JOSEException {
 
 		Set<KeyType> types = new HashSet<>();
 		types.add(KeyType.RSA);
@@ -277,7 +278,10 @@ public class JWKMatcherTest extends TestCase {
 		curves.add(Curve.P_256);
 		curves.add(Curve.P_384);
 
-		JWKMatcher matcher = new JWKMatcher(types, uses, ops, algs, ids, true, true, true, true, 128, 256, sizes, curves);
+		Set<Base64URL> thumbprints = new HashSet<>();
+		thumbprints.add(Base64URL.encode("thumbprint"));
+
+		JWKMatcher matcher = new JWKMatcher(types, uses, ops, algs, ids, true, true, true, true, 128, 256, sizes, curves, thumbprints);
 
 		assertEquals(types, matcher.getKeyTypes());
 		assertEquals(uses, matcher.getKeyUses());
@@ -296,6 +300,7 @@ public class JWKMatcherTest extends TestCase {
 		assertTrue(matcher.getKeySizes().contains(256));
 		assertEquals(2, matcher.getKeySizes().size());
 		assertEquals(curves, matcher.getCurves());
+		assertEquals(thumbprints, matcher.getThumbprints());
 	}
 	
 	
@@ -322,7 +327,10 @@ public class JWKMatcherTest extends TestCase {
 		Set<Curve> curves = new HashSet<>();
 		curves.add(Curve.P_256);
 		curves.add(Curve.P_384);
-		
+
+		Set<Base64URL> thumbprints = new HashSet<>();
+		thumbprints.add(Base64URL.encode("thumbprint"));
+
 		JWKMatcher matcher = new JWKMatcher.Builder()
 			.keyTypes(types)
 			.keyUses(uses)
@@ -335,6 +343,7 @@ public class JWKMatcherTest extends TestCase {
 			.publicOnly(true)
 			.keySizes(sizes)
 			.curves(curves)
+			.thumbprints(thumbprints)
 			.build();
 
 		assertEquals(types, matcher.getKeyTypes());
@@ -350,6 +359,7 @@ public class JWKMatcherTest extends TestCase {
 		assertEquals(0, matcher.getMaxKeySize());
 		assertEquals(sizes, matcher.getKeySizes());
 		assertEquals(curves, matcher.getCurves());
+		assertEquals(thumbprints, matcher.getThumbprints());
 	}
 	
 	
@@ -365,6 +375,7 @@ public class JWKMatcherTest extends TestCase {
 			.publicOnly(true)
 			.keySizes(128, 256)
 			.curves(Curve.P_256, null)
+			.thumbprints(Base64URL.encode("thumbprint"), null)
 			.build();
 
 		Set<KeyType> types = matcher.getKeyTypes();
@@ -403,6 +414,10 @@ public class JWKMatcherTest extends TestCase {
 		Set<Curve> curves = matcher.getCurves();
 		assertTrue(curves.containsAll(Arrays.asList(Curve.P_256, null)));
 		assertEquals(2, curves.size());
+
+		Set<Base64URL> thumbprints = matcher.getThumbprints();
+		assertTrue(thumbprints.containsAll(Arrays.asList(Base64URL.encode("thumbprint"), null)));
+		assertEquals(2, thumbprints.size());
 	}
 
 
@@ -849,4 +864,18 @@ public class JWKMatcherTest extends TestCase {
 		
 		assertTrue(matcher.matches(okp));
 	}
+
+	public void testMatchThumbprint() {
+
+		RSAKey rsa = new RSAKey.Builder(new Base64URL("n"), new Base64URL("e"))
+			.x509CertSHA256Thumbprint(new Base64URL("thumbprint"))
+			.build();
+
+		JWKMatcher matcher = new JWKMatcher.Builder()
+			.thumbprints(new Base64URL("thumbprint"))
+			.build();
+
+		assertTrue(matcher.matches(rsa));
+	}
+
 }

@@ -21,6 +21,8 @@ package com.nimbusds.jose.jwk;
 import java.util.*;
 
 import com.nimbusds.jose.Algorithm;
+import com.nimbusds.jose.util.Base64;
+import com.nimbusds.jose.util.Base64URL;
 import net.jcip.annotations.Immutable;
 
 
@@ -40,9 +42,10 @@ import net.jcip.annotations.Immutable;
  *     <li>Public only key.
  *     <li>Minimum, maximum or exact key sizes.
  *     <li>Any, unspecified, one or more curves for EC and OKP keys (crv).
+ *     <li>X.509 certificate thumbprint
  * </ul>
  *
- * <p>Matching by X.509 certificate URL, thumbprint and chain is not supported.
+ * <p>Matching by X.509 certificate URL and chain is not supported.
  *
  * @author Vladimir Dzhuvinov
  * @version 2017-08-23
@@ -128,6 +131,10 @@ public class JWKMatcher {
 	 */
 	private final Set<Curve> curves;
 
+	/**
+	 * The certificate thumbprints to match
+	 */
+	private final Set<Base64URL> thumbprints;
 
 	/**
 	 * Builder for constructing JWK matchers.
@@ -220,6 +227,10 @@ public class JWKMatcher {
 		 */
 		private Set<Curve> curves;
 
+		/**
+		 * The certificate thumbprints to match
+		 */
+		private Set<Base64URL> thumbprints;
 
 		/**
 		 * Sets a single key type to match.
@@ -637,6 +648,45 @@ public class JWKMatcher {
 			return this;
 		}
 
+		/**
+		 * Sets a single thumbprint to match.
+		 *
+		 * @param thumbprint The thumbprint, {@code null} if not specified.
+		 *
+		 * @return This builder.
+		 */
+		public Builder thumbprint(final Base64URL thumbprint) {
+
+			if (thumbprint == null) {
+				thumbprints = null;
+			} else {
+				thumbprints = new HashSet<>(Collections.singletonList(thumbprint));
+			}
+			return this;
+		}
+
+		/**
+		 * Sets multiple certificate thumbprints to match
+		 *
+		 * @param thumbprints The thumbprints.
+		 *
+		 * @return This builder.
+		 */
+		public Builder thumbprints(final Base64URL... thumbprints) {
+			return thumbprints(new LinkedHashSet<>(Arrays.asList(thumbprints)));
+		}
+
+		/**
+		 * Sets multiple certificate thumbprints to match.
+		 *
+		 * @param thumbprints The thumbprints, {@code null} if not specified.
+		 *
+		 * @return This builder.
+		 */
+		public Builder thumbprints(final Set<Base64URL> thumbprints) {
+			this.thumbprints = thumbprints;
+			return this;
+		}
 
 		/**
 		 * Builds a new JWK matcher.
@@ -645,7 +695,7 @@ public class JWKMatcher {
 		 */
 		public JWKMatcher build() {
 
-			return new JWKMatcher(types, uses, ops, algs, ids, hasUse, hasID, privateOnly, publicOnly, minSizeBits, maxSizeBits, sizesBits, curves);
+			return new JWKMatcher(types, uses, ops, algs, ids, hasUse, hasID, privateOnly, publicOnly, minSizeBits, maxSizeBits, sizesBits, curves, thumbprints);
 		}
 	}
 
@@ -819,6 +869,7 @@ public class JWKMatcher {
 	 * @param curves      The curves to match (for EC and OKP keys),
 	 *                    {@code null} if not specified.
 	 */
+	@Deprecated
 	public JWKMatcher(final Set<KeyType> types,
 			  final Set<KeyUse> uses,
 			  final Set<KeyOperation> ops,
@@ -833,6 +884,50 @@ public class JWKMatcher {
 			  final Set<Integer> sizesBits,
 			  final Set<Curve> curves) {
 
+		this(types, uses, ops, algs, ids, hasUse, hasID, privateOnly, publicOnly, minSizeBits, maxSizeBits, sizesBits, curves, null);
+	}
+
+	/**
+	 * Creates a new JSON Web Key (JWK) matcher.
+	 *
+	 * @param types       The key types to match, {@code null} if not
+	 *                    specified.
+	 * @param uses        The public key uses to match, {@code null} if not
+	 *                    specified.
+	 * @param ops         The key operations to match, {@code null} if not
+	 *                    specified.
+	 * @param algs        The JOSE algorithms to match, {@code null} if not
+	 *                    specified.
+	 * @param ids         The key IDs to match, {@code null} if not
+	 *                    specified.
+	 * @param hasUse      {@code true} to match a key with a set use.
+	 * @param hasID       {@code true} to match a key with a set ID.
+	 * @param privateOnly {@code true} to match a private key.
+	 * @param publicOnly  {@code true} to match a public only key.
+	 * @param minSizeBits The minimum key size in bits, zero implies no
+	 *                    minimum size limit.
+	 * @param maxSizeBits The maximum key size in bits, zero implies no
+	 *                    maximum size limit.
+	 * @param sizesBits   The key sizes in bits, {@code null} if not
+	 *                    specified.
+	 * @param curves      The curves to match (for EC and OKP keys),
+	 *                    {@code null} if not specified.
+	 */
+	public JWKMatcher(final Set<KeyType> types,
+					  final Set<KeyUse> uses,
+					  final Set<KeyOperation> ops,
+					  final Set<Algorithm> algs,
+					  final Set<String> ids,
+					  final boolean hasUse,
+					  final boolean hasID,
+					  final boolean privateOnly,
+					  final boolean publicOnly,
+					  final int minSizeBits,
+					  final int maxSizeBits,
+					  final Set<Integer> sizesBits,
+					  final Set<Curve> curves,
+					  final Set<Base64URL> thumbprints) {
+
 		this.types = types;
 		this.uses = uses;
 		this.ops = ops;
@@ -846,8 +941,8 @@ public class JWKMatcher {
 		this.maxSizeBits = maxSizeBits;
 		this.sizesBits = sizesBits;
 		this.curves = curves;
+		this.thumbprints = thumbprints;
 	}
-
 
 	/**
 	 * Returns the key types to match.
@@ -1023,6 +1118,14 @@ public class JWKMatcher {
 		return curves;
 	}
 
+	/**
+	 * Returns the certificate thumbprints to match
+	 *
+	 * @return The thumbprints, {@code null} if not specified.
+	 */
+	public Set<Base64URL> getThumbprints() {
+		return thumbprints;
+	}
 
 	/**
 	 * Returns {@code true} if the specified JWK matches.
@@ -1096,9 +1199,13 @@ public class JWKMatcher {
 				return false;
 		}
 
+		if (thumbprints != null) {
+			if (! thumbprints.contains(key.getX509CertSHA256Thumbprint()) )
+				return false;
+		}
+
 		return true;
 	}
-	
 	
 	@Override
 	public String toString() {
@@ -1136,6 +1243,7 @@ public class JWKMatcher {
 		
 		append(sb, "size", sizesBits);
 		append(sb, "crv", curves);
+		append(sb, "x5t#S256", thumbprints);
 			
 		return sb.toString().trim();
 	}
