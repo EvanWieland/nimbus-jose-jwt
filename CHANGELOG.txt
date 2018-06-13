@@ -836,3 +836,7 @@ version 5.11 (2018-06-07)
     * Adds X509CertUtils.toPEMString(X509Certificate, boolean) method which
       enables controls output of line breaks in string representing the
       PEM-encoded certificate.
+
+version 5.12 (2018-06-13)
+    * Adds X.509 certificate SHA-256 thumbprint (x5t#S256) matching to
+      JWKMatcher.

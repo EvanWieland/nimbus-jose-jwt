@@ -21,7 +21,6 @@ package com.nimbusds.jose.jwk;
 import java.util.*;
 
 import com.nimbusds.jose.Algorithm;
-import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.Base64URL;
 import net.jcip.annotations.Immutable;
 
@@ -42,13 +41,15 @@ import net.jcip.annotations.Immutable;
  *     <li>Public only key.
  *     <li>Minimum, maximum or exact key sizes.
  *     <li>Any, unspecified, one or more curves for EC and OKP keys (crv).
- *     <li>X.509 certificate thumbprint
+ *     <li>X.509 certificate SHA-256 thumbprint.
  * </ul>
  *
- * <p>Matching by X.509 certificate URL and chain is not supported.
+ * <p>Matching by JWK thumbprint (RFC 7638), X.509 certificate URL and X.509
+ * certificate chain is not supported.
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-08-23
+ * @author Josh Cummings
+ * @version 2018-06-13
  */
 @Immutable
 public class JWKMatcher {
@@ -131,11 +132,13 @@ public class JWKMatcher {
 	 */
 	private final Set<Curve> curves;
 
+	
 	/**
-	 * The certificate thumbprints to match
+	 * The X.509 certificate SHA-256 thumbprints to match.
 	 */
-	private final Set<Base64URL> thumbprints;
+	private final Set<Base64URL> x5tS256s;
 
+	
 	/**
 	 * Builder for constructing JWK matchers.
 	 *
@@ -227,11 +230,13 @@ public class JWKMatcher {
 		 */
 		private Set<Curve> curves;
 
+		
 		/**
-		 * The certificate thumbprints to match
+		 * The X.509 certificate SHA-256 thumbprints to match.
 		 */
-		private Set<Base64URL> thumbprints;
+		private Set<Base64URL> x5tS256s;
 
+		
 		/**
 		 * Sets a single key type to match.
 		 *
@@ -648,43 +653,49 @@ public class JWKMatcher {
 			return this;
 		}
 
+		
 		/**
-		 * Sets a single thumbprint to match.
+		 * Sets a single X.509 certificate SHA-256 thumbprint to match.
 		 *
-		 * @param thumbprint The thumbprint, {@code null} if not specified.
+		 * @param x5tS256 The thumbprint, {@code null} if not
+		 *                specified.
 		 *
 		 * @return This builder.
 		 */
-		public Builder thumbprint(final Base64URL thumbprint) {
+		public Builder x509CertSHA256Thumbprint(final Base64URL x5tS256) {
 
-			if (thumbprint == null) {
-				thumbprints = null;
+			if (x5tS256 == null) {
+				x5tS256s = null;
 			} else {
-				thumbprints = new HashSet<>(Collections.singletonList(thumbprint));
+				x5tS256s = Collections.singleton(x5tS256);
 			}
 			return this;
 		}
 
 		/**
-		 * Sets multiple certificate thumbprints to match
+		 * Sets multiple X.509 certificate SHA-256 thumbprints to
+		 * match.
 		 *
-		 * @param thumbprints The thumbprints.
+		 * @param x5tS256s The thumbprints.
 		 *
 		 * @return This builder.
 		 */
-		public Builder thumbprints(final Base64URL... thumbprints) {
-			return thumbprints(new LinkedHashSet<>(Arrays.asList(thumbprints)));
+		public Builder x509CertSHA256Thumbprints(final Base64URL... x5tS256s) {
+			return x509CertSHA256Thumbprints(new LinkedHashSet<>(Arrays.asList(x5tS256s)));
 		}
 
+		
 		/**
-		 * Sets multiple certificate thumbprints to match.
+		 * Sets multiple X.509 certificate SHA-256 thumbprints to
+		 * match.
 		 *
-		 * @param thumbprints The thumbprints, {@code null} if not specified.
+		 * @param x5tS256s The thumbprints, {@code null} if not
+		 *                 specified.
 		 *
 		 * @return This builder.
 		 */
-		public Builder thumbprints(final Set<Base64URL> thumbprints) {
-			this.thumbprints = thumbprints;
+		public Builder x509CertSHA256Thumbprints(final Set<Base64URL> x5tS256s) {
+			this.x5tS256s = x5tS256s;
 			return this;
 		}
 
@@ -695,7 +706,7 @@ public class JWKMatcher {
 		 */
 		public JWKMatcher build() {
 
-			return new JWKMatcher(types, uses, ops, algs, ids, hasUse, hasID, privateOnly, publicOnly, minSizeBits, maxSizeBits, sizesBits, curves, thumbprints);
+			return new JWKMatcher(types, uses, ops, algs, ids, hasUse, hasID, privateOnly, publicOnly, minSizeBits, maxSizeBits, sizesBits, curves, x5tS256s);
 		}
 	}
 
@@ -912,6 +923,8 @@ public class JWKMatcher {
 	 *                    specified.
 	 * @param curves      The curves to match (for EC and OKP keys),
 	 *                    {@code null} if not specified.
+	 * @param x5tS256s    The X.509 certificate thumbprints to match,
+	 *                    {@code null} if not specified.
 	 */
 	public JWKMatcher(final Set<KeyType> types,
 					  final Set<KeyUse> uses,
@@ -926,7 +939,7 @@ public class JWKMatcher {
 					  final int maxSizeBits,
 					  final Set<Integer> sizesBits,
 					  final Set<Curve> curves,
-					  final Set<Base64URL> thumbprints) {
+					  final Set<Base64URL> x5tS256s) {
 
 		this.types = types;
 		this.uses = uses;
@@ -941,8 +954,9 @@ public class JWKMatcher {
 		this.maxSizeBits = maxSizeBits;
 		this.sizesBits = sizesBits;
 		this.curves = curves;
-		this.thumbprints = thumbprints;
+		this.x5tS256s = x5tS256s;
 	}
+	
 
 	/**
 	 * Returns the key types to match.
@@ -1119,12 +1133,13 @@ public class JWKMatcher {
 	}
 
 	/**
-	 * Returns the certificate thumbprints to match
+	 * Returns the X.509 certificate SHA-256 thumbprints to match.
 	 *
 	 * @return The thumbprints, {@code null} if not specified.
 	 */
-	public Set<Base64URL> getThumbprints() {
-		return thumbprints;
+	public Set<Base64URL> getX509CertSHA256Thumbprints() {
+		
+		return x5tS256s;
 	}
 
 	/**
@@ -1199,8 +1214,8 @@ public class JWKMatcher {
 				return false;
 		}
 
-		if (thumbprints != null) {
-			if (! thumbprints.contains(key.getX509CertSHA256Thumbprint()) )
+		if (x5tS256s != null) {
+			if (! x5tS256s.contains(key.getX509CertSHA256Thumbprint()) )
 				return false;
 		}
 
@@ -1243,7 +1258,7 @@ public class JWKMatcher {
 		
 		append(sb, "size", sizesBits);
 		append(sb, "crv", curves);
-		append(sb, "x5t#S256", thumbprints);
+		append(sb, "x5t#S256", x5tS256s);
 			
 		return sb.toString().trim();
 	}

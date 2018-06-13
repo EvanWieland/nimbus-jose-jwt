@@ -300,7 +300,7 @@ public class JWKMatcherTest extends TestCase {
 		assertTrue(matcher.getKeySizes().contains(256));
 		assertEquals(2, matcher.getKeySizes().size());
 		assertEquals(curves, matcher.getCurves());
-		assertEquals(thumbprints, matcher.getThumbprints());
+		assertEquals(thumbprints, matcher.getX509CertSHA256Thumbprints());
 	}
 	
 	
@@ -343,7 +343,7 @@ public class JWKMatcherTest extends TestCase {
 			.publicOnly(true)
 			.keySizes(sizes)
 			.curves(curves)
-			.thumbprints(thumbprints)
+			.x509CertSHA256Thumbprints(thumbprints)
 			.build();
 
 		assertEquals(types, matcher.getKeyTypes());
@@ -359,7 +359,7 @@ public class JWKMatcherTest extends TestCase {
 		assertEquals(0, matcher.getMaxKeySize());
 		assertEquals(sizes, matcher.getKeySizes());
 		assertEquals(curves, matcher.getCurves());
-		assertEquals(thumbprints, matcher.getThumbprints());
+		assertEquals(thumbprints, matcher.getX509CertSHA256Thumbprints());
 	}
 	
 	
@@ -375,7 +375,7 @@ public class JWKMatcherTest extends TestCase {
 			.publicOnly(true)
 			.keySizes(128, 256)
 			.curves(Curve.P_256, null)
-			.thumbprints(Base64URL.encode("thumbprint"), null)
+			.x509CertSHA256Thumbprints(Base64URL.encode("thumbprint"), null)
 			.build();
 
 		Set<KeyType> types = matcher.getKeyTypes();
@@ -415,7 +415,7 @@ public class JWKMatcherTest extends TestCase {
 		assertTrue(curves.containsAll(Arrays.asList(Curve.P_256, null)));
 		assertEquals(2, curves.size());
 
-		Set<Base64URL> thumbprints = matcher.getThumbprints();
+		Set<Base64URL> thumbprints = matcher.getX509CertSHA256Thumbprints();
 		assertTrue(thumbprints.containsAll(Arrays.asList(Base64URL.encode("thumbprint"), null)));
 		assertEquals(2, thumbprints.size());
 	}
@@ -872,7 +872,7 @@ public class JWKMatcherTest extends TestCase {
 			.build();
 
 		JWKMatcher matcher = new JWKMatcher.Builder()
-			.thumbprints(new Base64URL("thumbprint"))
+			.x509CertSHA256Thumbprints(new Base64URL("thumbprint"))
 			.build();
 
 		assertTrue(matcher.matches(rsa));
