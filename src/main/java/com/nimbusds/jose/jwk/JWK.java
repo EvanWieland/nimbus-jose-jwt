@@ -49,9 +49,9 @@ import net.minidev.json.JSONObject;
  *     <li>{@link #getKeyUse use} (optional)
  *     <li>{@link #getKeyOperations key_ops} (optional)
  *     <li>{@link #getKeyID kid} (optional)
- *     <li>{@link #getX509CertURL()}  x5u} (optional)
- *     <li>{@link #getX509CertThumbprint()}  x5t} (optional)
- *     <li>{@link #getX509CertSHA256Thumbprint()}  x5t#S256} (optional)
+ *     <li>{@link #getX509CertURL()  x5u} (optional)
+ *     <li>{@link #getX509CertThumbprint()  x5t} (optional)
+ *     <li>{@link #getX509CertSHA256Thumbprint()  x5t#S256} (optional)
  *     <li>{@link #getX509CertChain() x5c} (optional)
  *     <li>{@link #getKeyStore()}
  * </ul>
