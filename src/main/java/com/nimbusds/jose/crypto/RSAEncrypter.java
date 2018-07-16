@@ -81,6 +81,10 @@ public class RSAEncrypter extends RSACryptoProvider implements JWEEncrypter {
 	 */
 	private final RSAPublicKey publicKey;
 
+	/**
+	 * The content encryption key. Must be an AES key
+	 */
+	private final SecretKey contentEncryptionKey;
 
 	/**
 	 * Creates a new RSA encrypter.
@@ -89,11 +93,7 @@ public class RSAEncrypter extends RSACryptoProvider implements JWEEncrypter {
 	 */
 	public RSAEncrypter(final RSAPublicKey publicKey) {
 
-		if (publicKey == null) {
-			throw new IllegalArgumentException("The public RSA key must not be null");
-		}
-
-		this.publicKey = publicKey;
+		this(publicKey, null);;
 	}
 
 
@@ -122,6 +122,30 @@ public class RSAEncrypter extends RSACryptoProvider implements JWEEncrypter {
 	}
 
 
+	/**
+	 * Creates a new RSA encrypter with specified content encryption key.
+	 *
+	 * @param publicKey The public RSA key. Must not be {@code null}.
+	 * @param contentEncryptionKey The content encryption key. Its algorithm must be "AES"
+	 */
+	public RSAEncrypter(final RSAPublicKey publicKey, final SecretKey contentEncryptionKey) {
+		if (publicKey == null) {
+			throw new IllegalArgumentException("The public RSA key must not be null");
+		}
+		this.publicKey = publicKey;
+
+		if (contentEncryptionKey != null) {
+			if (contentEncryptionKey.getAlgorithm() == null || !contentEncryptionKey.getAlgorithm().equals("AES")) {
+				throw new IllegalArgumentException("The content encryption key must be an AES key");
+			} else {
+				this.contentEncryptionKey = contentEncryptionKey;
+			}
+		} else {
+			this.contentEncryptionKey = null;
+		}
+	}
+
+
 	@Override
 	public JWECryptoParts encrypt(final JWEHeader header, final byte[] clearText)
 		throws JOSEException {
@@ -130,7 +154,11 @@ public class RSAEncrypter extends RSACryptoProvider implements JWEEncrypter {
 		final EncryptionMethod enc = header.getEncryptionMethod();
 
 		// Generate and encrypt the CEK according to the enc method
-		final SecretKey cek = ContentCryptoProvider.generateCEK(enc, getJCAContext().getSecureRandom());
+		SecretKey cek = contentEncryptionKey;
+		if (cek == null) {
+			// Generate and encrypt the CEK according to the enc method
+			cek = ContentCryptoProvider.generateCEK(enc, getJCAContext().getSecureRandom());
+		}
 
 		final Base64URL encryptedKey; // The second JWE part
 

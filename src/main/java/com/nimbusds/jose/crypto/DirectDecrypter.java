@@ -172,23 +172,12 @@ public class DirectDecrypter extends DirectCryptoProvider implements JWEDecrypte
 		throws JOSEException {
 
 		// Validate required JWE parts
-		if (encryptedKey != null) {
-			throw new JOSEException("Unexpected present JWE encrypted key");
-		}	
-
 		if (iv == null) {
 			throw new JOSEException("Unexpected present JWE initialization vector (IV)");
 		}
 
 		if (authTag == null) {
 			throw new JOSEException("Missing JWE authentication tag");
-		}
-		
-
-		JWEAlgorithm alg = header.getAlgorithm();
-
-		if (! alg.equals(JWEAlgorithm.DIR)) {
-			throw new JOSEException(AlgorithmSupportMessage.unsupportedJWEAlgorithm(alg, SUPPORTED_ALGORITHMS));
 		}
 
 		critPolicy.ensureHeaderPasses(header);

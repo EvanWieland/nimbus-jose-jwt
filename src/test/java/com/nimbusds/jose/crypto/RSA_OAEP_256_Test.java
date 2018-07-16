@@ -30,6 +30,9 @@ import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
 import com.nimbusds.jose.jwk.RSAKey;
 import junit.framework.TestCase;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+
 
 public class RSA_OAEP_256_Test extends TestCase {
 	
@@ -129,6 +132,43 @@ public class RSA_OAEP_256_Test extends TestCase {
 			
 			assertEquals("Hello, world!", jwe.getPayload().toString());
 		}
+	}
+
+	public void testRoundTripWithCekSpecified()
+			throws Exception {
+		JWEAlgorithm algorithm = JWEAlgorithm.RSA_OAEP_256;
+		EncryptionMethod encryptionMethod = EncryptionMethod.A128CBC_HS256;
+
+		//rsa key
+		KeyPairGenerator rsaGen = KeyPairGenerator.getInstance("RSA");
+		rsaGen.initialize(2048);
+		KeyPair rsaKeyPair = rsaGen.generateKeyPair();
+		RSAPublicKey rsaPublicKey = (RSAPublicKey)rsaKeyPair.getPublic();
+		RSAPrivateKey rsaPrivateKey = (RSAPrivateKey)rsaKeyPair.getPrivate();
+
+		KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+		keyGenerator.init(EncryptionMethod.A128CBC_HS256.cekBitLength());
+		SecretKey cek = keyGenerator.generateKey();
+
+		//encrypt JWE with rsa public key + specified AES key
+		JWEObject jwe = new JWEObject(
+				new JWEHeader(algorithm, encryptionMethod),
+				new Payload("Hello, world!"));
+		jwe.encrypt(new RSAEncrypter(rsaPublicKey, cek));
+		assertEquals(JWEObject.State.ENCRYPTED, jwe.getState());
+		String jweString = jwe.serialize();
+
+		//decrypt JWE with RSA private key
+		jwe = JWEObject.parse(jweString);
+		jwe.decrypt(new RSADecrypter(rsaPrivateKey));
+		assertEquals(JWEObject.State.DECRYPTED, jwe.getState());
+		assertEquals("Hello, world!", jwe.getPayload().toString());
+
+		//decrypt JWE with CEK directly
+		jwe = JWEObject.parse(jweString);
+		jwe.decrypt(new DirectDecrypter(cek));
+		assertEquals(JWEObject.State.DECRYPTED, jwe.getState());
+		assertEquals("Hello, world!", jwe.getPayload().toString());
 	}
 	
 	
