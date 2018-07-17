@@ -97,7 +97,7 @@ public class RSAEncrypter extends RSACryptoProvider implements JWEEncrypter {
 	 */
 	public RSAEncrypter(final RSAPublicKey publicKey) {
 
-		this(publicKey, null);;
+		this(publicKey, null);
 	}
 
 
@@ -137,7 +137,7 @@ public class RSAEncrypter extends RSACryptoProvider implements JWEEncrypter {
 
 		if (contentEncryptionKey != null) {
 			if (contentEncryptionKey.getAlgorithm() == null || !contentEncryptionKey.getAlgorithm().equals("AES")) {
-				throw new IllegalArgumentException("The content encryption key must be an AES key");
+				throw new IllegalArgumentException("The algorithm of the content encryption key (CEK) must be AES");
 			} else {
 				this.contentEncryptionKey = contentEncryptionKey;
 			}
