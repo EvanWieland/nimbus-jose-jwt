@@ -24,14 +24,13 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.List;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
 import com.nimbusds.jose.jwk.RSAKey;
 import junit.framework.TestCase;
-
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 
 
 public class RSA_OAEP_256_Test extends TestCase {
@@ -169,6 +168,33 @@ public class RSA_OAEP_256_Test extends TestCase {
 		jwe.decrypt(new DirectDecrypter(cek));
 		assertEquals(JWEObject.State.DECRYPTED, jwe.getState());
 		assertEquals("Hello, world!", jwe.getPayload().toString());
+	}
+
+	public void testRoundTripWithCekSpecified_lengthDoesntMatchEnc()
+			throws Exception {
+		JWEAlgorithm algorithm = JWEAlgorithm.RSA_OAEP_256;
+		EncryptionMethod encryptionMethod = EncryptionMethod.A128CBC_HS256;
+
+		//rsa key
+		KeyPairGenerator rsaGen = KeyPairGenerator.getInstance("RSA");
+		rsaGen.initialize(2048);
+		KeyPair rsaKeyPair = rsaGen.generateKeyPair();
+		RSAPublicKey rsaPublicKey = (RSAPublicKey)rsaKeyPair.getPublic();
+
+		KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+		keyGenerator.init(128);
+		SecretKey cek = keyGenerator.generateKey();
+
+		//encrypt JWE with rsa public key + specified AES key
+		JWEObject jwe = new JWEObject(
+				new JWEHeader(algorithm, encryptionMethod),
+				new Payload("Hello, world!"));
+		
+		try {
+			jwe.encrypt(new RSAEncrypter(rsaPublicKey, cek));
+		} catch (KeyLengthException e) {
+			assertEquals("The Content Encryption Key (CEK) length for A128CBC-HS256 must be 256 bits", e.getMessage());
+		}
 	}
 	
 	
