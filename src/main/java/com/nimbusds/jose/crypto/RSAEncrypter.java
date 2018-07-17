@@ -166,8 +166,11 @@ public class RSAEncrypter extends RSACryptoProvider implements JWEEncrypter {
 		final EncryptionMethod enc = header.getEncryptionMethod();
 
 		// Generate and encrypt the CEK according to the enc method
-		SecretKey cek = contentEncryptionKey;
-		if (cek == null) {
+		final SecretKey cek;
+		if (contentEncryptionKey != null) {
+			// Use externally supplied CEK
+			cek = contentEncryptionKey;
+		} else {
 			// Generate and encrypt the CEK according to the enc method
 			cek = ContentCryptoProvider.generateCEK(enc, getJCAContext().getSecureRandom());
 		}
