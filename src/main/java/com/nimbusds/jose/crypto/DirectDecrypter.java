@@ -22,11 +22,10 @@ import java.util.Set;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import net.jcip.annotations.ThreadSafe;
-
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.util.Base64URL;
+import net.jcip.annotations.ThreadSafe;
 
 
 /**
@@ -57,12 +56,23 @@ import com.nimbusds.jose.util.Base64URL;
  *     <li>{@link com.nimbusds.jose.EncryptionMethod#A128CBC_HS256_DEPRECATED} (requires 256 bit key)
  *     <li>{@link com.nimbusds.jose.EncryptionMethod#A256CBC_HS512_DEPRECATED} (requires 512 bit key)
  * </ul>
+ *
+ * <p>Also supports a promiscuous mode to decrypt any JWE by passing the
+ * content encryption key (CEK) directly. The that mode the JWE algorithm
+ * checks for ("alg":"dir") and encrypted key not being present will be
+ * skipped.
  * 
  * @author Vladimir Dzhuvinov
- * @version 2015-06-29
+ * @version 2018-07-16
  */
 @ThreadSafe
 public class DirectDecrypter extends DirectCryptoProvider implements JWEDecrypter, CriticalHeaderParamsAware {
+	
+	
+	/**
+	 * If set skips the checks for alg "dir" and encrypted key not present.
+	 */
+	private final boolean promiscuousMode;
 
 
 	/**
@@ -85,7 +95,35 @@ public class DirectDecrypter extends DirectCryptoProvider implements JWEDecrypte
 	public DirectDecrypter(final SecretKey key)
 		throws KeyLengthException {
 
+		this(key, false);
+	}
+
+
+	/**
+	 * Creates a new direct decrypter with the option to set it in
+	 * promiscuous mode.
+	 *
+	 * @param key             The symmetric key. Its algorithm should be
+	 *                        "AES". Must be 128 bits (16 bytes), 192 bits
+	 *                        (24 bytes), 256 bits (32 bytes), 384 bits (48
+	 *                        bytes) or 512 bits (64 bytes) long. Must not
+	 *                        be {@code null}.
+	 * @param promiscuousMode If {@code true} set the decrypter in
+	 *                        promiscuous mode to permit decryption of any
+	 *                        JWE with the supplied symmetric key. The that
+	 *                        mode the JWE algorithm checks for
+	 *                        ("alg":"dir") and encrypted key not being
+	 *                        present will be skipped.
+	 *
+	 * @throws KeyLengthException If the symmetric key length is not
+	 *                            compatible.
+	 */
+	public DirectDecrypter(final SecretKey key, final boolean promiscuousMode)
+		throws KeyLengthException {
+
 		super(key);
+		
+		this.promiscuousMode = promiscuousMode;
 	}
 
 
@@ -103,7 +141,7 @@ public class DirectDecrypter extends DirectCryptoProvider implements JWEDecrypte
 	public DirectDecrypter(final byte[] keyBytes)
 		throws KeyLengthException {
 
-		this(new SecretKeySpec(keyBytes, "AES"));
+		this(new SecretKeySpec(keyBytes, "AES"), false);
 	}
 
 
@@ -126,7 +164,8 @@ public class DirectDecrypter extends DirectCryptoProvider implements JWEDecrypte
 
 
 	/**
-	 * Creates a new direct decrypter.
+	 * Creates a new direct decrypter with the option to set it in
+	 * promiscuous mode.
 	 *
 	 * @param key            The symmetric key. Its algorithm should be
 	 *                       "AES". Must be 128 bits (16 bytes), 192 bits
@@ -143,9 +182,39 @@ public class DirectDecrypter extends DirectCryptoProvider implements JWEDecrypte
 	public DirectDecrypter(final SecretKey key, final Set<String> defCritHeaders)
 		throws KeyLengthException {
 
-		super(key);
+		this(key, defCritHeaders, false);
+	}
 
+
+	/**
+	 * Creates a new direct decrypter.
+	 *
+	 * @param key            The symmetric key. Its algorithm should be
+	 *                       "AES". Must be 128 bits (16 bytes), 192 bits
+	 *                       (24 bytes), 256 bits (32 bytes), 384 bits (48
+	 *                       bytes) or 512 bits (64 bytes) long. Must not
+	 *                       be {@code null}.
+	 * @param defCritHeaders The names of the critical header parameters
+	 *                       that are deferred to the application for
+	 *                       processing, empty set or {@code null} if none.
+	 *@param promiscuousMode If {@code true} set the decrypter in
+	 *                       promiscuous mode to permit decryption of any
+	 *                       JWE with the supplied symmetric key. The that
+	 *                       mode the JWE algorithm checks for
+	 *                       ("alg":"dir") and encrypted key not being
+	 *                       present will be skipped.
+	 *
+	 * @throws KeyLengthException If the symmetric key length is not
+	 *                            compatible.
+	 */
+	public DirectDecrypter(final SecretKey key,
+			       final Set<String> defCritHeaders,
+			       final boolean promiscuousMode)
+		throws KeyLengthException {
+
+		super(key);
 		critPolicy.setDeferredCriticalHeaderParams(defCritHeaders);
+		this.promiscuousMode = promiscuousMode;
 	}
 
 
@@ -172,6 +241,19 @@ public class DirectDecrypter extends DirectCryptoProvider implements JWEDecrypte
 		throws JOSEException {
 
 		// Validate required JWE parts
+		if (! promiscuousMode) {
+			
+			JWEAlgorithm alg = header.getAlgorithm();
+			
+			if (!alg.equals(JWEAlgorithm.DIR)) {
+				throw new JOSEException(AlgorithmSupportMessage.unsupportedJWEAlgorithm(alg, SUPPORTED_ALGORITHMS));
+			}
+			
+			if (encryptedKey != null) {
+				throw new JOSEException("Unexpected present JWE encrypted key");
+			}
+		}
+		
 		if (iv == null) {
 			throw new JOSEException("Unexpected present JWE initialization vector (IV)");
 		}
@@ -185,4 +267,3 @@ public class DirectDecrypter extends DirectCryptoProvider implements JWEDecrypte
 		return ContentCryptoProvider.decrypt(header, null, iv, cipherText, authTag, getKey(), getJCAContext());
 	}
 }
-

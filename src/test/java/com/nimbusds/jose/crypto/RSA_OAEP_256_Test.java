@@ -165,7 +165,7 @@ public class RSA_OAEP_256_Test extends TestCase {
 
 		//decrypt JWE with CEK directly
 		jwe = JWEObject.parse(jweString);
-		jwe.decrypt(new DirectDecrypter(cek));
+		jwe.decrypt(new DirectDecrypter(cek, true));
 		assertEquals(JWEObject.State.DECRYPTED, jwe.getState());
 		assertEquals("Hello, world!", jwe.getPayload().toString());
 	}
