@@ -70,7 +70,8 @@ import com.nimbusds.jose.util.Base64URL;
  *
  * @author David Ortiz
  * @author Vladimir Dzhuvinov
- * @version 2015-06-08
+ * @author Jun Yu
+ * @version 2018-07-17
  */
 @ThreadSafe
 public class RSAEncrypter extends RSACryptoProvider implements JWEEncrypter {
@@ -81,11 +82,14 @@ public class RSAEncrypter extends RSACryptoProvider implements JWEEncrypter {
 	 */
 	private final RSAPublicKey publicKey;
 
+	
 	/**
-	 * The content encryption key. Must be an AES key
+	 * The externally supplied AES content encryption key (CEK) to use,
+	 * {@code null} to generate a CEK for each JWE.
 	 */
 	private final SecretKey contentEncryptionKey;
 
+	
 	/**
 	 * Creates a new RSA encrypter.
 	 *
@@ -112,23 +116,20 @@ public class RSAEncrypter extends RSACryptoProvider implements JWEEncrypter {
 
 
 	/**
-	 * Gets the public RSA key.
+	 * Creates a new RSA encrypter with an optionally specified content
+	 * encryption key (CEK).
 	 *
-	 * @return The public RSA key.
-	 */
-	public RSAPublicKey getPublicKey() {
-
-		return publicKey;
-	}
-
-
-	/**
-	 * Creates a new RSA encrypter with specified content encryption key.
-	 *
-	 * @param publicKey The public RSA key. Must not be {@code null}.
-	 * @param contentEncryptionKey The content encryption key. Its algorithm must be "AES"
+	 * @param publicKey            The public RSA key. Must not be
+	 *                             {@code null}.
+	 * @param contentEncryptionKey The content encryption key (CEK) to use.
+	 *                             If specified its algorithm must be "AES"
+	 *                             and its length must match the expected
+	 *                             for the JWE encryption method ("enc").
+	 *                             If {@code null} a CEK will be generated
+	 *                             for each JWE.
 	 */
 	public RSAEncrypter(final RSAPublicKey publicKey, final SecretKey contentEncryptionKey) {
+		
 		if (publicKey == null) {
 			throw new IllegalArgumentException("The public RSA key must not be null");
 		}
@@ -143,6 +144,17 @@ public class RSAEncrypter extends RSACryptoProvider implements JWEEncrypter {
 		} else {
 			this.contentEncryptionKey = null;
 		}
+	}
+	
+	
+	/**
+	 * Gets the public RSA key.
+	 *
+	 * @return The public RSA key.
+	 */
+	public RSAPublicKey getPublicKey() {
+		
+		return publicKey;
 	}
 
 
