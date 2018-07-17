@@ -840,3 +840,11 @@ version 5.11 (2018-06-07)
 version 5.12 (2018-06-13)
     * Adds X.509 certificate SHA-256 thumbprint (x5t#S256) matching to
       JWKMatcher.
+
+version 5.13 (2018-07-17)
+    * Updates the RSAEncrypter to enable the Content Encryption Key (CEK) to
+      be passed directly (iss #266).
+    * Adds an optional promiscuous mode to the DirectDecrypter to decrypt any
+      JWE by passing the content encryption key (CEK) directly. The that mode
+      the JWE algorithm checks for "alg":"dir" and encrypted key not being
+      present will be skipped.
