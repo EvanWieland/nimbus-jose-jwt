@@ -848,3 +848,8 @@ version 5.13 (2018-07-17)
       JWE by passing the content encryption key (CEK) directly. The that mode
       the JWE algorithm checks for "alg":"dir" and encrypted key not being
       present will be skipped.
+
+version 5.14 (2018-07-20)
+    * Adds new com.nimbusds.jose.jwk.gen package with RSA, EC and octet
+      sequence JWK generators (iss #268).
+
