@@ -32,9 +32,15 @@ import com.nimbusds.jose.jwk.RSAKey;
  * RSA JSON Web Key (JWK) generator.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-07-15
+ * @version 2018-07-20
  */
 public class RSAKeyGenerator extends JWKGenerator<RSAKey> {
+	
+	
+	/**
+	 * The minimum size of generated keys.
+	 */
+	public static final int MIN_KEY_SIZE_BITS = 2048;
 	
 	
 	/**
@@ -46,9 +52,29 @@ public class RSAKeyGenerator extends JWKGenerator<RSAKey> {
 	/**
 	 * Creates a new RSA JWK generator.
 	 *
-	 * @param size The RSA key size, in bits.
+	 * @param size The RSA key size, in bits. Must be at least 2048 bits
+	 *             long for sufficient strength.
 	 */
-	public RSAKeyGenerator(int size) {
+	public RSAKeyGenerator(final int size) {
+		
+		this(size, false);
+	}
+	
+	
+	/**
+	 * Creates a new RSA JWK generator.
+	 *
+	 * @param size          The RSA key size, in bits. Must be at least
+	 *                      2048 bits long for sufficient strength.
+	 * @param allowWeakKeys {@code true} to allow generation of keys
+	 *                      shorter than 2048 bits.
+	 */
+	public RSAKeyGenerator(final int size, final boolean allowWeakKeys) {
+		
+		if (! allowWeakKeys && size < MIN_KEY_SIZE_BITS) {
+			throw new IllegalArgumentException("The key size must be at least " + MIN_KEY_SIZE_BITS + " bits");
+		}
+		
 		this.size = size;
 	}
 	

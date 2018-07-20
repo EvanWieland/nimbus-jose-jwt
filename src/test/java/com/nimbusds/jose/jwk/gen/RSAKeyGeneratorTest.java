@@ -32,6 +32,28 @@ import junit.framework.TestCase;
 public class RSAKeyGeneratorTest extends TestCase {
 	
 	
+	public void testMinKeySize() {
+		
+		assertEquals(2048, RSAKeyGenerator.MIN_KEY_SIZE_BITS);
+		
+		try {
+			new RSAKeyGenerator(RSAKeyGenerator.MIN_KEY_SIZE_BITS - 1);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertEquals("The key size must be at least 2048 bits", e.getMessage());
+		}
+	}
+	
+	
+	public void testAllowWeakKeys()
+		throws JOSEException {
+		
+		RSAKey rsaJWK = new RSAKeyGenerator(1024, true).generate();
+		
+		assertEquals(1024, rsaJWK.size());
+	}
+	
+	
 	public void testGenMinimal()
 		throws JOSEException  {
 		
