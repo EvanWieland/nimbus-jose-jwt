@@ -63,6 +63,9 @@ public class OctetSequenceKeyGenerator extends JWKGenerator<OctetSequenceKey> {
 		if (size < MIN_KEY_SIZE_BITS) {
 			throw new IllegalArgumentException("The key size must be at least " + MIN_KEY_SIZE_BITS + " bits");
 		}
+		if (size % 8 != 0) {
+			throw new IllegalArgumentException("The key size in bits must be divisible by 8");
+		}
 		this.size = size;
 	}
 	

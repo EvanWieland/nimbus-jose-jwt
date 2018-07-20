@@ -18,6 +18,7 @@
 package com.nimbusds.jose.jwk.gen;
 
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import com.nimbusds.jose.JOSEException;
@@ -42,6 +43,20 @@ public class OctetSequenceKeyGeneratorTest extends TestCase {
 			fail();
 		} catch (IllegalArgumentException e) {
 			assertEquals("The key size must be at least 112 bits", e.getMessage());
+		}
+	}
+	
+	
+	public void testMod8() {
+		
+		for (int n: Arrays.asList(1, 2, 3, 4, 5, 6, 7)) {
+			
+			try {
+				new OctetSequenceKeyGenerator(112 + n);
+				fail();
+			} catch (IllegalArgumentException e) {
+				assertEquals("The key size in bits must be divisible by 8", e.getMessage());
+			}
 		}
 	}
 	
