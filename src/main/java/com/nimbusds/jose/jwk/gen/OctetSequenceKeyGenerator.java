@@ -29,9 +29,15 @@ import com.nimbusds.jose.util.Base64URL;
  * Octet sequence JSON Web Key (JWK) generator.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-07-15
+ * @version 2018-07-20
  */
 public class OctetSequenceKeyGenerator extends JWKGenerator<OctetSequenceKey> {
+	
+	
+	/**
+	 * The minimum size of generated keys.
+	 */
+	public static final int MIN_KEY_SIZE_BITS = 112;
 	
 	
 	/**
@@ -50,9 +56,13 @@ public class OctetSequenceKeyGenerator extends JWKGenerator<OctetSequenceKey> {
 	/**
 	 * Creates a new octet sequence JWK generator.
 	 *
-	 * @param size The key size, in bits.
+	 * @param size The key size, in bits. Must be at least 112 bits long
+	 *             for sufficient entropy.
 	 */
 	public OctetSequenceKeyGenerator(int size) {
+		if (size < MIN_KEY_SIZE_BITS) {
+			throw new IllegalArgumentException("The key size must be at least " + MIN_KEY_SIZE_BITS + " bits");
+		}
 		this.size = size;
 	}
 	

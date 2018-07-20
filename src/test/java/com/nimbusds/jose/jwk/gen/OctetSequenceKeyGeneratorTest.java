@@ -33,6 +33,19 @@ import junit.framework.TestCase;
 public class OctetSequenceKeyGeneratorTest extends TestCase {
 	
 	
+	public void testMinKeySize() {
+		
+		assertEquals(112, OctetSequenceKeyGenerator.MIN_KEY_SIZE_BITS);
+		
+		try {
+			new OctetSequenceKeyGenerator(OctetSequenceKeyGenerator.MIN_KEY_SIZE_BITS - 1);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertEquals("The key size must be at least 112 bits", e.getMessage());
+		}
+	}
+	
+	
 	public void testGenMinimal()
 		throws JOSEException  {
 		
