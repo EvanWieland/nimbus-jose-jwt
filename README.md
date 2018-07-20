@@ -57,6 +57,7 @@ The library can handle all standard JOSE algorithms:
   Encryption (JOSE)
 * RFC 7165 - Use Cases and Requirements for JSON Object Signing and Encryption
   (JOSE)
+* RFC 7638 JSON Web Key (JWK) Thumbprint
 * RFC 8037 - CFRG Elliptic Curve Diffie-Hellman (ECDH) and Signatures in JSON 
   Object Signing and Encryption (JOSE)
 
