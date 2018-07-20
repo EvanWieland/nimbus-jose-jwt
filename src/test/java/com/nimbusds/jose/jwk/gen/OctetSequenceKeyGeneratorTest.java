@@ -19,6 +19,8 @@ package com.nimbusds.jose.jwk.gen;
 
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEAlgorithm;
@@ -27,6 +29,7 @@ import com.nimbusds.jose.jwk.KeyOperation;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.jwk.ThumbprintUtils;
+import com.nimbusds.jose.util.Base64URL;
 import junit.framework.TestCase;
 
 
@@ -86,5 +89,21 @@ public class OctetSequenceKeyGeneratorTest extends TestCase {
 		assertEquals(JWEAlgorithm.DIR, octJWK.getAlgorithm());
 		assertEquals(ThumbprintUtils.compute(octJWK).toString(), octJWK.getKeyID());
 		assertNull(octJWK.getKeyStore());
+	}
+
+
+	// The keys that are generated should all be distinct
+	public void testDistinctness()
+		throws JOSEException  {
+
+		Set<Base64URL> keys = new HashSet<>();
+
+		OctetSequenceKeyGenerator gen = new OctetSequenceKeyGenerator(112);
+
+		for (int i=0; i<1000; i++) {
+
+			OctetSequenceKey k = gen.generate();
+			assertTrue(keys.add(k.getKeyValue()));
+		}
 	}
 }
