@@ -22,23 +22,27 @@ import java.security.*;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECParameterSpec;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import javax.crypto.SecretKey;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
-import com.nimbusds.jose.util.Base64URL;
 import net.jcip.annotations.ThreadSafe;
 
 
 /**
  * Elliptic Curve Diffie-Hellman encrypter of
- * {@link com.nimbusds.jose.JWEObject JWE objects}. Expects a public EC key
- * (with a P-256, P-384 or P-521 curve).
+ * {@link com.nimbusds.jose.JWEObject JWE objects} for curves using EC JWK keys.
+ * Expects a public EC key (with a P-256, P-384 or P-521 curve).
  *
  * <p>See RFC 7518
  * <a href="https://tools.ietf.org/html/rfc7518#section-4.6">section 4.6</a>
  * for more information.
+ *
+ * <p>For Curve25519/X25519, see {@link X25519Encrypter} instead.
  *
  * <p>This class is thread-safe.
  *
@@ -72,11 +76,27 @@ import net.jcip.annotations.ThreadSafe;
  *     <li>{@link com.nimbusds.jose.EncryptionMethod#A256CBC_HS512_DEPRECATED}
  * </ul>
  *
+ * @author Tim McLean
  * @author Vladimir Dzhuvinov
- * @version 2015-06-08
+ * @version 2018-07-12
  */
 @ThreadSafe
 public class ECDHEncrypter extends ECDHCryptoProvider implements JWEEncrypter {
+
+
+	/**
+	 * The supported EC JWK curves by the ECDH crypto provider class.
+	 */
+	public static final Set<Curve> SUPPORTED_ELLIPTIC_CURVES;
+
+
+	static {
+		Set<Curve> curves = new LinkedHashSet<>();
+		curves.add(Curve.P_256);
+		curves.add(Curve.P_384);
+		curves.add(Curve.P_521);
+		SUPPORTED_ELLIPTIC_CURVES = Collections.unmodifiableSet(curves);
+	}
 
 
 	/**
@@ -129,17 +149,25 @@ public class ECDHEncrypter extends ECDHCryptoProvider implements JWEEncrypter {
 
 
 	@Override
+	public Set<Curve> supportedEllipticCurves() {
+
+		return SUPPORTED_ELLIPTIC_CURVES;
+	}
+
+
+	@Override
 	public JWECryptoParts encrypt(final JWEHeader header, final byte[] clearText)
 		throws JOSEException {
-
-		final JWEAlgorithm alg = header.getAlgorithm();
-		final ECDH.AlgorithmMode algMode = ECDH.resolveAlgorithmMode(alg);
-		final EncryptionMethod enc = header.getEncryptionMethod();
 
 		// Generate ephemeral EC key pair on the same curve as the consumer's public key
 		KeyPair ephemeralKeyPair = generateEphemeralKeyPair(publicKey.getParams());
 		ECPublicKey ephemeralPublicKey = (ECPublicKey)ephemeralKeyPair.getPublic();
 		ECPrivateKey ephemeralPrivateKey = (ECPrivateKey)ephemeralKeyPair.getPrivate();
+
+		// Add the ephemeral public EC key to the header
+		JWEHeader updatedHeader = new JWEHeader.Builder(header).
+			ephemeralPublicKey(new ECKey.Builder(getCurve(), ephemeralPublicKey).build()).
+			build();
 
 		// Derive 'Z'
 		SecretKey Z = ECDH.deriveSharedSecret(
@@ -147,29 +175,7 @@ public class ECDHEncrypter extends ECDHCryptoProvider implements JWEEncrypter {
 			ephemeralPrivateKey,
 			getJCAContext().getKeyEncryptionProvider());
 
-		// Derive shared key via concat KDF
-		getConcatKDF().getJCAContext().setProvider(getJCAContext().getMACProvider()); // update before concat
-		SecretKey sharedKey = ECDH.deriveSharedKey(header, Z, getConcatKDF());
-
-		final SecretKey cek;
-		final Base64URL encryptedKey; // The CEK encrypted (second JWE part)
-
-		if (algMode.equals(ECDH.AlgorithmMode.DIRECT)) {
-			cek = sharedKey;
-			encryptedKey = null;
-		} else if (algMode.equals(ECDH.AlgorithmMode.KW)) {
-			cek = ContentCryptoProvider.generateCEK(enc, getJCAContext().getSecureRandom());
-			encryptedKey = Base64URL.encode(AESKW.wrapCEK(cek, sharedKey, getJCAContext().getKeyEncryptionProvider()));
-		} else {
-			throw new JOSEException("Unexpected JWE ECDH algorithm mode: " + algMode);
-		}
-
-		// Add the ephemeral public EC key to the header
-		JWEHeader updatedHeader = new JWEHeader.Builder(header).
-			ephemeralPublicKey(new ECKey.Builder(getCurve(), ephemeralPublicKey).build()).
-			build();
-
-		return ContentCryptoProvider.encrypt(updatedHeader, clearText, cek, encryptedKey, getJCAContext());
+		return encryptWithZ(updatedHeader, Z, clearText);
 	}
 
 

@@ -26,7 +26,6 @@ import net.jcip.annotations.Immutable;
 
 import net.minidev.json.JSONObject;
 
-import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.Base64URL;
@@ -214,7 +213,7 @@ public final class JWEHeader extends CommonSEHeader {
 		/**
 		 * The ephemeral public key.
 		 */
-		private ECKey epk;
+		private JWK epk;
 
 
 		/**
@@ -494,7 +493,7 @@ public final class JWEHeader extends CommonSEHeader {
 		 *
 		 * @return This builder.
 		 */
-		public Builder ephemeralPublicKey(final ECKey epk) {
+		public Builder ephemeralPublicKey(final JWK epk) {
 
 			this.epk = epk;
 			return this;
@@ -698,7 +697,7 @@ public final class JWEHeader extends CommonSEHeader {
 	/**
 	 * The ephemeral public key ({@code epk}) parameter.
 	 */
-	private final ECKey epk;
+	private final JWK epk;
 
 
 	/**
@@ -831,7 +830,7 @@ public final class JWEHeader extends CommonSEHeader {
 			 final Base64URL x5t256,
 			 final List<Base64> x5c,
 			 final String kid,
-			 final ECKey epk,
+			 final JWK epk,
 			 final CompressionAlgorithm zip,
 			 final Base64URL apu,
 			 final Base64URL apv,
@@ -850,6 +849,10 @@ public final class JWEHeader extends CommonSEHeader {
 
 		if (enc == null) {
 			throw new IllegalArgumentException("The encryption method \"enc\" parameter must not be null");
+		}
+
+		if (epk != null && epk.isPrivate()) {
+			throw new IllegalArgumentException("Ephemeral public key should not be a private key");
 		}
 
 		this.enc = enc;
@@ -938,7 +941,7 @@ public final class JWEHeader extends CommonSEHeader {
 	 * @return The Ephemeral Public Key parameter, {@code null} if not
 	 *         specified.
 	 */
-	public ECKey getEphemeralPublicKey() {
+	public JWK getEphemeralPublicKey() {
 
 		return epk;
 	}
@@ -1207,7 +1210,7 @@ public final class JWEHeader extends CommonSEHeader {
 			} else if("kid".equals(name)) {
 				header = header.keyID(JSONObjectUtils.getString(jsonObject, name));
 			} else if("epk".equals(name)) {
-				header = header.ephemeralPublicKey(ECKey.parse(JSONObjectUtils.getJSONObject(jsonObject, name)));
+				header = header.ephemeralPublicKey(JWK.parse(JSONObjectUtils.getJSONObject(jsonObject, name)));
 			} else if("zip".equals(name)) {
 				header = header.compressionAlgorithm(new CompressionAlgorithm(JSONObjectUtils.getString(jsonObject, name)));
 			} else if("apu".equals(name)) {

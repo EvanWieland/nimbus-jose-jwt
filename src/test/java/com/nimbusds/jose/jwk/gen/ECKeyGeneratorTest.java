@@ -19,10 +19,13 @@ package com.nimbusds.jose.jwk.gen;
 
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.*;
+import com.nimbusds.jose.util.Base64URL;
 import junit.framework.TestCase;
 
 
@@ -42,6 +45,44 @@ public class ECKeyGeneratorTest extends TestCase {
 		assertNull(ecJWK.getAlgorithm());
 		assertNull(ecJWK.getKeyID());
 		assertNull(ecJWK.getKeyStore());
+	}
+
+
+	// The x, y, d values that are generated should all be distinct
+	public void testDistinctness()
+		throws JOSEException  {
+
+		Set<Base64URL> values = new HashSet<>();
+
+		ECKeyGenerator gen = new ECKeyGenerator(Curve.P_256);
+
+		for (int i=0; i<100; i++) {
+
+			ECKey k = gen.generate();
+			assertTrue(values.add(k.getD()));
+			assertTrue(values.add(k.getX()));
+			assertTrue(values.add(k.getY()));
+		}
+
+		gen = new ECKeyGenerator(Curve.P_384);
+
+		for (int i=0; i<100; i++) {
+
+			ECKey k = gen.generate();
+			assertTrue(values.add(k.getD()));
+			assertTrue(values.add(k.getX()));
+			assertTrue(values.add(k.getY()));
+		}
+
+		gen = new ECKeyGenerator(Curve.P_521);
+
+		for (int i=0; i<100; i++) {
+
+			ECKey k = gen.generate();
+			assertTrue(values.add(k.getD()));
+			assertTrue(values.add(k.getX()));
+			assertTrue(values.add(k.getY()));
+		}
 	}
 	
 	
@@ -82,5 +123,28 @@ public class ECKeyGeneratorTest extends TestCase {
 		assertEquals(JWSAlgorithm.ES256, ecJWK.getAlgorithm());
 		assertEquals(ThumbprintUtils.compute(ecJWK).toString(), ecJWK.getKeyID());
 		assertNull(ecJWK.getKeyStore());
+	}
+
+
+	// Ed25519 and X25519 are not allowed in EC keys.
+	// See OctetKeyPair instead.
+	public void testGenInvalidCurves()
+		throws JOSEException  {
+
+		try {
+			ECKey ecJWK = new ECKeyGenerator(Curve.Ed25519).generate();
+			fail();
+
+		} catch (Exception e) {
+			// Passed
+		}
+
+		try {
+			ECKey ecJWK = new ECKeyGenerator(Curve.X25519).generate();
+			fail();
+
+		} catch (Exception e) {
+			// Passed
+		}
 	}
 }

@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2018, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -24,8 +24,10 @@ import javax.crypto.SecretKey;
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.OctetKeyPair;
 import com.nimbusds.jose.util.Base64URL;
 import junit.framework.TestCase;
+import org.junit.Assert;
 
 
 /**
@@ -89,6 +91,32 @@ public class ECDHTest extends TestCase{
 		SecretKey sharedSecret = ECDH.deriveSharedSecret(ecJWK.toECPublicKey(), ecJWK.toECPrivateKey(), null);
 
 		assertEquals(528, sharedSecret.getEncoded().length * 8);
+	}
+
+
+	/**
+	 * Test X25519 shared secret derivation using example computation from
+	 * RFC8037.
+	 *
+	 * See https://tools.ietf.org/html/rfc8037#appendix-A.6
+	 */
+	public void testRfc8037Example()
+		throws Exception {
+
+		OctetKeyPair receiverKey = OctetKeyPair.parse(
+			"{\"kty\":\"OKP\",\"crv\":\"X25519\",\"kid\":\"Bob\"," +
+			"\"x\":\"3p7bfXt9wbTTW2HC7OQ1Nz-DQ8hbeGdNrfx-FG-IK08\"}"
+		);
+		OctetKeyPair ephemeralKey = OctetKeyPair.parse(
+			"{\"kty\":\"OKP\",\"crv\":\"X25519\"," +
+			"\"x\":\"hSDwCYkwp1R0i33ctD73Wg2_Og0mOBr066SpjqqbTmo\"," +
+			"\"d\":\"dwdtCnMYpX08FsFyUbJmRd9ML4frwJkqsXf7pR25LCo\"}"
+		);
+
+		SecretKey sharedSecret = ECDH.deriveSharedSecret(receiverKey, ephemeralKey);
+
+		byte[] expected = new Base64URL("Sl2dW6TOLeFyjjv0gDUPJeB-IclH0Z4zdvCbPB4WF0I").decode();
+		Assert.assertArrayEquals(sharedSecret.getEncoded(), expected);
 	}
 
 

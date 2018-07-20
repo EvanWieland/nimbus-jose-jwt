@@ -20,6 +20,8 @@ package com.nimbusds.jose.crypto;
 
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.crypto.SecretKey;
 
@@ -32,12 +34,14 @@ import com.nimbusds.jose.util.Base64URL;
 
 /**
  * Elliptic Curve Diffie-Hellman decrypter of
- * {@link com.nimbusds.jose.JWEObject JWE objects}. Expects a private EC key
- * (with a P-256, P-384 or P-521 curve).
+ * {@link com.nimbusds.jose.JWEObject JWE objects} for curves using EC JWK keys.
+ * Expects a private EC key (with a P-256, P-384 or P-521 curve).
  *
  * <p>See RFC 7518
  * <a href="https://tools.ietf.org/html/rfc7518#section-4.6">section 4.6</a>
  * for more information.
+ *
+ * <p>For Curve25519/X25519, see {@link X25519Decrypter} instead.
  *
  * <p>This class is thread-safe.
  *
@@ -75,6 +79,21 @@ import com.nimbusds.jose.util.Base64URL;
  * @version 2017-04-13
  */
 public class ECDHDecrypter extends ECDHCryptoProvider implements JWEDecrypter, CriticalHeaderParamsAware {
+
+
+	/**
+	 * The supported EC JWK curves by the ECDH crypto provider class.
+	 */
+	public static final Set<Curve> SUPPORTED_ELLIPTIC_CURVES;
+
+
+	static {
+		Set<Curve> curves = new LinkedHashSet<>();
+		curves.add(Curve.P_256);
+		curves.add(Curve.P_384);
+		curves.add(Curve.P_521);
+		SUPPORTED_ELLIPTIC_CURVES = Collections.unmodifiableSet(curves);
+	}
 
 
 	/**
@@ -157,6 +176,13 @@ public class ECDHDecrypter extends ECDHCryptoProvider implements JWEDecrypter, C
 
 
 	@Override
+	public Set<Curve> supportedEllipticCurves() {
+
+		return SUPPORTED_ELLIPTIC_CURVES;
+	}
+
+
+	@Override
 	public Set<String> getProcessedCriticalHeaderParams() {
 
 		return critPolicy.getProcessedCriticalHeaderParams();
@@ -178,13 +204,10 @@ public class ECDHDecrypter extends ECDHCryptoProvider implements JWEDecrypter, C
 			      final Base64URL authTag)
 		throws JOSEException {
 
-		final JWEAlgorithm alg = header.getAlgorithm();
-		final ECDH.AlgorithmMode algMode = ECDH.resolveAlgorithmMode(alg);
-
 		critPolicy.ensureHeaderPasses(header);
 
 		// Get ephemeral EC key
-		ECKey ephemeralKey = header.getEphemeralPublicKey();
+		ECKey ephemeralKey = (ECKey) header.getEphemeralPublicKey();
 
 		if (ephemeralKey == null) {
 			throw new JOSEException("Missing ephemeral public EC key \"epk\" JWE header parameter");
@@ -203,23 +226,6 @@ public class ECDHDecrypter extends ECDHCryptoProvider implements JWEDecrypter, C
 			privateKey,
 			getJCAContext().getKeyEncryptionProvider());
 
-		// Derive shared key via concat KDF
-		getConcatKDF().getJCAContext().setProvider(getJCAContext().getMACProvider()); // update before concat
-		SecretKey sharedKey = ECDH.deriveSharedKey(header, Z, getConcatKDF());
-
-		final SecretKey cek;
-
-		if (algMode.equals(ECDH.AlgorithmMode.DIRECT)) {
-			cek = sharedKey;
-		} else if (algMode.equals(ECDH.AlgorithmMode.KW)) {
-			if (encryptedKey == null) {
-				throw new JOSEException("Missing JWE encrypted key");
-			}
-			cek = AESKW.unwrapCEK(sharedKey, encryptedKey.decode(), getJCAContext().getKeyEncryptionProvider());
-		} else {
-			throw new JOSEException("Unexpected JWE ECDH algorithm mode: " + algMode);
-		}
-
-		return ContentCryptoProvider.decrypt(header, encryptedKey, iv, cipherText, authTag, cek, getJCAContext());
+		return decryptWithZ(header, Z, encryptedKey, iv, cipherText, authTag);
 	}
 }

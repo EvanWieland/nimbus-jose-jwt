@@ -19,6 +19,8 @@ package com.nimbusds.jose.jwk.gen;
 
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -26,6 +28,7 @@ import com.nimbusds.jose.jwk.KeyOperation;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.ThumbprintUtils;
+import com.nimbusds.jose.util.Base64URL;
 import junit.framework.TestCase;
 
 
@@ -107,5 +110,27 @@ public class RSAKeyGeneratorTest extends TestCase {
 		assertEquals(JWSAlgorithm.RS256, rsaJWK.getAlgorithm());
 		assertEquals(ThumbprintUtils.compute(rsaJWK).toString(), rsaJWK.getKeyID());
 		assertNull(rsaJWK.getKeyStore());
+	}
+
+
+	// The n, d, p, q, dp, dq, qi values that are generated should all be distinct
+	public void testDistinctness()
+		throws JOSEException  {
+
+		Set<Base64URL> values = new HashSet<>();
+
+		RSAKeyGenerator gen = new RSAKeyGenerator(2048);
+
+		for (int i=0; i<3; i++) {
+
+			RSAKey k = gen.generate();
+			assertTrue(values.add(k.getModulus()));
+			assertTrue(values.add(k.getPrivateExponent()));
+			assertTrue(values.add(k.getFirstPrimeFactor()));
+			assertTrue(values.add(k.getSecondPrimeFactor()));
+			assertTrue(values.add(k.getFirstFactorCRTExponent()));
+			assertTrue(values.add(k.getSecondFactorCRTExponent()));
+			assertTrue(values.add(k.getFirstCRTCoefficient()));
+		}
 	}
 }

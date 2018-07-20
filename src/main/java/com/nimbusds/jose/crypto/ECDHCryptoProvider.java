@@ -21,11 +21,15 @@ package com.nimbusds.jose.crypto;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import javax.crypto.SecretKey;
 
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEAlgorithm;
+import com.nimbusds.jose.JWEHeader;
+import com.nimbusds.jose.JWECryptoParts;
 import com.nimbusds.jose.jwk.Curve;
+import com.nimbusds.jose.util.Base64URL;
 
 
 /**
@@ -47,6 +51,7 @@ import com.nimbusds.jose.jwk.Curve;
  *     <li>{@link com.nimbusds.jose.jwk.Curve#P_256}
  *     <li>{@link com.nimbusds.jose.jwk.Curve#P_384}
  *     <li>{@link com.nimbusds.jose.jwk.Curve#P_521}
+ *     <li>{@link com.nimbusds.jose.jwk.Curve#X25519}
  * </ul>
  *
  * <p>Supports the following content encryption algorithms:
@@ -62,8 +67,9 @@ import com.nimbusds.jose.jwk.Curve;
  *     <li>{@link com.nimbusds.jose.EncryptionMethod#A256CBC_HS512_DEPRECATED}
  * </ul>
  *
+ * @author Tim McLean
  * @author Vladimir Dzhuvinov
- * @version 2015-05-26
+ * @version 2018-07-12
  */
 abstract class ECDHCryptoProvider extends BaseJWEProvider {
 
@@ -80,12 +86,6 @@ abstract class ECDHCryptoProvider extends BaseJWEProvider {
 	public static final Set<EncryptionMethod> SUPPORTED_ENCRYPTION_METHODS = ContentCryptoProvider.SUPPORTED_ENCRYPTION_METHODS;
 
 
-	/**
-	 * The supported EC JWK curves by the ECDH crypto provider class.
-	 */
-	public static final Set<Curve> SUPPORTED_ELLIPTIC_CURVES;
-
-
 	static {
 		Set<JWEAlgorithm> algs = new LinkedHashSet<>();
 		algs.add(JWEAlgorithm.ECDH_ES);
@@ -93,12 +93,6 @@ abstract class ECDHCryptoProvider extends BaseJWEProvider {
 		algs.add(JWEAlgorithm.ECDH_ES_A192KW);
 		algs.add(JWEAlgorithm.ECDH_ES_A256KW);
 		SUPPORTED_ALGORITHMS = Collections.unmodifiableSet(algs);
-
-		Set<Curve> curves = new LinkedHashSet<>();
-		curves.add(Curve.P_256);
-		curves.add(Curve.P_384);
-		curves.add(Curve.P_521);
-		SUPPORTED_ELLIPTIC_CURVES = Collections.unmodifiableSet(curves);
 	}
 
 
@@ -130,9 +124,9 @@ abstract class ECDHCryptoProvider extends BaseJWEProvider {
 
 		Curve definedCurve = curve != null ? curve : new Curve("unknown");
 
-		if (! SUPPORTED_ELLIPTIC_CURVES.contains(curve)) {
+		if (! supportedEllipticCurves().contains(curve)) {
 			throw new JOSEException(AlgorithmSupportMessage.unsupportedEllipticCurve(
-				definedCurve, SUPPORTED_ELLIPTIC_CURVES));
+				definedCurve, supportedEllipticCurves()));
 		}
 
 		this.curve = curve;
@@ -158,10 +152,7 @@ abstract class ECDHCryptoProvider extends BaseJWEProvider {
 	 *
 	 * @return The supported elliptic curves.
 	 */
-	public Set<Curve> supportedEllipticCurves() {
-
-		return SUPPORTED_ELLIPTIC_CURVES;
-	}
+	public abstract Set<Curve> supportedEllipticCurves();
 
 
 	/**
@@ -173,4 +164,72 @@ abstract class ECDHCryptoProvider extends BaseJWEProvider {
 
 		return curve;
 	}
+
+
+	/**
+	 * Encrypts the specified plaintext using the specified shared secret ("Z").
+	 */
+	protected JWECryptoParts encryptWithZ(final JWEHeader header, final SecretKey Z, final byte[] clearText)
+		throws JOSEException {
+
+		final JWEAlgorithm alg = header.getAlgorithm();
+		final ECDH.AlgorithmMode algMode = ECDH.resolveAlgorithmMode(alg);
+		final EncryptionMethod enc = header.getEncryptionMethod();
+
+		// Derive shared key via concat KDF
+		getConcatKDF().getJCAContext().setProvider(getJCAContext().getMACProvider()); // update before concat
+		SecretKey sharedKey = ECDH.deriveSharedKey(header, Z, getConcatKDF());
+
+		final SecretKey cek;
+		final Base64URL encryptedKey; // The CEK encrypted (second JWE part)
+
+		if (algMode.equals(ECDH.AlgorithmMode.DIRECT)) {
+			cek = sharedKey;
+			encryptedKey = null;
+		} else if (algMode.equals(ECDH.AlgorithmMode.KW)) {
+			cek = ContentCryptoProvider.generateCEK(enc, getJCAContext().getSecureRandom());
+			encryptedKey = Base64URL.encode(AESKW.wrapCEK(cek, sharedKey, getJCAContext().getKeyEncryptionProvider()));
+		} else {
+			throw new JOSEException("Unexpected JWE ECDH algorithm mode: " + algMode);
+		}
+
+		return ContentCryptoProvider.encrypt(header, clearText, cek, encryptedKey, getJCAContext());
+	}
+
+
+	/**
+	 * Decrypts the encrypted JWE parts using the specified shared secret ("Z").
+	 */
+	protected byte[] decryptWithZ(final JWEHeader header,
+				      final SecretKey Z,
+				      final Base64URL encryptedKey,
+				      final Base64URL iv,
+				      final Base64URL cipherText,
+				      final Base64URL authTag)
+		throws JOSEException {
+
+		final JWEAlgorithm alg = header.getAlgorithm();
+		final ECDH.AlgorithmMode algMode = ECDH.resolveAlgorithmMode(alg);
+
+		// Derive shared key via concat KDF
+		getConcatKDF().getJCAContext().setProvider(getJCAContext().getMACProvider()); // update before concat
+		SecretKey sharedKey = ECDH.deriveSharedKey(header, Z, getConcatKDF());
+
+		final SecretKey cek;
+
+		if (algMode.equals(ECDH.AlgorithmMode.DIRECT)) {
+			cek = sharedKey;
+		} else if (algMode.equals(ECDH.AlgorithmMode.KW)) {
+			if (encryptedKey == null) {
+				throw new JOSEException("Missing JWE encrypted key");
+			}
+			cek = AESKW.unwrapCEK(sharedKey, encryptedKey.decode(), getJCAContext().getKeyEncryptionProvider());
+		} else {
+			throw new JOSEException("Unexpected JWE ECDH algorithm mode: " + algMode);
+		}
+
+		return ContentCryptoProvider.decrypt(header, encryptedKey, iv, cipherText, authTag, cek, getJCAContext());
+	}
+
+
 }

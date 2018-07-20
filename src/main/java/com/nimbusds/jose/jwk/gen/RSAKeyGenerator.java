@@ -74,7 +74,6 @@ public class RSAKeyGenerator extends JWKGenerator<RSAKey> {
 		if (! allowWeakKeys && size < MIN_KEY_SIZE_BITS) {
 			throw new IllegalArgumentException("The key size must be at least " + MIN_KEY_SIZE_BITS + " bits");
 		}
-		
 		this.size = size;
 	}
 	

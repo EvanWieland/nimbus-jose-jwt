@@ -644,7 +644,7 @@ public final class RSAKey extends JWK implements AsymmetricJWK {
 
 		/**
 		 * Sets the first Chinese Remainder Theorem (CRT) coefficient
-		 * ({@code qi})} of the private RSA key.
+		 * ({@code qi}) of the private RSA key.
 		 *
 		 * @param qi The RSA first CRT coefficient. It is represented 
 		 *           as the Base64URL encoding of the value's big 

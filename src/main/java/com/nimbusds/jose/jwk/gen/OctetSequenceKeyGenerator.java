@@ -59,7 +59,7 @@ public class OctetSequenceKeyGenerator extends JWKGenerator<OctetSequenceKey> {
 	 * @param size The key size, in bits. Must be at least 112 bits long
 	 *             for sufficient entropy.
 	 */
-	public OctetSequenceKeyGenerator(int size) {
+	public OctetSequenceKeyGenerator(final int size) {
 		if (size < MIN_KEY_SIZE_BITS) {
 			throw new IllegalArgumentException("The key size must be at least " + MIN_KEY_SIZE_BITS + " bits");
 		}

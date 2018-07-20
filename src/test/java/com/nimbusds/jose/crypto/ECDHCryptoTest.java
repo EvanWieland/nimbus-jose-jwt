@@ -83,7 +83,7 @@ public class ECDHCryptoTest extends TestCase {
 		encrypter.getJCAContext().setContentEncryptionProvider(BouncyCastleProviderSingleton.getInstance());
 		jweObject.encrypt(encrypter);
 
-		ECKey epk = jweObject.getHeader().getEphemeralPublicKey();
+		ECKey epk = (ECKey) jweObject.getHeader().getEphemeralPublicKey();
 		assertEquals(Curve.P_256, epk.getCurve());
 		assertNotNull(epk.getX());
 		assertNotNull(epk.getY());
@@ -119,7 +119,7 @@ public class ECDHCryptoTest extends TestCase {
 		encrypter.getJCAContext().setContentEncryptionProvider(BouncyCastleProviderSingleton.getInstance());
 		jweObject.encrypt(encrypter);
 
-		ECKey epk = jweObject.getHeader().getEphemeralPublicKey();
+		ECKey epk = (ECKey) jweObject.getHeader().getEphemeralPublicKey();
 		assertEquals(Curve.P_256, epk.getCurve());
 		assertNotNull(epk.getX());
 		assertNotNull(epk.getY());
@@ -155,7 +155,7 @@ public class ECDHCryptoTest extends TestCase {
 		encrypter.getJCAContext().setContentEncryptionProvider(BouncyCastleProviderSingleton.getInstance());
 		jweObject.encrypt(encrypter);
 
-		ECKey epk = jweObject.getHeader().getEphemeralPublicKey();
+		ECKey epk = (ECKey) jweObject.getHeader().getEphemeralPublicKey();
 		assertEquals(Curve.P_384, epk.getCurve());
 		assertNotNull(epk.getX());
 		assertNotNull(epk.getY());
@@ -191,7 +191,7 @@ public class ECDHCryptoTest extends TestCase {
 		encrypter.getJCAContext().setContentEncryptionProvider(BouncyCastleProviderSingleton.getInstance());
 		jweObject.encrypt(encrypter);
 
-		ECKey epk = jweObject.getHeader().getEphemeralPublicKey();
+		ECKey epk = (ECKey) jweObject.getHeader().getEphemeralPublicKey();
 		assertEquals(Curve.P_384, epk.getCurve());
 		assertNotNull(epk.getX());
 		assertNotNull(epk.getY());
@@ -227,7 +227,7 @@ public class ECDHCryptoTest extends TestCase {
 		encrypter.getJCAContext().setContentEncryptionProvider(BouncyCastleProviderSingleton.getInstance());
 		jweObject.encrypt(encrypter);
 
-		ECKey epk = jweObject.getHeader().getEphemeralPublicKey();
+		ECKey epk = (ECKey) jweObject.getHeader().getEphemeralPublicKey();
 		assertEquals(Curve.P_521, epk.getCurve());
 		assertNotNull(epk.getX());
 		assertNotNull(epk.getY());
@@ -263,7 +263,7 @@ public class ECDHCryptoTest extends TestCase {
 		encrypter.getJCAContext().setContentEncryptionProvider(BouncyCastleProviderSingleton.getInstance());
 		jweObject.encrypt(encrypter);
 
-		ECKey epk = jweObject.getHeader().getEphemeralPublicKey();
+		ECKey epk = (ECKey) jweObject.getHeader().getEphemeralPublicKey();
 		assertEquals(Curve.P_521, epk.getCurve());
 		assertNotNull(epk.getX());
 		assertNotNull(epk.getY());
@@ -429,7 +429,7 @@ public class ECDHCryptoTest extends TestCase {
 		assertEquals(JWEAlgorithm.ECDH_ES, jweHeader.getAlgorithm());
 		assertEquals(EncryptionMethod.A128CBC_HS256, jweHeader.getEncryptionMethod());
 
-		ECKey epkParsed = jweHeader.getEphemeralPublicKey();
+		ECKey epkParsed = (ECKey) jweHeader.getEphemeralPublicKey();
 		assertEquals(Curve.P_256, epk.getCurve());
 		assertEquals("mPUKT_bAWGHIhg0TpjjqVsP1rXWQu_vwVOHHtNkdYoA", epkParsed.getX().toString());
 		assertEquals("8BQAsImGeAS46fyWw5MhYfGTT0IjBpFw2SS34Dv4Irs", epkParsed.getY().toString());
@@ -521,7 +521,7 @@ public class ECDHCryptoTest extends TestCase {
 		assertEquals(JWEAlgorithm.ECDH_ES_A128KW, jweHeader.getAlgorithm());
 		assertEquals(EncryptionMethod.A128GCM, jweHeader.getEncryptionMethod());
 
-		ECKey epkParsed = jweHeader.getEphemeralPublicKey();
+		ECKey epkParsed = (ECKey) jweHeader.getEphemeralPublicKey();
 		assertEquals(Curve.P_384, epk.getCurve());
 		assertEquals("uBo4kHPw6kbjx5l0xowrd_oYzBmaz-GKFZu4xAFFkbYiWgutEK6iuEDsQ6wNdNg3", epkParsed.getX().toString());
 		assertEquals("sp3p5SGhZVC2faXumI-e9JU2Mo8KpoYrFDr5yPNVtW4PgEwZOyQTA-JdaY8tb7E0", epkParsed.getY().toString());
@@ -592,7 +592,7 @@ public class ECDHCryptoTest extends TestCase {
 		assertEquals(JWEAlgorithm.ECDH_ES_A128KW, jweObject.getHeader().getAlgorithm());
 		assertEquals(EncryptionMethod.A128GCM, jweObject.getHeader().getEncryptionMethod());
 
-		ECKey epk = jweObject.getHeader().getEphemeralPublicKey();
+		ECKey epk = (ECKey) jweObject.getHeader().getEphemeralPublicKey();
 		assertEquals(Curve.P_384, epk.getCurve());
 		assertEquals("uBo4kHPw6kbjx5l0xowrd_oYzBmaz-GKFZu4xAFFkbYiWgutEK6iuEDsQ6wNdNg3", epk.getX().toString());
 		assertEquals("sp3p5SGhZVC2faXumI-e9JU2Mo8KpoYrFDr5yPNVtW4PgEwZOyQTA-JdaY8tb7E0", epk.getY().toString());
@@ -644,7 +644,7 @@ public class ECDHCryptoTest extends TestCase {
 		assertEquals(JWEAlgorithm.ECDH_ES, jweObject.getHeader().getAlgorithm());
 		assertEquals(EncryptionMethod.A128CBC_HS256, jweObject.getHeader().getEncryptionMethod());
 
-		ECKey epk = jweObject.getHeader().getEphemeralPublicKey();
+		ECKey epk = (ECKey) jweObject.getHeader().getEphemeralPublicKey();
 		assertEquals(Curve.P_256, epk.getCurve());
 		assertEquals("mPUKT_bAWGHIhg0TpjjqVsP1rXWQu_vwVOHHtNkdYoA", epk.getX().toString());
 		assertEquals("8BQAsImGeAS46fyWw5MhYfGTT0IjBpFw2SS34Dv4Irs", epk.getY().toString());
