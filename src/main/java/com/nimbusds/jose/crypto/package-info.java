@@ -39,6 +39,11 @@
  *             <li>{@link com.nimbusds.jose.crypto.ECDSASigner}
  *             <li>{@link com.nimbusds.jose.crypto.ECDSAVerifier}
  *         </ul>
+ *      <li>For EdDSA signatures Ed25519:
+ *         <ul>
+ *             <li>{@link com.nimbusds.jose.crypto.Ed25519Signer}
+ *             <li>{@link com.nimbusds.jose.crypto.Ed25519Verifier}
+ *         </ul>
  * </ul>
  *
  * <p>Provides {@link com.nimbusds.jose.JWEEncrypter encrypters} and 
@@ -65,6 +70,8 @@
  *         <ul>
  *             <li>{@link com.nimbusds.jose.crypto.ECDHEncrypter}
  *             <li>{@link com.nimbusds.jose.crypto.ECDHDecrypter}
+ *             <li>{@link com.nimbusds.jose.crypto.X25519Encrypter} (for Curve25519 only)
+ *             <li>{@link com.nimbusds.jose.crypto.X25519Decrypter} (for Curve25519 only)
  *         </ul>
  *     <li>For password-based (PBKDF2) encryption:
  *         <ul>

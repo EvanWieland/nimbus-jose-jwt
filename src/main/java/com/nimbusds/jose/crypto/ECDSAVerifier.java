@@ -34,7 +34,7 @@ import net.jcip.annotations.ThreadSafe;
 
 /**
  * Elliptic Curve Digital Signature Algorithm (ECDSA) verifier of 
- * {@link com.nimbusds.jose.JWSObject JWS objects}. Expects a private EC key
+ * {@link com.nimbusds.jose.JWSObject JWS objects}. Expects a public EC key
  * (with a P-256, P-384 or P-521 curve).
  *
  * <p>See RFC 7518

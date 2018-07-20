@@ -28,10 +28,13 @@ import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.google.crypto.tink.subtle.X25519;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWEHeader;
+import com.nimbusds.jose.jwk.Curve;
+import com.nimbusds.jose.jwk.OctetKeyPair;
 
 
 /**
@@ -178,6 +181,54 @@ class ECDH {
 		}
 
 		return new SecretKeySpec(keyAgreement.generateSecret(), "AES");
+	}
+
+
+	/**
+	 * Derives a shared secret (also called 'Z') from the specified ECDH
+	 * key agreement.
+	 *
+	 * @param publicKey  The public OKP key, i.e. the consumer's public EC
+	 *                   key on encryption, or the ephemeral public EC key
+	 *                   on decryption. Must not be {@code null}.
+	 * @param privateKey The private OKP key, i.e. the ephemeral private EC
+	 *                   key on encryption, or the consumer's private EC
+	 *                   key on decryption. Must not be {@code null}.
+	 *
+	 * @return The derived shared secret ('Z'), with algorithm "AES".
+	 *
+	 * @throws JOSEException If derivation of the shared secret failed.
+	 */
+	static SecretKey deriveSharedSecret(final OctetKeyPair publicKey, final OctetKeyPair privateKey)
+		throws JOSEException {
+
+		if (publicKey.isPrivate()) {
+			throw new JOSEException("Expected public key but received OKP with 'd' value");
+		}
+
+		if (! Curve.X25519.equals(publicKey.getCurve())) {
+			throw new JOSEException("Expected public key OKP with crv=X25519");
+		}
+
+		if (! privateKey.isPrivate()) {
+			throw new JOSEException("Expected private key but received OKP without 'd' value");
+		}
+
+		if (! Curve.X25519.equals(privateKey.getCurve())) {
+			throw new JOSEException("Expected private key OKP with crv=X25519");
+		}
+
+		final byte[] privateKeyBytes = privateKey.getD().decode();
+		final byte[] publicKeyBytes = publicKey.getX().decode();
+
+		final byte[] sharedSecretBytes;
+		try {
+			sharedSecretBytes = X25519.computeSharedSecret(privateKeyBytes, publicKeyBytes);
+		} catch (InvalidKeyException e) {
+			throw new JOSEException(e.getMessage(), e);
+		}
+
+		return new SecretKeySpec(sharedSecretBytes, "AES");
 	}
 
 
