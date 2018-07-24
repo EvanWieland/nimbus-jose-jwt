@@ -27,6 +27,7 @@ import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.Base64URL;
 import junit.framework.TestCase;
 import net.minidev.json.JSONObject;
+import org.junit.Assert;
 
 
 public class OctetKeyPairTest extends TestCase {
@@ -67,7 +68,9 @@ public class OctetKeyPairTest extends TestCase {
 		assertEquals(KeyType.OKP, okp.getKeyType());
 		assertEquals(Curve.Ed25519, okp.getCurve());
 		assertEquals(new Base64URL("11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"), okp.getX());
+		Assert.assertArrayEquals(okp.getX().decode(), okp.getDecodedX());
 		assertEquals(new Base64URL("nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A"), okp.getD());
+		Assert.assertArrayEquals(okp.getD().decode(), okp.getDecodedD());
 		
 		assertTrue(okp.isPrivate());
 		
@@ -76,7 +79,9 @@ public class OctetKeyPairTest extends TestCase {
 		assertEquals(KeyType.OKP, pubOKP.getKeyType());
 		assertEquals(Curve.Ed25519, pubOKP.getCurve());
 		assertEquals(okp.getX(), pubOKP.getX());
+		Assert.assertArrayEquals(okp.getX().decode(), pubOKP.getDecodedX());
 		assertNull(pubOKP.getD());
+		assertNull(pubOKP.getDecodedD());
 		
 		assertFalse(pubOKP.isPrivate());
 	}
@@ -93,7 +98,9 @@ public class OctetKeyPairTest extends TestCase {
 		assertEquals(KeyType.OKP, okp.getKeyType());
 		assertEquals(Curve.Ed25519, okp.getCurve());
 		assertEquals(new Base64URL("11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"), okp.getX());
+		Assert.assertArrayEquals(okp.getX().decode(), okp.getDecodedX());
 		assertNull(okp.getD());
+		assertNull(okp.getDecodedD());
 		
 		assertFalse(okp.isPrivate());
 	}
@@ -109,7 +116,9 @@ public class OctetKeyPairTest extends TestCase {
 		assertEquals(KeyType.OKP, okp.getKeyType());
 		assertEquals(Curve.Ed25519, okp.getCurve());
 		assertEquals(new Base64URL("11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"), okp.getX());
+		Assert.assertArrayEquals(okp.getX().decode(), okp.getDecodedX());
 		assertNull(okp.getD());
+		assertNull(okp.getDecodedD());
 		
 		assertFalse(okp.isPrivate());
 		
@@ -164,7 +173,9 @@ public class OctetKeyPairTest extends TestCase {
 		
 		assertEquals(Curve.Ed25519, key.getCurve());
 		assertEquals(EXAMPLE_OKP_ED25519.X, key.getX());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.X.decode(), key.getDecodedX());
 		assertEquals(EXAMPLE_OKP_ED25519.D, key.getD());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.D.decode(), key.getDecodedD());
 		
 		assertTrue(key.isPrivate());
 		
@@ -186,7 +197,9 @@ public class OctetKeyPairTest extends TestCase {
 		
 		assertEquals(Curve.Ed25519, key.getCurve());
 		assertEquals(EXAMPLE_OKP_ED25519.X, key.getX());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.X.decode(), key.getDecodedX());
 		assertEquals(EXAMPLE_OKP_ED25519.D, key.getD());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.D.decode(), key.getDecodedD());
 		
 		assertTrue(key.isPrivate());
 		
@@ -207,7 +220,9 @@ public class OctetKeyPairTest extends TestCase {
 		
 		assertEquals(Curve.Ed25519, key.getCurve());
 		assertEquals(EXAMPLE_OKP_ED25519.X, key.getX());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.X.decode(), key.getDecodedX());
 		assertNull(key.getD());
+		assertNull(key.getDecodedD());
 		
 		assertFalse(key.isPrivate());
 	}
@@ -243,7 +258,9 @@ public class OctetKeyPairTest extends TestCase {
 		
 		assertEquals(Curve.Ed25519, key.getCurve());
 		assertEquals(EXAMPLE_OKP_ED25519.X, key.getX());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.X.decode(), key.getDecodedX());
 		assertNull(key.getD());
+		assertNull(key.getDecodedD());
 		
 		assertFalse(key.isPrivate());
 		
@@ -265,7 +282,9 @@ public class OctetKeyPairTest extends TestCase {
 		
 		assertEquals(Curve.Ed25519, key.getCurve());
 		assertEquals(EXAMPLE_OKP_ED25519.X, key.getX());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.X.decode(), key.getDecodedX());
 		assertNull(key.getD());
+		assertNull(key.getDecodedD());
 		
 		assertFalse(key.isPrivate());
 	}
@@ -307,7 +326,9 @@ public class OctetKeyPairTest extends TestCase {
 		
 		assertEquals(Curve.Ed25519, key.getCurve());
 		assertEquals(EXAMPLE_OKP_ED25519.X, key.getX());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.X.decode(), key.getDecodedX());
 		assertEquals(EXAMPLE_OKP_ED25519.D, key.getD());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.D.decode(), key.getDecodedD());
 		
 		assertTrue(key.isPrivate());
 		
@@ -325,7 +346,9 @@ public class OctetKeyPairTest extends TestCase {
 		
 		assertEquals(Curve.Ed25519, key.getCurve());
 		assertEquals(EXAMPLE_OKP_ED25519.X, key.getX());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.X.decode(), key.getDecodedX());
 		assertEquals(EXAMPLE_OKP_ED25519.D, key.getD());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.D.decode(), key.getDecodedD());
 		
 		assertTrue(key.isPrivate());
 		
@@ -345,7 +368,9 @@ public class OctetKeyPairTest extends TestCase {
 		
 		assertEquals(Curve.Ed25519, key.getCurve());
 		assertEquals(EXAMPLE_OKP_ED25519.X, key.getX());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.X.decode(), key.getDecodedX());
 		assertNull(key.getD());
+		assertNull(key.getDecodedD());
 		
 		assertFalse(key.isPrivate());
 	}
@@ -388,7 +413,9 @@ public class OctetKeyPairTest extends TestCase {
 		
 		assertEquals(Curve.Ed25519, key.getCurve());
 		assertEquals(EXAMPLE_OKP_ED25519.X, key.getX());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.X.decode(), key.getDecodedX());
 		assertEquals(EXAMPLE_OKP_ED25519.D, key.getD());
+		Assert.assertArrayEquals(EXAMPLE_OKP_ED25519.D.decode(), key.getDecodedD());
 		
 		assertTrue(key.isPrivate());
 	}

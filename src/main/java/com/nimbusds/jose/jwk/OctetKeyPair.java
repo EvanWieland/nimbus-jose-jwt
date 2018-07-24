@@ -478,14 +478,30 @@ public class OctetKeyPair extends JWK implements AsymmetricJWK, CurveBasedJWK {
 	 * The public 'x' parameter.
 	 */
 	private final Base64URL x;
-	
-	
+
+
+	/**
+	 * The public 'x' parameter, decoded from Base64.
+	 * Cached for performance and to reduce the risk of side channel attacks
+	 * against the Base64 decoding procedure.
+	 */
+	private final byte[] decodedX;
+
+
 	/**
 	 * The private 'd' parameter.
 	 */
 	private final Base64URL d;
-	
-	
+
+
+	/**
+	 * The private 'd' parameter, decoded from Base64.
+	 * Cached for performance and to reduce the risk of side channel attacks
+	 * against the Base64 decoding procedure.
+	 */
+	private final byte[] decodedD;
+
+
 	/**
 	 * Creates a new public Octet Key Pair JSON Web Key (JWK) with the
 	 * specified parameters.
@@ -531,8 +547,10 @@ public class OctetKeyPair extends JWK implements AsymmetricJWK, CurveBasedJWK {
 		}
 		
 		this.x = x;
+		decodedX = x.decode();
 		
 		d = null;
+		decodedD = null;
 	}
 	
 	
@@ -582,12 +600,14 @@ public class OctetKeyPair extends JWK implements AsymmetricJWK, CurveBasedJWK {
 		}
 		
 		this.x = x;
+		decodedX = x.decode();
 		
 		if (d == null) {
 			throw new IllegalArgumentException("The 'd' parameter must not be null");
 		}
 		
 		this.d = d;
+		decodedD = d.decode();
 	}
 	
 	
@@ -607,8 +627,19 @@ public class OctetKeyPair extends JWK implements AsymmetricJWK, CurveBasedJWK {
 		
 		return x;
 	}
-	
-	
+
+
+	/**
+	 * Gets the public 'x' parameter, decoded from Base64.
+	 *
+	 * @return The public 'x' parameter in bytes.
+	 */
+	public byte[] getDecodedX() {
+
+		return decodedX.clone();
+	}
+
+
 	/**
 	 * Gets the private 'd' parameter.
 	 *
@@ -619,8 +650,20 @@ public class OctetKeyPair extends JWK implements AsymmetricJWK, CurveBasedJWK {
 		
 		return d;
 	}
-	
-	
+
+
+	/**
+	 * Gets the private 'd' parameter, decoded from Base64.
+	 *
+	 * @return The private 'd' coordinate in bytes, {@code null} if not specified
+	 *         (for a public key).
+	 */
+	public byte[] getDecodedD() {
+
+		return decodedD == null ? null : decodedD.clone();
+	}
+
+
 	@Override
 	public PublicKey toPublicKey()
 		throws JOSEException {

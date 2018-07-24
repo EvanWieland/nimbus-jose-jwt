@@ -105,7 +105,7 @@ public class Ed25519Verifier extends EdDSAProvider implements JWSVerifier, Criti
 		}
 
 		this.publicKey = publicKey;
-		tinkVerifier = new Ed25519Verify(publicKey.getX().decode());
+		tinkVerifier = new Ed25519Verify(publicKey.getDecodedX());
 		critPolicy.setDeferredCriticalHeaderParams(defCritHeaders);
 	}
 
