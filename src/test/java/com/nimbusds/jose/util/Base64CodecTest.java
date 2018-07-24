@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2018, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -52,7 +52,70 @@ public class Base64CodecTest extends TestCase {
 	}
 
 
+	public void testTpSelect() {
+
+		assertEquals(Base64Codec.tpSelect(0, 43927, 50985034), 50985034);
+		assertEquals(Base64Codec.tpSelect(1, 43927, 50985034), 43927);
+		assertEquals(Base64Codec.tpSelect(0, -39248, 43298), 43298);
+		assertEquals(Base64Codec.tpSelect(1, -98432, 96283), -98432);
+		assertEquals(Base64Codec.tpSelect(0, -34, -12), -12);
+		assertEquals(Base64Codec.tpSelect(1, -98, -11), -98);
+	}
+
+
+	public void testTpLT() {
+
+		assertEquals(Base64Codec.tpLT(23489, 0), 0);
+		assertEquals(Base64Codec.tpLT(34, 9), 0);
+		assertEquals(Base64Codec.tpLT(0, 9), 1);
+		assertEquals(Base64Codec.tpLT(3, 9), 1);
+		assertEquals(Base64Codec.tpLT(9, 9), 0);
+		assertEquals(Base64Codec.tpLT(0, 0), 0);
+		assertEquals(Base64Codec.tpLT(-23, -23), 0);
+		assertEquals(Base64Codec.tpLT(-43, -23), 1);
+		assertEquals(Base64Codec.tpLT(-43, 23), 1);
+		assertEquals(Base64Codec.tpLT(43, -23), 0);
+	}
+
+
+	public void testTpGT() {
+
+		assertEquals(Base64Codec.tpGT(0, 23489), 0);
+		assertEquals(Base64Codec.tpGT(9, 34), 0);
+		assertEquals(Base64Codec.tpGT(9, 0), 1);
+		assertEquals(Base64Codec.tpGT(9, 3), 1);
+		assertEquals(Base64Codec.tpGT(9, 9), 0);
+		assertEquals(Base64Codec.tpGT(0, 0), 0);
+		assertEquals(Base64Codec.tpGT(-23, -23), 0);
+		assertEquals(Base64Codec.tpGT(-23, -43), 1);
+		assertEquals(Base64Codec.tpGT(23, -43), 1);
+		assertEquals(Base64Codec.tpGT(-23, 43), 0);
+	}
+
+
+	public void testTpEq() {
+
+		assertEquals(Base64Codec.tpEq(0, 23489), 0);
+		assertEquals(Base64Codec.tpEq(9, 34), 0);
+		assertEquals(Base64Codec.tpEq(9, 0), 0);
+		assertEquals(Base64Codec.tpEq(9, 3), 0);
+		assertEquals(Base64Codec.tpEq(9, 9), 1);
+		assertEquals(Base64Codec.tpEq(0, 0), 1);
+		assertEquals(Base64Codec.tpEq(-23, -23), 1);
+		assertEquals(Base64Codec.tpEq(-23, -43), 0);
+		assertEquals(Base64Codec.tpEq(23, -43), 0);
+		assertEquals(Base64Codec.tpEq(-23, 43), 0);
+		assertEquals(Base64Codec.tpEq(0x7FFFFFFF, 0x7FFFFFFF), 1);
+		assertEquals(Base64Codec.tpEq(0xFFFFFFFF, 0x7FFFFFFF), 0);
+		assertEquals(Base64Codec.tpEq(0x7FFFFFFF, 0xFFFFFFFF), 0);
+		assertEquals(Base64Codec.tpEq(0xFFFFFFFF, 0xFFFFFFFF), 1);
+	}
+
+
 	public void testEncode() {
+
+		assertEquals("YWE+", Base64Codec.encodeToString("aa>".getBytes(Charset.forName("utf-8")), false));
+		assertEquals("YmI/", Base64Codec.encodeToString("bb?".getBytes(Charset.forName("utf-8")), false));
 
 		// Test vectors from rfc4648#section-10
 		assertEquals("", Base64Codec.encodeToString("".getBytes(Charset.forName("utf-8")), false));
@@ -67,6 +130,9 @@ public class Base64CodecTest extends TestCase {
 
 	public void testEncodeUrlSafe() {
 
+		assertEquals("YWE-", Base64Codec.encodeToString("aa>".getBytes(Charset.forName("utf-8")), true));
+		assertEquals("YmI_", Base64Codec.encodeToString("bb?".getBytes(Charset.forName("utf-8")), true));
+
 		// Test vectors from rfc4648#section-10 with stripped padding
 		assertEquals("", Base64Codec.encodeToString("".getBytes(Charset.forName("utf-8")), true));
 		assertEquals("Zg", Base64Codec.encodeToString("f".getBytes(Charset.forName("utf-8")), true));
@@ -78,29 +144,10 @@ public class Base64CodecTest extends TestCase {
 	}
 
 
-	public void testNormalize(){
-
-		assertEquals("Zg==", Base64Codec.normalizeEncodedString("Zg"));
-		assertEquals("Zm8=", Base64Codec.normalizeEncodedString("Zm8"));
-		assertEquals("Zm9v", Base64Codec.normalizeEncodedString("Zm9v"));
-		assertEquals("Zm9vYg==", Base64Codec.normalizeEncodedString("Zm9vYg"));
-		assertEquals("Zm9vYmE=", Base64Codec.normalizeEncodedString("Zm9vYmE"));
-		assertEquals("Zm9vYmFy", Base64Codec.normalizeEncodedString("Zm9vYmFy"));
-	}
-
-
-	public void testNormalizeWithIllegalChars(){
-
-		assertEquals("Zg\n==", Base64Codec.normalizeEncodedString("Zg\n"));
-		assertEquals("Zm\n8=", Base64Codec.normalizeEncodedString("Zm\n8"));
-		assertEquals("Zm\n9v\n", Base64Codec.normalizeEncodedString("Zm\n9v\n"));
-		assertEquals("Zm\n9v\nYg\n==", Base64Codec.normalizeEncodedString("Zm\n9v\nYg\n"));
-		assertEquals("Zm\n9v\nYm\nE=", Base64Codec.normalizeEncodedString("Zm\n9v\nYm\nE"));
-		assertEquals("Zm\n9v\nYm\nFy", Base64Codec.normalizeEncodedString("Zm\n9v\nYm\nFy"));
-	}
-
-
 	public void testDecode() {
+
+		assertEquals("aa>", new String(Base64Codec.decode("YWE+"), Charset.forName("utf-8")));
+		assertEquals("bb?", new String(Base64Codec.decode("YmI/"), Charset.forName("utf-8")));
 
 		assertEquals("", new String(Base64Codec.decode(""), Charset.forName("utf-8")));
 		assertEquals("f", new String(Base64Codec.decode("Zg=="), Charset.forName("utf-8")));
@@ -126,6 +173,9 @@ public class Base64CodecTest extends TestCase {
 
 	public void testDecodeUrlSafe() {
 
+		assertEquals("aa>", new String(Base64Codec.decode("YWE-"), Charset.forName("utf-8")));
+		assertEquals("bb?", new String(Base64Codec.decode("YmI_"), Charset.forName("utf-8")));
+
 		assertEquals("", new String(Base64Codec.decode(""), Charset.forName("utf-8")));
 		assertEquals("f", new String(Base64Codec.decode("Zg"), Charset.forName("utf-8")));
 		assertEquals("fo", new String(Base64Codec.decode("Zm8"), Charset.forName("utf-8")));
@@ -145,22 +195,5 @@ public class Base64CodecTest extends TestCase {
 		assertEquals("foob", new String(Base64Codec.decode("Zm9vYg\n"), Charset.forName("utf-8")));
 		assertEquals("fooba", new String(Base64Codec.decode("Zm9vYmE\n"), Charset.forName("utf-8")));
 		assertEquals("foobar", new String(Base64Codec.decode("Zm9vYmFy\n"), Charset.forName("utf-8")));
-	}
-
-
-	public void testCountIllegalChars() {
-
-		assertEquals(0, Base64Codec.countIllegalChars(""));
-		assertEquals(0, Base64Codec.countIllegalChars("Zg"));
-		assertEquals(1, Base64Codec.countIllegalChars("Zg\n"));
-		assertEquals(2, Base64Codec.countIllegalChars("Zg\r\n"));
-
-		assertEquals(0, Base64Codec.countIllegalChars("Zg=="));
-		assertEquals(1, Base64Codec.countIllegalChars("Zg==\n"));
-		assertEquals(2, Base64Codec.countIllegalChars("Zg==\r\n"));
-
-		assertEquals(0, Base64Codec.countIllegalChars("Zm9vYmFy"));
-		assertEquals(2, Base64Codec.countIllegalChars("Zm9v\nYmFy\n"));
-		assertEquals(4, Base64Codec.countIllegalChars("Zm9v\r\nYmFy\r\n"));
 	}
 }
