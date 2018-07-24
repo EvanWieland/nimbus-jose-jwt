@@ -90,7 +90,7 @@ public class Ed25519Signer extends EdDSAProvider implements JWSSigner {
 		this.privateKey = privateKey;
 
 		try {
-			tinkSigner = new Ed25519Sign(privateKey.getD().decode());
+			tinkSigner = new Ed25519Sign(privateKey.getDecodedD());
 
 		} catch (GeneralSecurityException e) {
 			// If Tink failed to initialize; generally should not happen

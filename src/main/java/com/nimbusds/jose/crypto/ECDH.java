@@ -218,8 +218,8 @@ class ECDH {
 			throw new JOSEException("Expected private key OKP with crv=X25519");
 		}
 
-		final byte[] privateKeyBytes = privateKey.getD().decode();
-		final byte[] publicKeyBytes = publicKey.getX().decode();
+		final byte[] privateKeyBytes = privateKey.getDecodedD();
+		final byte[] publicKeyBytes = publicKey.getDecodedX();
 
 		final byte[] sharedSecretBytes;
 		try {
