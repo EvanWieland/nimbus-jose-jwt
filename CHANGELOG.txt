@@ -59,13 +59,13 @@ version 1.12 (2012-05-21)
 	  draft-ietf-jose-json-web-encryption-02).
 	* Changes the JWE compression algorithm to DEFLATE (to reflect changes
 	  in draft-ietf-jose-json-web-encryption-02).
-	* Renames JWK class to JWKSet and JWKKeyObject class to JWK (to reflect 
+	* Renames JWK class to JWKSet and JWKKeyObject class to JWK (to reflect
 	  changes in draft-ietf-jose-json-web-key-02).
 	* Adds toJSONObject() method to the ReadOnlyHeader interface.
 	* Updates JavaDocs.
 
 version 2.0 (2012-09-29)
-	* Full rewrite of 1.* code to decouple plain/JWS/JWE/JWT object 
+	* Full rewrite of 1.* code to decouple plain/JWS/JWE/JWT object
 	  representation from JWA implementations.
 	* JWS code updated to draft-ietf-jose-json-web-signature-05.
 	* JWE code updated to draft-ietf-jose-json-web-encryption-05.
@@ -81,7 +81,7 @@ version 2.0.1 (2012-09-29)
 version 2.1 (2012-10-07)
 	* Changes naming from "verifier" to "validator" to conform with JWS
 	  terminology.
-	* Refactors library to enforce header parameter checking of signed JWS 
+	* Refactors library to enforce header parameter checking of signed JWS
 	  and encrypted JWE objects.
 	* Simplifies package tree.
 
@@ -119,9 +119,9 @@ version 2.9 (2013-01-08)
 	* Updates the library to the latest JWA/JWS/JWE/JWK -08 draft suite.
 	* Updates the library to the latest JWT -06 draft.
 	* Minor code refactoring and clean up.
-	
+
 version 2.10 (2013-01-15)
-	* Fixes incorrect null argument treatment in overridden Object.equals() 
+	* Fixes incorrect null argument treatment in overridden Object.equals()
 	  methods.
 	* Renames ReadOnlyClaimsSet to ReadOnlyJWTClaimsSet and ClaimsSet to
 	  JWTClaimsSet.
@@ -133,7 +133,7 @@ version 2.10.1 (2013-01-16)
 version 2.11.0 (2013-02-22)
 	* Adds RSA1_5 / RSA OAEP with AES-GCM encryption and decryption.
 	* Refactors JWTClaimsSet.
-	
+
 version 2.12.0 (2013-03-21)
 	* Adds JSON Private and Symmetric Key (JPSK) support.
 	* Extends HeaderFilter to allow setting of accepted header parameters.
@@ -153,7 +153,7 @@ version 2.13.0 (2013-03-28)
 version 2.13.1 (2013-04-15)
 	* Fixes incorrect time unit representation of "iat", "exp" and "nbf" JWT
 	  claims.
-	* If the JOSE header was parsed Header.toBase64URL() returns the 
+	* If the JOSE header was parsed Header.toBase64URL() returns the
 	  original Base64URL.
 
 version 2.14 (2013-04-16)
@@ -172,7 +172,7 @@ version 2.15 (2013-05-07)
 	  in draft 09.
 	* Updates authenticated AES/CBC encryption to new AES_CBC_HMAC_SHA2
 	  method (draft-mcgrew-aead-aes-cbc-hmac-sha2-01).
-	* Updates AES/GCM encryption by removing IV from additional 
+	* Updates AES/GCM encryption by removing IV from additional
 	  authenticated data (AAD) computation.
 	* Adds MIME type constants for the plain, JWS and JWE objects.
 	* Refactors crypto package classes.
@@ -190,7 +190,7 @@ version 2.15.2 (2013-05-20)
 	  direct JWE encryption and decryption.
 
 version 2.16 (2013-05-30)
-	* Updates the library to match the latest JOSE -11 and JWT -08 draft 
+	* Updates the library to match the latest JOSE -11 and JWT -08 draft
 	  suite.
 	* Adds builders for constructing RSA, EC and octet sequence JWKs (using
 	  the builder pattern).
@@ -212,7 +212,7 @@ version 2.18 (2013-08-20)
 	* Updates the library to match the latest JOSE -14 and JWT -11 draft
 	  suite.
 	* Adds Header.parse(String) and Header.parse(Base64URL) static methods.
-	
+
 version 2.18.1 (2013-08-26)
 	* Adds JWTClaimsSet.parse(String) method.
 
@@ -315,7 +315,7 @@ version 3.1.1 (2014-08-21)
 version 3.1.2 (2014-09-01)
     * Closes timing attack vulnerability in MACVerifier for JWS with HS256,
       HS384 and HS512 (issue #107).
-    
+
 version 3.2 (2014-10-14)
     * Adds signed JWT support to Payload class (iss #108).
 
@@ -853,3 +853,19 @@ version 5.14 (2018-07-20)
     * Adds new com.nimbusds.jose.jwk.gen package with RSA, EC and octet
       sequence JWK generators (iss #268).
 
+version 6.0 (2018-07-24)
+    * Adds an Ed25519Signer and Ed25519Verifier for EdDSA with an Ed25519
+      curve (RFC 8037, section 3.1). Requires the optional
+      com.google.crypto.tink:tink:1.2.0-rc2 dependency.
+    * Adds an X25519Encrypter and X25519Decrypter for ECDH-ES key agreement
+      with an X25519 curve (RFC 8037, section 3.2). Requires the optional
+      com.google.crypto.tink:tink:1.2.0-rc2 dependency.
+    * Adds an OctetKeyPairGenerator for generating JSON Web Keys (JWT) of
+      type "OKP" with Ed25519 and X25519 curves.
+    * Breaking change: The ephemeral public key (epk) in JWEHeader is now
+      represented by the more general JWK class instead of ECKey which only
+      allowed EC JWKs. The change was necessary to implement ECDH-ES key
+      agreement with an Octet Key Pair (OKP) JWK.
+    * Refactors the Base64 and Base64URL codec utilities to prevent potential
+      cache timing attacks due to use of table lookups. The Base64URL utility
+      is used to decode the encrypted key portion in a JWE object (iss #270).

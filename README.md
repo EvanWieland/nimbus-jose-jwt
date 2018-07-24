@@ -69,6 +69,7 @@ The Nimbus JOSE+JWT library requires Java 7+ and has minimal dependencies.
 * JSON Smart for highly efficient parsing and serialisation of JSON.
 * JCIP for concurrency annotations.
 * [optional] BouncyCastle as an alternative JCA provider.
+* [optional] Tink for EdDSA with Ed25519 and ECDH with X25519.
 
 
 For Maven add:
