@@ -853,7 +853,7 @@ version 5.14 (2018-07-20)
     * Adds new com.nimbusds.jose.jwk.gen package with RSA, EC and octet
       sequence JWK generators (iss #268).
 
-version 6.0 (2018-07-24)
+version 6.0 (2018-08-07)
     * Adds an Ed25519Signer and Ed25519Verifier for EdDSA with an Ed25519
       curve (RFC 8037, section 3.1). Requires the optional
       com.google.crypto.tink:tink:1.2.0-rc2 dependency.
@@ -869,3 +869,5 @@ version 6.0 (2018-07-24)
     * Refactors the Base64 and Base64URL codec utilities to prevent potential
       cache timing attacks due to use of table lookups. The Base64URL utility
       is used to decode the encrypted key portion in a JWE object (iss #270).
+    * Fixes Maven build so that the output JDK 1.7 JAR has 1.7 classes and not
+      1.6 (iss #271).
