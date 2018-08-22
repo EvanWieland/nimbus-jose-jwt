@@ -871,3 +871,6 @@ version 6.0 (2018-08-07)
       is used to decode the encrypted key portion in a JWE object (iss #270).
     * Fixes Maven build so that the output JDK 1.7 JAR has 1.7 classes and not
       1.6 (iss #271).
+
+version 6.0.1 (2018-08-22)
+    * Updates Tink dependency to 1.2.0.
