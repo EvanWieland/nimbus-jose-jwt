@@ -33,9 +33,9 @@ import com.nimbusds.jose.jwk.KeyUse;
  * Abstract JWK generator.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-07-15
+ * @version 2018-09-07
  */
-abstract class JWKGenerator<T extends JWK> {
+public abstract class JWKGenerator<T extends JWK> {
 	
 	
 	/**
@@ -180,5 +180,5 @@ abstract class JWKGenerator<T extends JWK> {
 	 *
 	 * @throws JOSEException If the key generation failed.
 	 */
-	abstract T generate() throws JOSEException;
+	public abstract T generate() throws JOSEException;
 }

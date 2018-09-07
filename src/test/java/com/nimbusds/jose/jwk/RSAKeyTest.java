@@ -31,6 +31,7 @@ import java.util.*;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.*;
 import junit.framework.TestCase;
@@ -47,7 +48,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
  * Tests the RSA JWK class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-02-27
+ * @version 2018-09-07
  */
 public class RSAKeyTest extends TestCase {
 
@@ -1503,5 +1504,20 @@ public class RSAKeyTest extends TestCase {
 		keyStore.load(null, password);
 		
 		assertNull(RSAKey.load(keyStore, "1", null));
+	}
+	
+	
+	// https://bitbucket.org/connect2id/nimbus-jose-jwt/issues/274/compile-error-when-using-any-of-the
+	public void testGenerator_fromOutsidePackage()
+		throws JOSEException {
+		
+		RSAKey senderJWK = new RSAKeyGenerator(2048)
+			.keyID("123")
+			.keyUse(KeyUse.SIGNATURE)
+			.generate();
+		
+		assertEquals(2048, senderJWK.size());
+		assertEquals("123", senderJWK.getKeyID());
+		assertEquals(KeyUse.SIGNATURE, senderJWK.getKeyUse());
 	}
 }
