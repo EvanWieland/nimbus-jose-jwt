@@ -34,6 +34,7 @@ import java.util.Set;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jose.util.Base64URL;
 import junit.framework.TestCase;
 
@@ -43,7 +44,7 @@ import junit.framework.TestCase;
  * from the JWS spec.
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-05-13
+ * @version 2018-10-08
  */
 public class RSASSATest extends TestCase {
 
@@ -460,7 +461,7 @@ public class RSASSATest extends TestCase {
 		// the public key must be made known to the JWS recipient in
 		// order to verify the signatures
 		KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
-		keyGenerator.initialize(1024);
+		keyGenerator.initialize(2048);
 
 		KeyPair kp = keyGenerator.genKeyPair();
 		RSAPublicKey publicKey = (RSAPublicKey)kp.getPublic();
@@ -474,8 +475,8 @@ public class RSASSATest extends TestCase {
 
 		// Compute the RSA signature
 		jwsObject.sign(signer);
-
-		assertTrue(jwsObject.getState().equals(JWSObject.State.SIGNED));
+		
+		assertEquals(jwsObject.getState(), JWSObject.State.SIGNED);
 
 		// To serialize to compact form, produces something like
 		// eyJhbGciOiJSUzI1NiJ9.SW4gUlNBIHdlIHRydXN0IQ.IRMQENi4nJyp4er2L
@@ -499,7 +500,7 @@ public class RSASSATest extends TestCase {
 		throws Exception {
 
 		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-		keyGen.initialize(512);
+		keyGen.initialize(2048);
 		KeyPair keyPair = keyGen.genKeyPair();
 		RSAPublicKey rsaPublicKey = (RSAPublicKey)keyPair.getPublic();
 		RSAPrivateKey rsaPrivateKey = (RSAPrivateKey)keyPair.getPrivate();
@@ -517,8 +518,8 @@ public class RSASSATest extends TestCase {
 		signer = new RSASSASigner(rsaJWK.toRSAPrivateKey());
 		jwsObject2.sign(signer);
 		Base64URL sig2 = jwsObject2.getSignature();
-
-		assertTrue("Signature comparison", sig1.equals(sig2));
+		
+		assertEquals("Signature comparison", sig1, sig2);
 
 		// Verifier from raw Java RSA key
 		JWSVerifier verifier = new RSASSAVerifier(rsaPublicKey);
@@ -744,8 +745,7 @@ public class RSASSATest extends TestCase {
 	}
 
 
-	public void testRejectPrivateKeyWithNonRSAAlg()
-		throws Exception {
+	public void testRejectPrivateKeyWithNonRSAAlg() {
 
 		try {
 			new RSASSASigner(new PrivateKey() {
@@ -770,5 +770,60 @@ public class RSASSATest extends TestCase {
 		} catch (IllegalArgumentException e) {
 			assertEquals("The private key algorithm must be RSA", e.getMessage());
 		}
+	}
+	
+	
+	public void testRejectWeakKey()
+		throws JOSEException {
+		
+		int weakSize = RSAKeyGenerator.MIN_KEY_SIZE_BITS - 8;
+		
+		RSAKey rsaJWK = new RSAKeyGenerator(weakSize, true).generate();
+		
+		try {
+			new RSASSASigner(rsaJWK);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertEquals("The RSA key size must be at least 2048 bits", e.getMessage());
+		}
+		
+		try {
+			new RSASSASigner(rsaJWK.toRSAPrivateKey());
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertEquals("The RSA key size must be at least 2048 bits", e.getMessage());
+		}
+	}
+	
+	
+	public void testAllowWeakKey_JWK()
+		throws JOSEException {
+		
+		int weakSize = RSAKeyGenerator.MIN_KEY_SIZE_BITS - 8;
+		
+		RSAKey rsaJWK = new RSAKeyGenerator(weakSize, true).generate();
+		
+		JWSObject jws = new JWSObject(new JWSHeader(JWSAlgorithm.RS256), new Payload("Hello, world!"));
+		jws.sign(new RSASSASigner(rsaJWK, true));
+		
+		assertEquals(JWSObject.State.SIGNED, jws.getState());
+		
+		assertTrue(jws.verify(new RSASSAVerifier(rsaJWK)));
+	}
+	
+	
+	public void testAllowWeakKey_RSAPrivateKey()
+		throws JOSEException {
+		
+		int weakSize = RSAKeyGenerator.MIN_KEY_SIZE_BITS - 8;
+		
+		RSAKey rsaJWK = new RSAKeyGenerator(weakSize, true).generate();
+		
+		JWSObject jws = new JWSObject(new JWSHeader(JWSAlgorithm.RS256), new Payload("Hello, world!"));
+		jws.sign(new RSASSASigner(rsaJWK.toRSAPrivateKey(), true));
+		
+		assertEquals(JWSObject.State.SIGNED, jws.getState());
+		
+		assertTrue(jws.verify(new RSASSAVerifier(rsaJWK)));
 	}
 }

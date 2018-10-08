@@ -49,21 +49,25 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.junit.Test;
 
 
 /**
  * HSM test with Nitrokey.
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-12-06
+ * @version 2018-10-08
  */
 public class HSMTest {
 	
 	
-	private static String HSM_CONFIG =
+	private static final boolean ENABLE = false; // true to enable
+	
+	
+	private static final String HSM_CONFIG =
 		"name = NitroKeyHSM\n" +
 		"library = /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so\n" +
-		"slotListIndex = 1\n" +
+		"slotListIndex = 0\n" +
 		"attributes(*,CKO_PRIVATE_KEY,CKK_RSA) = {\n" +
 		"  CKA_SIGN = true\n" +
 		"}\n" +
@@ -72,7 +76,7 @@ public class HSMTest {
 		"}\n";
 	
 	
-	private static String HSM_PIN = "836019";
+	private static final String HSM_PIN = "648219";
 	
 
 	private static Provider loadHSMProvider(final String hsmConfig) {
@@ -170,9 +174,11 @@ public class HSMTest {
 	}
 	
 	
-//	@Test
+	@Test
 	public void testRSASign()
 		throws Exception {
+		
+		if (! ENABLE) return;
 		
 		Provider hsmProvider = loadHSMProvider(HSM_CONFIG);
 		
@@ -207,9 +213,11 @@ public class HSMTest {
 	}
 	
 	
-//	@Test
+	@Test
 	public void testRSASignWithJWK()
 		throws Exception {
+		
+		if (! ENABLE) return;
 		
 		Provider hsmProvider = loadHSMProvider(HSM_CONFIG);
 		
@@ -250,9 +258,11 @@ public class HSMTest {
 	}
 	
 	
-//	@Test
+	@Test
 	public void testRSADecryptWithHSM()
 		throws Exception {
+		
+		if (! ENABLE) return;
 		
 		Provider hsmProvider = loadHSMProvider(HSM_CONFIG);
 		
@@ -299,9 +309,11 @@ public class HSMTest {
 	}
 	
 	
-//	@Test
+	@Test
 	public void testECSign()
 		throws Exception {
+		
+		if (! ENABLE) return;
 		
 		Provider hsmProvider = loadHSMProvider(HSM_CONFIG);
 		
@@ -342,9 +354,11 @@ public class HSMTest {
 	}
 	
 	
-//	@Test
+	@Test
 	public void testECSignWithJWK()
 		throws Exception {
+		
+		if (! ENABLE) return;
 		
 		Provider hsmProvider = loadHSMProvider(HSM_CONFIG);
 		
@@ -379,9 +393,11 @@ public class HSMTest {
 	}
 	
 	
-//	@Test
+	@Test
 	public void testLoadJWKs()
 		throws Exception {
+		
+		if (! ENABLE) return;
 		
 		Provider hsmProvider = loadHSMProvider(HSM_CONFIG);
 		
@@ -418,7 +434,7 @@ public class HSMTest {
 	}
 	
 	
-//	@Test
+	@Test
 	public void testAvailableAlgs() {
 		
 		Provider hsmProvider = loadHSMProvider(HSM_CONFIG);

@@ -19,8 +19,11 @@ package com.nimbusds.jose.crypto;
 
 
 import java.security.PrivateKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.util.Set;
 import javax.crypto.SecretKey;
+
+import static com.nimbusds.jose.jwk.gen.RSAKeyGenerator.MIN_KEY_SIZE_BITS;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -65,7 +68,7 @@ import net.jcip.annotations.ThreadSafe;
  * @author David Ortiz
  * @author Vladimir Dzhuvinov
  * @author Dimitar A. Stoikov
- * @version 2016-12-01
+ * @version 2018-10-08
  */
 @ThreadSafe
 public class RSADecrypter extends RSACryptoProvider implements JWEDecrypter, CriticalHeaderParamsAware {
@@ -95,19 +98,24 @@ public class RSADecrypter extends RSACryptoProvider implements JWEDecrypter, Cri
 	 * private RSA key located in a PKCS#11 store that doesn't expose the
 	 * private key parameters (such as a smart card or HSM).
 	 *
-	 * @param privateKey The private RSA key. Must not be {@code null}.
+	 * @param privateKey The private RSA key. Its algorithm must be "RSA"
+	 *                   and its length at least 2048 bits. Note that the
+	 *                   length of an RSA key in a PKCS#11 store cannot be
+	 *                   checked. Must not be {@code null}.
 	 */
 	public RSADecrypter(final PrivateKey privateKey) {
 
-		this(privateKey, null);
+		this(privateKey, null, false);
 	}
 
 
 	/**
 	 * Creates a new RSA decrypter.
 	 *
-	 * @param rsaJWK The RSA JSON Web Key (JWK). Must contain a private
-	 *               part. Must not be {@code null}.
+	 * @param rsaJWK The RSA JSON Web Key (JWK). Must contain or reference
+	 *               a private part. Its length must be at least 2048 bits.
+	 *               Note that the length of an RSA key in a PKCS#11 store
+	 *               cannot be checked. Must not be {@code null}.
 	 *
 	 * @throws JOSEException If the RSA JWK doesn't contain a private part
 	 *                       or its extraction failed.
@@ -115,21 +123,20 @@ public class RSADecrypter extends RSACryptoProvider implements JWEDecrypter, Cri
 	public RSADecrypter(final RSAKey rsaJWK)
 		throws JOSEException {
 
-		if (! rsaJWK.isPrivate()) {
-			throw new JOSEException("The RSA JWK doesn't contain a private part");
-		}
-
-		privateKey = rsaJWK.toPrivateKey();
+		this(RSAKeyUtils.toRSAPrivateKey(rsaJWK));
 	}
 
 
 	/**
 	 * Creates a new RSA decrypter. This constructor can also accept a
-	 * private RSA key located in a key store that doesn't expose the
+	 * private RSA key located in a PKCS#11 store that doesn't expose the
 	 * private key parameters (such as a smart card or HSM).
 	 *
 	 * @param privateKey     The private RSA key. Its algorithm must be
-	 *                       "RSA". Must not be {@code null}.
+	 *                       "RSA" and its length at least 2048 bits. Note
+	 *                       that the length of an RSA key in a PKCS#11
+	 *                       store cannot be checked. Must not be
+	 *                       {@code null}.
 	 * @param defCritHeaders The names of the critical header parameters
 	 *                       that are deferred to the application for
 	 *                       processing, empty set or {@code null} if none.
@@ -137,12 +144,36 @@ public class RSADecrypter extends RSACryptoProvider implements JWEDecrypter, Cri
 	public RSADecrypter(final PrivateKey privateKey,
 			    final Set<String> defCritHeaders) {
 
-		if (privateKey == null) {
-			throw new IllegalArgumentException("The private RSA key must not be null");
-		}
+		this(privateKey, defCritHeaders, false);
+	}
+
+
+	/**
+	 * Creates a new RSA decrypter. This constructor can also accept a
+	 * private RSA key located in a PKCS#11 store that doesn't expose the
+	 * private key parameters (such as a smart card or HSM).
+	 *
+	 * @param privateKey     The private RSA key. Its algorithm must be
+	 *                       "RSA" and its length at least 2048 bits. Note
+	 *                       that the length of an RSA key in a PKCS#11
+	 *                       store cannot be checked. Must not be
+	 *                       {@code null}.
+	 * @param defCritHeaders The names of the critical header parameters
+	 *                       that are deferred to the application for
+	 *                       processing, empty set or {@code null} if none.
+	 * @param allowWeakKey   {@code true} to allow an RSA key shorter than
+	 * 	                 2048 bits.
+	 */
+	public RSADecrypter(final PrivateKey privateKey,
+			    final Set<String> defCritHeaders,
+			    final boolean allowWeakKey) {
 
 		if (! privateKey.getAlgorithm().equalsIgnoreCase("RSA")) {
 			throw new IllegalArgumentException("The private key algorithm must be RSA");
+		}
+		
+		if (! allowWeakKey && privateKey instanceof RSAPrivateKey && ((RSAPrivateKey)privateKey).getModulus().bitLength() < MIN_KEY_SIZE_BITS) {
+			throw new IllegalArgumentException("The RSA key size must be at least " + MIN_KEY_SIZE_BITS + " bits");
 		}
 
 		this.privateKey = privateKey;

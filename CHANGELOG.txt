@@ -878,3 +878,11 @@ version 6.0.1 (2018-08-22)
 version 6.0.2 (2018-09-07)
     * Makes JWKGenerator a public class with publicly accessible methods (iss
       #274).
+
+version 6.1 (2018-10-08)
+    * Updates the RSASSASigner to reject weak RSA keys (shorter than 2048
+      bits). To use a weak key use the new RSASSASigner constructors with the
+      boolean allowWeakKey parameter (iss #219).
+    * Updates the RSADecrypter to reject weak RSA keys (shorter than 2048
+      bits). To use a weak key use the new RSADecrypter constructor with the
+      boolean allowWeakKey parameter (iss #219).

@@ -27,6 +27,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,6 +36,7 @@ import java.util.List;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import junit.framework.TestCase;
 
 
@@ -43,7 +45,7 @@ import junit.framework.TestCase;
  * spec.
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-12-04
+ * @version 2018-10-08
  */
 public class RSA1_5Test extends TestCase {
 
@@ -654,7 +656,7 @@ public class RSA1_5Test extends TestCase {
 		throws Exception {
 		
 		KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-		gen.initialize(1024);
+		gen.initialize(2048);
 		KeyPair kp = gen.generateKeyPair();
 		
 		// Good pair
@@ -690,7 +692,7 @@ public class RSA1_5Test extends TestCase {
 		throws Exception {
 		
 		KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-		gen.initialize(1024);
+		gen.initialize(2048);
 		KeyPair kp = gen.generateKeyPair();
 		
 		// Good pair
@@ -743,5 +745,46 @@ public class RSA1_5Test extends TestCase {
 			assertEquals("RSA block size exception: The RSA key is too short, try a longer one", e.getMessage());
 			assertNotNull(e.getCause());
 		}
+	}
+	
+	
+	public void testRejectWeakKey()
+		throws JOSEException {
+		
+		int weakSize = RSAKeyGenerator.MIN_KEY_SIZE_BITS - 8;
+		
+		RSAKey rsaJWK = new RSAKeyGenerator(weakSize, true).generate();
+		
+		try {
+			new RSADecrypter(rsaJWK);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertEquals("The RSA key size must be at least 2048 bits", e.getMessage());
+		}
+		
+		try {
+			new RSADecrypter(rsaJWK.toRSAPrivateKey());
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertEquals("The RSA key size must be at least 2048 bits", e.getMessage());
+		}
+	}
+	
+	
+	public void testAllowWeakKey()
+		throws JOSEException, ParseException {
+		
+		int weakSize = RSAKeyGenerator.MIN_KEY_SIZE_BITS - 8;
+		
+		RSAKey rsaJWK = new RSAKeyGenerator(weakSize, true).generate();
+		
+		JWEObject jwe = new JWEObject(new JWEHeader(JWEAlgorithm.RSA1_5, EncryptionMethod.A128GCM), new Payload("Hello, world!"));
+		jwe.encrypt(new RSAEncrypter(rsaJWK));
+		
+		assertEquals(JWEObject.State.ENCRYPTED, jwe.getState());
+		
+		JWEObject.parse(jwe.serialize()).decrypt(new RSADecrypter(rsaJWK.toRSAPrivateKey(), null, true));
+		
+		assertEquals("Hello, world!", jwe.getPayload().toString());
 	}
 }

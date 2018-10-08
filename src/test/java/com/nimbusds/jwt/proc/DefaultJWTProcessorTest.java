@@ -1024,7 +1024,7 @@ public class DefaultJWTProcessorTest extends TestCase {
 		throws Exception {
 		
 		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-		keyPairGenerator.initialize(1024);
+		keyPairGenerator.initialize(2048);
 		KeyPair keyPair = keyPairGenerator.generateKeyPair();
 		RSAKey rsaJWK = new RSAKey.Builder((RSAPublicKey)keyPair.getPublic())
 			.privateKey(keyPair.getPrivate())
@@ -1069,7 +1069,7 @@ public class DefaultJWTProcessorTest extends TestCase {
 		throws Exception {
 		
 		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-		keyPairGenerator.initialize(1024);
+		keyPairGenerator.initialize(2048);
 		KeyPair keyPair = keyPairGenerator.generateKeyPair();
 		RSAKey rsaJWK = new RSAKey.Builder((RSAPublicKey)keyPair.getPublic())
 			.privateKey(keyPair.getPrivate())

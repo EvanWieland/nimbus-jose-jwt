@@ -22,6 +22,9 @@ import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.interfaces.RSAPrivateKey;
+
+import static com.nimbusds.jose.jwk.gen.RSAKeyGenerator.MIN_KEY_SIZE_BITS;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSHeader;
@@ -56,7 +59,7 @@ import net.jcip.annotations.ThreadSafe;
  * 
  * @author Vladimir Dzhuvinov
  * @author Omer Levi Hevroni
- * @version 2016-11-30
+ * @version 2018-10-08
  */
 @ThreadSafe
 public class RSASSASigner extends RSASSAProvider implements JWSSigner {
@@ -79,13 +82,38 @@ public class RSASSASigner extends RSASSAProvider implements JWSSigner {
 	 * PKCS#11 store that doesn't expose the private key parameters (such
 	 * as a smart card or HSM).
 	 *
-	 * @param privateKey The private RSA key. Its algorithm must be "RSA".
-	 *                   Must not be {@code null}.
+	 * @param privateKey The private RSA key. Its algorithm must be "RSA"
+	 *                   and its length at least 2048 bits. Note that the
+	 *                   length of an RSA key in a PKCS#11 store cannot be
+	 *                   checked. Must not be {@code null}.
 	 */
 	public RSASSASigner(final PrivateKey privateKey) {
 
+		this(privateKey, false);
+	}
+
+
+	/**
+	 * Creates a new RSA Signature-Scheme-with-Appendix (RSASSA) signer.
+	 * This constructor can also accept a private RSA key located in a
+	 * PKCS#11 store that doesn't expose the private key parameters (such
+	 * as a smart card or HSM).
+	 *
+	 * @param privateKey   The private RSA key. Its algorithm must be
+	 *                     "RSA" and its length at least 2048 bits. Note
+	 *                     that the length of an RSA key in a PKCS#11 store
+	 *                     cannot be checked. Must not be {@code null}.
+	 * @param allowWeakKey {@code true} to allow an RSA key shorter than
+	 *                     2048 bits.
+	 */
+	public RSASSASigner(final PrivateKey privateKey, final boolean allowWeakKey) {
+
 		if (! "RSA".equalsIgnoreCase(privateKey.getAlgorithm())) {
 			throw new IllegalArgumentException("The private key algorithm must be RSA");
+		}
+		
+		if (! allowWeakKey && privateKey instanceof RSAPrivateKey && ((RSAPrivateKey)privateKey).getModulus().bitLength() < MIN_KEY_SIZE_BITS) {
+			throw new IllegalArgumentException("The RSA key size must be at least " + MIN_KEY_SIZE_BITS + " bits");
 		}
 
 		this.privateKey = privateKey;
@@ -96,7 +124,9 @@ public class RSASSASigner extends RSASSAProvider implements JWSSigner {
 	 * Creates a new RSA Signature-Scheme-with-Appendix (RSASSA) signer.
 	 *
 	 * @param rsaJWK The RSA JSON Web Key (JWK). Must contain or reference
-	 *               a private part. Must not be {@code null}.
+	 *               a private part. Its length must be at least 2048 bits.
+	 *               Note that the length of an RSA key in a PKCS#11 store
+	 *               cannot be checked. Must not be {@code null}.
 	 *
 	 * @throws JOSEException If the RSA JWK doesn't contain a private part
 	 *                       or its extraction failed.
@@ -104,11 +134,28 @@ public class RSASSASigner extends RSASSAProvider implements JWSSigner {
 	public RSASSASigner(final RSAKey rsaJWK)
 		throws JOSEException {
 
-		if (! rsaJWK.isPrivate()) {
-			throw new JOSEException("The RSA JWK doesn't contain a private part");
-		}
+		this(rsaJWK, false);
+	}
 
-		privateKey = rsaJWK.toPrivateKey();
+
+	/**
+	 * Creates a new RSA Signature-Scheme-with-Appendix (RSASSA) signer.
+	 *
+	 * @param rsaJWK       The RSA JSON Web Key (JWK). Must contain or
+	 *                     reference a private part. Its length must be at
+	 *                     least 2048 bits. Note that the length of an RSA
+	 *                     key in a PKCS#11 store cannot be checked. Must
+	 *                     not be {@code null}.
+	 * @param allowWeakKey {@code true} to allow an RSA key shorter than
+	 * 	               2048 bits.
+	 *
+	 * @throws JOSEException If the RSA JWK doesn't contain a private part
+	 *                       or its extraction failed.
+	 */
+	public RSASSASigner(final RSAKey rsaJWK, final boolean allowWeakKey)
+		throws JOSEException {
+
+		this(RSAKeyUtils.toRSAPrivateKey(rsaJWK), allowWeakKey);
 	}
 
 
