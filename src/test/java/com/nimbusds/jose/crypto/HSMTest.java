@@ -56,7 +56,7 @@ import org.junit.Test;
  * HSM test with Nitrokey.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-10-08
+ * @version 2018-10-11
  */
 public class HSMTest {
 	
@@ -451,5 +451,24 @@ public class HSMTest {
 		for (Provider.Service service: hsmProvider.getServices()) {
 			System.out.println(service.getType() + " : " + service.getAlgorithm());
 		}
+	}
+	
+	
+	@Test
+	public void testKeyBitLength() throws Exception {
+		
+		if (! ENABLE) return;
+		
+		Provider hsmProvider = loadHSMProvider(HSM_CONFIG);
+		
+		KeyStore hsmKeyStore = loadHSMKeyStore(hsmProvider, HSM_PIN);
+		
+		assertEquals("PKCS11", hsmKeyStore.getType());
+		
+		String keyID = generateRSAKeyWithSelfSignedCert(hsmKeyStore);
+		
+		PrivateKey privateKey = (PrivateKey)hsmKeyStore.getKey(keyID, "".toCharArray());
+		
+		assertEquals(-1, RSAKeyUtils.keyBitLength(privateKey));
 	}
 }

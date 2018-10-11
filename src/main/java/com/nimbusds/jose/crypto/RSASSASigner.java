@@ -22,7 +22,6 @@ import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
-import java.security.interfaces.RSAPrivateKey;
 
 import static com.nimbusds.jose.jwk.gen.RSAKeyGenerator.MIN_KEY_SIZE_BITS;
 
@@ -59,7 +58,7 @@ import net.jcip.annotations.ThreadSafe;
  * 
  * @author Vladimir Dzhuvinov
  * @author Omer Levi Hevroni
- * @version 2018-10-08
+ * @version 2018-10-11
  */
 @ThreadSafe
 public class RSASSASigner extends RSASSAProvider implements JWSSigner {
@@ -112,8 +111,13 @@ public class RSASSASigner extends RSASSAProvider implements JWSSigner {
 			throw new IllegalArgumentException("The private key algorithm must be RSA");
 		}
 		
-		if (! allowWeakKey && privateKey instanceof RSAPrivateKey && ((RSAPrivateKey)privateKey).getModulus().bitLength() < MIN_KEY_SIZE_BITS) {
-			throw new IllegalArgumentException("The RSA key size must be at least " + MIN_KEY_SIZE_BITS + " bits");
+		if (! allowWeakKey) {
+			
+			int keyBitLength = RSAKeyUtils.keyBitLength(privateKey);
+			
+			if (keyBitLength > 0 && keyBitLength < MIN_KEY_SIZE_BITS) {
+				throw new IllegalArgumentException("The RSA key size must be at least " + MIN_KEY_SIZE_BITS + " bits");
+			}
 		}
 
 		this.privateKey = privateKey;

@@ -68,7 +68,7 @@ import net.jcip.annotations.ThreadSafe;
  * @author David Ortiz
  * @author Vladimir Dzhuvinov
  * @author Dimitar A. Stoikov
- * @version 2018-10-08
+ * @version 2018-10-11
  */
 @ThreadSafe
 public class RSADecrypter extends RSACryptoProvider implements JWEDecrypter, CriticalHeaderParamsAware {
@@ -172,8 +172,13 @@ public class RSADecrypter extends RSACryptoProvider implements JWEDecrypter, Cri
 			throw new IllegalArgumentException("The private key algorithm must be RSA");
 		}
 		
-		if (! allowWeakKey && privateKey instanceof RSAPrivateKey && ((RSAPrivateKey)privateKey).getModulus().bitLength() < MIN_KEY_SIZE_BITS) {
-			throw new IllegalArgumentException("The RSA key size must be at least " + MIN_KEY_SIZE_BITS + " bits");
+		if (! allowWeakKey) {
+			
+			int keyBitLength = RSAKeyUtils.keyBitLength(privateKey);
+			
+			if (keyBitLength > 0 && keyBitLength < MIN_KEY_SIZE_BITS) {
+				throw new IllegalArgumentException("The RSA key size must be at least " + MIN_KEY_SIZE_BITS + " bits");
+			}
 		}
 
 		this.privateKey = privateKey;

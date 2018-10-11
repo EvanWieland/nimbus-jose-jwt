@@ -19,6 +19,7 @@ package com.nimbusds.jose.crypto;
 
 
 import java.security.PrivateKey;
+import java.security.interfaces.RSAPrivateKey;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -48,5 +49,34 @@ class RSAKeyUtils {
 		}
 		
 		return rsaJWK.toPrivateKey();
+	}
+	
+	
+	/**
+	 * Returns the length in bits of the specified RSA private key.
+	 *
+	 * @param privateKey The RSA private key. Must not be {@code null}.
+	 *
+	 * @return The key length in bits, -1 if the length couldn't be
+	 *         determined, e.g. for a PKCS#11 backed key which doesn't
+	 *         expose an RSAPrivateKey interface or support the
+	 *         {@code getModulus()} method.
+	 */
+	static int keyBitLength(final PrivateKey privateKey) {
+		
+		if (! (privateKey instanceof RSAPrivateKey)) {
+			return -1; // May be an PKCS#11 backed key
+		}
+		
+		RSAPrivateKey rsaPrivateKey = (RSAPrivateKey)privateKey;
+		
+		try {
+			return rsaPrivateKey.getModulus().bitLength();
+		} catch (Exception e) {
+			// Some PKCS#11 backed keys still have the
+			// RSAPrivateKey interface, but will throw an exception
+			// here
+			return -1;
+		}
 	}
 }
