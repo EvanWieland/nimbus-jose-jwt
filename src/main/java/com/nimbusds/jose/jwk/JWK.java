@@ -18,16 +18,6 @@
 package com.nimbusds.jose.jwk;
 
 
-import java.io.Serializable;
-import java.net.URI;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.text.ParseException;
-import java.util.*;
-
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.util.Base64;
@@ -36,6 +26,23 @@ import com.nimbusds.jose.util.JSONObjectUtils;
 import com.nimbusds.jose.util.X509CertChainUtils;
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONObject;
+
+import java.io.Serializable;
+import java.net.URI;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.*;
+import java.security.spec.ECParameterSpec;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -652,6 +659,110 @@ public abstract class JWK implements JSONAware, Serializable {
 			return ECKey.load(keyStore, alias, pin);
 		} else {
 			throw new JOSEException("Unsupported public key algorithm: " + cert.getPublicKey().getAlgorithm());
+		}
+	}
+
+	/**
+	 * Loads a JWK from a PEM-formatted string.
+	 * The JWK can be a public / private {@link RSAKey RSA key} or a public / private
+	 * {@link ECKey EC key}.
+	 * @param pem The PEM-formatted key.
+	 * @return The public / private RSA or EC JWK.
+	 * @throws JOSEException If RSA or EC key parsing failed.
+	 */
+	public static JWK parsePem(final String pem) throws JOSEException {
+		final List<KeyPair> keys = KeyLoader.parsePemKeys(pem);
+		if (keys.isEmpty()) {
+			throw new JOSEException("Found no keys in PEM: " + pem);
+		}
+
+		final KeyPair pair = mergeKeyPairs(toKeyPairList(pem));
+
+		final PublicKey publicKey = pair.getPublic();
+		final PrivateKey privateKey = pair.getPrivate();
+
+		if (publicKey instanceof ECPublicKey) {
+			final ECPublicKey ecPubKey = (ECPublicKey) publicKey;
+			final ECParameterSpec pubParams = ecPubKey.getParams();
+
+			if (privateKey instanceof ECPrivateKey) {
+				validateEcCurves(ecPubKey, (ECPrivateKey) privateKey);
+			}
+			if (privateKey != null && !(privateKey instanceof ECPrivateKey)) {
+				throw new JOSEException("Unsupported EC private key type: " + privateKey);
+			}
+
+			final Curve curve = Curve.forECParameterSpec(pubParams);
+			final ECKey.Builder builder = new ECKey.Builder(curve, (ECPublicKey) publicKey);
+
+			if (privateKey != null) {
+				builder.privateKey(privateKey);
+			}
+			return builder.build();
+		}
+
+		if (publicKey instanceof RSAPublicKey) {
+			final RSAKey.Builder builder = new RSAKey.Builder((RSAPublicKey) publicKey);
+			if (privateKey instanceof RSAPrivateKey) {
+				builder.privateKey(privateKey);
+			} else if (privateKey != null) {
+				throw new JOSEException("Unsupported RSA private key type: " + privateKey);
+			}
+			return builder.build();
+		}
+
+		throw new JOSEException("Unsupported PEM keys" + keys);
+	}
+
+	private static void validateEcCurves(ECPublicKey publicKey, ECPrivateKey privateKey) throws JOSEException {
+		final ECParameterSpec pubParams = publicKey.getParams();
+		final ECParameterSpec privParams = privateKey.getParams();
+		if (!pubParams.getCurve().equals(privParams.getCurve())) {
+			throw new JOSEException("Public/private EC key curve mismatch: " + publicKey);
+		}
+		if (pubParams.getCofactor() != privParams.getCofactor()) {
+			throw new JOSEException("Public/private EC key cofactor mismatch: " + publicKey);
+		}
+		if (!pubParams.getGenerator().equals(privParams.getGenerator())) {
+			throw new JOSEException("Public/private EC key generator mismatch: " + publicKey);
+		}
+		if (!pubParams.getOrder().equals(privParams.getOrder())) {
+			throw new JOSEException("Public/private EC key order mismatch: " + publicKey);
+		}
+	}
+
+	private static KeyPair mergeKeyPairs(List<KeyPair> keys) throws JOSEException {
+		final KeyPair pair;
+		if (keys.size() == 1) {
+			// Assume public key, or private key easy to convert to public,
+			// otherwise not representable as a JWK
+			pair = keys.get(0);
+		} else if (keys.size() == 2) {
+			// If two keys, assume public + private keys separated
+			pair = twoKeysToKeyPair(keys);
+		} else {
+			throw new JOSEException("Expected key or pair of keys in PEM, got " + keys);
+		}
+		return pair;
+	}
+
+	private static List<KeyPair> toKeyPairList(final String pem) throws JOSEException {
+		final List<KeyPair> keys = KeyLoader.parsePemKeys(pem);
+		if (keys.isEmpty()) {
+			throw new JOSEException("Found no keys in PEM: " + pem);
+		}
+		return keys;
+	}
+
+	private static KeyPair twoKeysToKeyPair(final List<? extends KeyPair> keys) throws JOSEException {
+		final KeyPair key1 = keys.get(0);
+		final KeyPair key2 = keys.get(1);
+		if (key1.getPublic() != null && key2.getPrivate() != null) {
+			return new KeyPair(key1.getPublic(), key2.getPrivate());
+		} else if (key1.getPrivate() != null && key2.getPublic() != null) {
+			return new KeyPair(key2.getPublic(), key1.getPrivate());
+		} else {
+			throw new JOSEException("Not a private/public pair: " + keys);
 		}
 	}
 }

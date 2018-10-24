@@ -28,14 +28,19 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
-import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.util.IOUtils;
 import com.nimbusds.jose.util.X509CertUtils;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import junit.framework.TestCase;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
@@ -265,5 +270,119 @@ public class JWKTest extends TestCase {
 		assertEquals("PreoKbDNIPW8_AtZm2_sz22kYnEHvbDU80W0MCfYuXL8PjT7QjKhPKcG3LV67D2uB73BxnvzNgk", okp.getX().toString());
 		assertEquals("Dave", okp.getKeyID());
 		assertFalse(okp.isPrivate());
+	}
+
+	public void testParsePemRsaPublicKey() throws JOSEException {
+		RSAKey rsaKey = (RSAKey) JWK.parsePem(TestCredentials.RSA_PUBLIC_KEY_PEM);
+		assertEquals(KeyType.RSA, rsaKey.getKeyType());
+		assertFalse(rsaKey.isPrivate());
+	}
+
+	public void testParsePemRsaPublicKeyFromCert() throws JOSEException {
+		RSAKey rsaKey = (RSAKey) JWK.parsePem(TestCredentials.RSA_CERT_PEM);
+		assertEquals(KeyType.RSA, rsaKey.getKeyType());
+		assertFalse(rsaKey.isPrivate());
+	}
+
+	public void testParsePemRsaPrivateKey() throws JOSEException {
+		RSAKey rsaKey = (RSAKey) JWK.parsePem(TestCredentials.RSA_PRIVATE_KEY_PEM);
+		assertEquals(KeyType.RSA, rsaKey.getKeyType());
+		assertTrue(rsaKey.isPrivate());
+	}
+
+	public void testParsePemRsaPrivateKeyPlusCert() throws JOSEException {
+		RSAKey rsaKey = (RSAKey) JWK.parsePem(TestCredentials.RSA_CERT_PEM + "\r\n" + TestCredentials.RSA_PRIVATE_KEY_PEM);
+		assertEquals(KeyType.RSA, rsaKey.getKeyType());
+		assertTrue(rsaKey.isPrivate());
+	}
+
+
+	public void testParsePemEcPublicKey() throws JOSEException {
+		ECKey ecKey = (ECKey) JWK.parsePem(TestCredentials.EC_PUBLIC_KEY_PEM);
+		assertEquals(KeyType.EC, ecKey.getKeyType());
+		assertFalse(ecKey.isPrivate());
+	}
+
+	public void testParsePemEcPublicKeyFromCert() throws JOSEException {
+		ECKey ecKey = (ECKey) JWK.parsePem(TestCredentials.EC_CERT_PEM);
+		assertEquals(KeyType.EC, ecKey.getKeyType());
+		assertFalse(ecKey.isPrivate());
+	}
+
+	public void testParsePemEcPrivateKey() throws JOSEException {
+		ECKey ecKey = (ECKey) JWK.parsePem(TestCredentials.EC_PRIVATE_KEY_PEM);
+		assertEquals(KeyType.EC, ecKey.getKeyType());
+		assertTrue(ecKey.isPrivate());
+	}
+
+	public void testParsePemEcPrivateKeyPlusCert() throws JOSEException {
+		ECKey ecKey = (ECKey) JWK.parsePem(TestCredentials.EC_CERT_PEM + "\r\n" + TestCredentials.EC_PRIVATE_KEY_PEM);
+		assertEquals(KeyType.EC, ecKey.getKeyType());
+		assertTrue(ecKey.isPrivate());
+	}
+
+	public void testPemRoundtripSignVerify() throws JOSEException, ParseException {
+		RSAKey signingKey = (RSAKey) JWK.parsePem(TestCredentials.RSA_PRIVATE_KEY_PEM);
+		RSAKey validationKey = (RSAKey) JWK.parsePem(TestCredentials.RSA_PUBLIC_KEY_PEM);
+
+		JWSSigner signer = new RSASSASigner(signingKey);
+
+		// Prepare JWT with claims set
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+				.subject("alice")
+				.issuer("https://c2id.com")
+				.expirationTime(new Date(new Date().getTime() + 60 * 1000))
+				.build();
+
+		SignedJWT signedJWT = new SignedJWT(
+				new JWSHeader(JWSAlgorithm.RS256),
+				claimsSet);
+
+		// Compute the RSA signature
+		signedJWT.sign(signer);
+
+		String s = signedJWT.serialize();
+
+		// On the consumer side, parse the JWS and verify its RSA signature
+		signedJWT = SignedJWT.parse(s);
+
+		JWSVerifier verifier = new RSASSAVerifier(validationKey);
+		assertTrue(signedJWT.verify(verifier));
+	}
+
+	public void testPemRoundtripSignVerifyMismatch()
+			throws JOSEException, ParseException, NoSuchAlgorithmException {
+
+		KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
+		keyGenerator.initialize(2048);
+
+		KeyPair kp = keyGenerator.genKeyPair();
+		RSAPublicKey wrongValidationKey = (RSAPublicKey)kp.getPublic();
+
+		RSAKey signingKey = (RSAKey) JWK.parsePem(TestCredentials.RSA_PRIVATE_KEY_PEM);
+
+		JWSSigner signer = new RSASSASigner(signingKey);
+
+		// Prepare JWT with claims set
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+				.subject("alice")
+				.issuer("https://c2id.com")
+				.expirationTime(new Date(new Date().getTime() + 60 * 1000))
+				.build();
+
+		SignedJWT signedJWT = new SignedJWT(
+				new JWSHeader(JWSAlgorithm.RS256),
+				claimsSet);
+
+		// Compute the RSA signature
+		signedJWT.sign(signer);
+
+		String s = signedJWT.serialize();
+
+		// On the consumer side, parse the JWS and verify its RSA signature
+		signedJWT = SignedJWT.parse(s);
+
+		JWSVerifier verifier = new RSASSAVerifier(wrongValidationKey);
+		assertFalse(signedJWT.verify(verifier));
 	}
 }
