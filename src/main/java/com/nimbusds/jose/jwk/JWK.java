@@ -699,33 +699,35 @@ public abstract class JWK implements JSONAware, Serializable {
 	}
 
 	/**
-	 * Parses an RSA or EC JWK from the specified PEM-encoded object(s):
+	 * Parses an RSA or EC JWK from the specified string of one or more
+	 * PEM-encoded object(s):
 	 *
 	 * <ul>
-	 *     <li>X.509 certificate
-	 *     <li>public key (encoded as ASN.1 SubjectPublicKeyInfo)
-	 *     <li>private key (PKCS#8 encoded)
-	 *     <li>X.509 certificate and matching private key
-	 *     <li>public key and matching private key
+	 *     <li>X.509 certificate (PEM header: BEGIN CERTIFICATE)
+	 *     <li>PKCS#1 RSAPublicKey (PEM header: BEGIN RSA PUBLIC KEY)
+	 *     <li>X.509 SubjectPublicKeyInfo (PEM header: BEGIN PUBLIC KEY)
+	 *     <li>PKCS#1 RSAPrivateKey (PEM header: BEGIN RSA PRIVATE KEY)
+	 *     <li>PKCS#8 PrivateKeyInfo (PEM header: BEGIN PRIVATE KEY)
+	 *     <li>matching pair of the above
 	 * </ul>
 	 *
 	 * <p>Requires BouncyCastle.
 	 *
-	 * @param pemEncoded The PEM-encoded object(s).
+	 * @param pemEncodedObjects The string of PEM-encoded object(s).
 	 *
 	 * @return The public / (private) RSA or EC JWK.
 	 *
 	 * @throws JOSEException If RSA or EC key parsing failed.
 	 */
-	public static JWK parseFromPEMEncoded(final String pemEncoded)
+	public static JWK parseFromPEMEncodedObjects(final String pemEncodedObjects)
 		throws JOSEException {
 		
-		final List<KeyPair> keys = PEMEncodedKeyParser.parseKeys(pemEncoded);
+		final List<KeyPair> keys = PEMEncodedKeyParser.parseKeys(pemEncodedObjects);
 		if (keys.isEmpty()) {
 			throw new JOSEException("No PEM-encoded keys found");
 		}
 
-		final KeyPair pair = mergeKeyPairs(toKeyPairList(pemEncoded));
+		final KeyPair pair = mergeKeyPairs(toKeyPairList(pemEncodedObjects));
 
 		final PublicKey publicKey = pair.getPublic();
 		final PrivateKey privateKey = pair.getPrivate();
