@@ -20,10 +20,7 @@ package com.nimbusds.jose.jwk;
 
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.util.Base64;
-import com.nimbusds.jose.util.Base64URL;
-import com.nimbusds.jose.util.JSONObjectUtils;
-import com.nimbusds.jose.util.X509CertChainUtils;
+import com.nimbusds.jose.util.*;
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONObject;
 
@@ -78,7 +75,7 @@ import java.util.Set;
  *
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
- * @version 2018-02-27
+ * @version 2018-10-26
  */
 public abstract class JWK implements JSONAware, Serializable {
 
@@ -620,6 +617,44 @@ public abstract class JWK implements JSONAware, Serializable {
 		} else {
 			throw new JOSEException("Unsupported public key algorithm: " + cert.getPublicKey().getAlgorithm());
 		}
+	}
+	
+	
+	/**
+	 * Parses a public {@link RSAKey RSA} or {@link ECKey EC JWK} from the
+	 * specified PEM-encoded X.509 certificate. Requires BouncyCastle.
+	 *
+	 * <p><strong>Important:</strong> The X.509 certificate is not
+	 * validated!
+	 *
+	 * <p>Sets the following JWK parameters:
+	 *
+	 * <ul>
+	 *     <li>For an EC key the curve is obtained from the subject public
+	 *         key info algorithm parameters.
+	 *     <li>The JWK use inferred by {@link KeyUse#from}.
+	 *     <li>The JWK ID from the X.509 serial number (in base 10).
+	 *     <li>The JWK X.509 certificate chain (this certificate only).
+	 *     <li>The JWK X.509 certificate SHA-256 thumbprint.
+	 * </ul>
+	 *
+	 * @param pemEncodedCert The PEM-encoded X.509 certificate. Must not be
+	 *                       {@code null}.
+	 *
+	 * @return The public RSA or EC JWK.
+	 *
+	 * @throws JOSEException If parsing failed.
+	 */
+	public static JWK parseFromPEMEncodedX509Cert(final String pemEncodedCert)
+		throws JOSEException {
+		
+		X509Certificate cert = X509CertUtils.parse(pemEncodedCert);
+		
+		if (cert == null) {
+			throw new JOSEException("Couldn't parse PEM-encoded X.509 certificate");
+		}
+		
+		return parse(cert);
 	}
 	
 	

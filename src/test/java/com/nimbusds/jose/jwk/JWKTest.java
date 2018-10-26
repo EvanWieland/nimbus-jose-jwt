@@ -54,7 +54,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
  * Tests the base JWK class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-08-24
+ * @version 2018-10-26
  */
 public class JWKTest extends TestCase {
 	
@@ -65,13 +65,9 @@ public class JWKTest extends TestCase {
 	}
 	
 	
-	public void testParseRSAJWKFromX509Cert()
-		throws Exception {
+	private void validateJWKFromX509Cert(final JWK jwk, final KeyType expectedKeyType) {
 		
-		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/ietf.crt"), Charset.forName("UTF-8"));
-		X509Certificate cert = X509CertUtils.parse(pemEncodedCert);
-		JWK jwk = JWK.parse(cert);
-		assertEquals(KeyType.RSA, jwk.getKeyType());
+		assertEquals(expectedKeyType, jwk.getKeyType());
 		assertNull(jwk.getAlgorithm());
 		assertEquals(KeyUse.ENCRYPTION, jwk.getKeyUse());
 		assertNull(jwk.getKeyOperations());
@@ -79,7 +75,24 @@ public class JWKTest extends TestCase {
 		assertNull(jwk.getX509CertThumbprint());
 		assertNotNull(jwk.getX509CertSHA256Thumbprint());
 		assertFalse(jwk.isPrivate());
-		assertTrue(jwk instanceof RSAKey);
+		
+		if (KeyType.RSA.equals(expectedKeyType)) {
+			assertTrue(jwk instanceof RSAKey);
+		} else if (KeyType.EC.equals(expectedKeyType)) {
+			assertTrue(jwk instanceof ECKey);
+		} else {
+			fail();
+		}
+	}
+	
+	
+	public void testParseRSAJWKFromX509Cert()
+		throws Exception {
+		
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/ietf.crt"), Charset.forName("UTF-8"));
+		X509Certificate cert = X509CertUtils.parse(pemEncodedCert);
+		JWK jwk = JWK.parse(cert);
+		validateJWKFromX509Cert(jwk, KeyType.RSA);
 	}
 	
 	
@@ -89,15 +102,26 @@ public class JWKTest extends TestCase {
 		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/wikipedia.crt"), Charset.forName("UTF-8"));
 		X509Certificate cert = X509CertUtils.parse(pemEncodedCert);
 		JWK jwk = JWK.parse(cert);
-		assertEquals(KeyType.EC, jwk.getKeyType());
-		assertNull(jwk.getAlgorithm());
-		assertEquals(KeyUse.ENCRYPTION, jwk.getKeyUse());
-		assertNull(jwk.getKeyOperations());
-		assertEquals(1, jwk.getX509CertChain().size());
-		assertNull(jwk.getX509CertThumbprint());
-		assertNotNull(jwk.getX509CertSHA256Thumbprint());
-		assertFalse(jwk.isPrivate());
-		assertTrue(jwk instanceof ECKey);
+		validateJWKFromX509Cert(jwk, KeyType.EC);
+		assertEquals(Curve.P_256, ((ECKey)jwk).getCurve());
+	}
+	
+	
+	public void testParseRSAJWKFromX509Cert_pem()
+		throws Exception {
+		
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/ietf.crt"), Charset.forName("UTF-8"));
+		JWK jwk = JWK.parseFromPEMEncodedX509Cert(pemEncodedCert);
+		validateJWKFromX509Cert(jwk, KeyType.RSA);
+	}
+	
+	
+	public void testParseECJWKFromX509Cert_pem()
+		throws Exception {
+		
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/wikipedia.crt"), Charset.forName("UTF-8"));
+		JWK jwk = JWK.parseFromPEMEncodedX509Cert(pemEncodedCert);
+		validateJWKFromX509Cert(jwk, KeyType.EC);
 		assertEquals(Curve.P_256, ((ECKey)jwk).getCurve());
 	}
 	

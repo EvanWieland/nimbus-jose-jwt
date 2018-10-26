@@ -892,3 +892,6 @@ version 6.1.1 (2018-10-11)
       PKCS#11 backed RSA keys that have an RSAPrivateKey interface but will
       throw an Exception when trying to call the RSAPrivateKey.getModulus
       method (iss #279).
+
+version 6.2 (2018-10-26)
+    * Adds new JWK.parseFromPEMEncodedX509Cert method.
