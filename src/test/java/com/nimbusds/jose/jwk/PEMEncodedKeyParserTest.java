@@ -36,28 +36,28 @@ public class PEMEncodedKeyParserTest {
     // EC
     @Test
     public void loadCertificate() throws Exception {
-        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeysFromPEMEncodedObjects(SamplePEMEncodedObjects.EC_CERT_PEM);
+        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeys(SamplePEMEncodedObjects.EC_CERT_PEM);
         final ECPublicKey key = (ECPublicKey) credential.get(0).getPublic();
         assertNotNull(key);
     }
 
     @Test
     public void loadPrivateKey() throws Exception {
-        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeysFromPEMEncodedObjects(SamplePEMEncodedObjects.EC_PRIVATE_KEY_PEM);
+        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeys(SamplePEMEncodedObjects.EC_PRIVATE_KEY_PEM);
         final ECPrivateKey key = (ECPrivateKey) credential.get(0).getPrivate();
         assertNotNull(key);
     }
 
     @Test
     public void loadPublicFromPrivateKey() throws Exception {
-        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeysFromPEMEncodedObjects(SamplePEMEncodedObjects.EC_PRIVATE_KEY_PEM);
+        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeys(SamplePEMEncodedObjects.EC_PRIVATE_KEY_PEM);
         final ECPublicKey key = (ECPublicKey) credential.get(0).getPublic();
         assertNotNull(key);
     }
 
     @Test
     public void loadPublicKey() throws Exception {
-        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeysFromPEMEncodedObjects(SamplePEMEncodedObjects.EC_PUBLIC_KEY_PEM);
+        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeys(SamplePEMEncodedObjects.EC_PUBLIC_KEY_PEM);
         final ECPublicKey key = (ECPublicKey) credential.get(0).getPublic();
         assertNotNull(key);
         assertNull(credential.get(0).getPrivate());
@@ -66,28 +66,28 @@ public class PEMEncodedKeyParserTest {
     // RSA
     @Test
     public void loadRsaCertificate() throws Exception {
-        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeysFromPEMEncodedObjects(SamplePEMEncodedObjects.RSA_CERT_PEM);
+        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeys(SamplePEMEncodedObjects.RSA_CERT_PEM);
         final RSAPublicKey key = (RSAPublicKey) credential.get(0).getPublic();
         assertNotNull(key);
     }
 
     @Test
     public void loadRsaPrivateKey() throws Exception {
-        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeysFromPEMEncodedObjects(SamplePEMEncodedObjects.RSA_PRIVATE_KEY_PEM);
+        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeys(SamplePEMEncodedObjects.RSA_PRIVATE_KEY_PEM);
         final RSAPrivateKey key = (RSAPrivateKey) credential.get(0).getPrivate();
         assertNotNull(key);
     }
 
     @Test
     public void loadRsaPublicFromPrivateKey() throws Exception {
-        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeysFromPEMEncodedObjects(SamplePEMEncodedObjects.RSA_PRIVATE_KEY_PEM);
+        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeys(SamplePEMEncodedObjects.RSA_PRIVATE_KEY_PEM);
         final RSAPublicKey key = (RSAPublicKey) credential.get(0).getPublic();
         assertNotNull(key);
     }
 
     @Test
     public void loadRsaPublicKey() throws Exception {
-        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeysFromPEMEncodedObjects(SamplePEMEncodedObjects.RSA_PUBLIC_KEY_PEM);
+        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeys(SamplePEMEncodedObjects.RSA_PUBLIC_KEY_PEM);
         final RSAPublicKey key = (RSAPublicKey) credential.get(0).getPublic();
         assertNotNull(key);
     }
@@ -95,7 +95,7 @@ public class PEMEncodedKeyParserTest {
     // malformed, no keys
     @Test
     public void loadEmptyKey() throws Exception {
-        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeysFromPEMEncodedObjects("");
+        final List<KeyPair> credential = PEMEncodedKeyParser.parseKeys("");
         assertTrue(credential.isEmpty());
     }
 }

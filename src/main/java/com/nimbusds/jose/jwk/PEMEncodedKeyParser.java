@@ -63,7 +63,7 @@ class PEMEncodedKeyParser {
 	 * 
 	 * @throws JOSEException If parsing failed.
 	 */
-	static List<KeyPair> parseKeysFromPEMEncodedObjects(final String pemEncodedKeys)
+	static List<KeyPair> parseKeys(final String pemEncodedKeys)
 		throws JOSEException {
 		
 		// Strips the "---- {BEGIN,END} {CERTIFICATE,PUBLIC/PRIVATE KEY} -----"-like header and footer lines,
