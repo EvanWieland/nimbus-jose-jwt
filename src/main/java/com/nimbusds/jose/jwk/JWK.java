@@ -720,7 +720,7 @@ public abstract class JWK implements JSONAware, Serializable {
 	public static JWK parseFromPEMEncoded(final String pemEncoded)
 		throws JOSEException {
 		
-		final List<KeyPair> keys = PEMEncodedKeyParser.parsePemKeys(pemEncoded);
+		final List<KeyPair> keys = PEMEncodedKeyParser.parseKeysFromPEMEncodedObjects(pemEncoded);
 		if (keys.isEmpty()) {
 			throw new JOSEException("No PEM-encoded keys found");
 		}
@@ -799,7 +799,7 @@ public abstract class JWK implements JSONAware, Serializable {
 
 	
 	private static List<KeyPair> toKeyPairList(final String pem) throws JOSEException {
-		final List<KeyPair> keys = PEMEncodedKeyParser.parsePemKeys(pem);
+		final List<KeyPair> keys = PEMEncodedKeyParser.parseKeysFromPEMEncodedObjects(pem);
 		if (keys.isEmpty()) {
 			throw new JOSEException("No PEM-encoded keys found");
 		}
