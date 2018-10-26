@@ -297,57 +297,57 @@ public class JWKTest extends TestCase {
 	}
 
 	public void testParsePemRsaPublicKey() throws JOSEException {
-		RSAKey rsaKey = (RSAKey) JWK.parseFromPEMEncoded(TestCredentials.RSA_PUBLIC_KEY_PEM);
+		RSAKey rsaKey = (RSAKey) JWK.parseFromPEMEncoded(SamplePEMEncodedObjects.RSA_PUBLIC_KEY_PEM);
 		assertEquals(KeyType.RSA, rsaKey.getKeyType());
 		assertFalse(rsaKey.isPrivate());
 	}
 
 	public void testParsePemRsaPublicKeyFromCert() throws JOSEException {
-		RSAKey rsaKey = (RSAKey) JWK.parseFromPEMEncoded(TestCredentials.RSA_CERT_PEM);
+		RSAKey rsaKey = (RSAKey) JWK.parseFromPEMEncoded(SamplePEMEncodedObjects.RSA_CERT_PEM);
 		assertEquals(KeyType.RSA, rsaKey.getKeyType());
 		assertFalse(rsaKey.isPrivate());
 	}
 
 	public void testParsePemRsaPrivateKey() throws JOSEException {
-		RSAKey rsaKey = (RSAKey) JWK.parseFromPEMEncoded(TestCredentials.RSA_PRIVATE_KEY_PEM);
+		RSAKey rsaKey = (RSAKey) JWK.parseFromPEMEncoded(SamplePEMEncodedObjects.RSA_PRIVATE_KEY_PEM);
 		assertEquals(KeyType.RSA, rsaKey.getKeyType());
 		assertTrue(rsaKey.isPrivate());
 	}
 
 	public void testParsePemRsaPrivateKeyPlusCert() throws JOSEException {
-		RSAKey rsaKey = (RSAKey) JWK.parseFromPEMEncoded(TestCredentials.RSA_CERT_PEM + "\r\n" + TestCredentials.RSA_PRIVATE_KEY_PEM);
+		RSAKey rsaKey = (RSAKey) JWK.parseFromPEMEncoded(SamplePEMEncodedObjects.RSA_CERT_PEM + "\r\n" + SamplePEMEncodedObjects.RSA_PRIVATE_KEY_PEM);
 		assertEquals(KeyType.RSA, rsaKey.getKeyType());
 		assertTrue(rsaKey.isPrivate());
 	}
 
 
 	public void testParsePemEcPublicKey() throws JOSEException {
-		ECKey ecKey = (ECKey) JWK.parseFromPEMEncoded(TestCredentials.EC_PUBLIC_KEY_PEM);
+		ECKey ecKey = (ECKey) JWK.parseFromPEMEncoded(SamplePEMEncodedObjects.EC_PUBLIC_KEY_PEM);
 		assertEquals(KeyType.EC, ecKey.getKeyType());
 		assertFalse(ecKey.isPrivate());
 	}
 
 	public void testParsePemEcPublicKeyFromCert() throws JOSEException {
-		ECKey ecKey = (ECKey) JWK.parseFromPEMEncoded(TestCredentials.EC_CERT_PEM);
+		ECKey ecKey = (ECKey) JWK.parseFromPEMEncoded(SamplePEMEncodedObjects.EC_CERT_PEM);
 		assertEquals(KeyType.EC, ecKey.getKeyType());
 		assertFalse(ecKey.isPrivate());
 	}
 
 	public void testParsePemEcPrivateKey() throws JOSEException {
-		ECKey ecKey = (ECKey) JWK.parseFromPEMEncoded(TestCredentials.EC_PRIVATE_KEY_PEM);
+		ECKey ecKey = (ECKey) JWK.parseFromPEMEncoded(SamplePEMEncodedObjects.EC_PRIVATE_KEY_PEM);
 		assertEquals(KeyType.EC, ecKey.getKeyType());
 		assertTrue(ecKey.isPrivate());
 	}
 
 	public void testParsePemEcPrivateKeyPlusCert() throws JOSEException {
-		ECKey ecKey = (ECKey) JWK.parseFromPEMEncoded(TestCredentials.EC_CERT_PEM + "\r\n" + TestCredentials.EC_PRIVATE_KEY_PEM);
+		ECKey ecKey = (ECKey) JWK.parseFromPEMEncoded(SamplePEMEncodedObjects.EC_CERT_PEM + "\r\n" + SamplePEMEncodedObjects.EC_PRIVATE_KEY_PEM);
 		assertEquals(KeyType.EC, ecKey.getKeyType());
 		assertTrue(ecKey.isPrivate());
 	}
 
 	public void testPemRoundtripSignVerify() throws JOSEException, ParseException {
-		RSAKey signingKey = (RSAKey) JWK.parseFromPEMEncoded(TestCredentials.RSA_PRIVATE_KEY_PEM);
-		RSAKey validationKey = (RSAKey) JWK.parseFromPEMEncoded(TestCredentials.RSA_PUBLIC_KEY_PEM);
+		RSAKey signingKey = (RSAKey) JWK.parseFromPEMEncoded(SamplePEMEncodedObjects.RSA_PRIVATE_KEY_PEM);
+		RSAKey validationKey = (RSAKey) JWK.parseFromPEMEncoded(SamplePEMEncodedObjects.RSA_PUBLIC_KEY_PEM);
 
 		JWSSigner signer = new RSASSASigner(signingKey);
 
@@ -383,7 +383,7 @@ public class JWKTest extends TestCase {
 		KeyPair kp = keyGenerator.genKeyPair();
 		RSAPublicKey wrongValidationKey = (RSAPublicKey)kp.getPublic();
 
-		RSAKey signingKey = (RSAKey) JWK.parseFromPEMEncoded(TestCredentials.RSA_PRIVATE_KEY_PEM);
+		RSAKey signingKey = (RSAKey) JWK.parseFromPEMEncoded(SamplePEMEncodedObjects.RSA_PRIVATE_KEY_PEM);
 
 		JWSSigner signer = new RSASSASigner(signingKey);
 

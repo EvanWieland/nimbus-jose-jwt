@@ -24,7 +24,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public final class TestCredentials {
+public final class SamplePEMEncodedObjects {
+    
     // openssl ecparam -name secp256r1 -genkey -noout -out src/test/resources/ecprivkey.pem
     private static final URL EC_PRIVATE_KEY_PEM_URL = getResource("ecprivkey.pem");
     // openssl ec -in src/test/resources/ecprivkey.pem -pubout -out src/test/resources/ecpubkey.pem
@@ -47,7 +48,7 @@ public final class TestCredentials {
     public static final String RSA_CERT_PEM = loadUrl(RSA_CERT_PEM_URL);
 
     private static URL getResource(final String resourceName) {
-        final ClassLoader loader = TestCredentials.class.getClassLoader();
+        final ClassLoader loader = SamplePEMEncodedObjects.class.getClassLoader();
         return loader.getResource("sample-pem-encoded-objects/" + resourceName);
     }
 
