@@ -894,4 +894,7 @@ version 6.1.1 (2018-10-11)
       method (iss #279).
 
 version 6.2 (2018-10-26)
+    * Adds new JWK.parseFromPEMEncoded method for parsing a public / private
+      JWK from a PEM-encoded X.509 certificate, PEM-encoded PKCS#8 private key,
+      or PEM-encoded public key.
     * Adds new JWK.parseFromPEMEncodedX509Cert method.

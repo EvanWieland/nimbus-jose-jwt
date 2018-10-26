@@ -75,6 +75,7 @@ import java.util.Set;
  *
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
+ * @author Stefan Larsson
  * @version 2018-10-26
  */
 public abstract class JWK implements JSONAware, Serializable {
@@ -698,20 +699,33 @@ public abstract class JWK implements JSONAware, Serializable {
 	}
 
 	/**
-	 * Loads a JWK from a PEM-formatted string.
-	 * The JWK can be a public / private {@link RSAKey RSA key} or a public / private
-	 * {@link ECKey EC key}.
-	 * @param pem The PEM-formatted key.
-	 * @return The public / private RSA or EC JWK.
+	 * Parses an RSA or EC JWK from the specified PEM-encoded object(s):
+	 *
+	 * <ul>
+	 *     <li>X.509 certificate
+	 *     <li>public key (encoded as ASN.1 SubjectPublicKeyInfo)
+	 *     <li>private key (PKCS#8 encoded)
+	 *     <li>X.509 certificate and matching private key
+	 *     <li>public key and matching private key
+	 * </ul>
+	 *
+	 * <p>Requires BouncyCastle.
+	 *
+	 * @param pemEncoded The PEM-encoded object(s).
+	 *
+	 * @return The public / (private) RSA or EC JWK.
+	 *
 	 * @throws JOSEException If RSA or EC key parsing failed.
 	 */
-	public static JWK parsePem(final String pem) throws JOSEException {
-		final List<KeyPair> keys = KeyLoader.parsePemKeys(pem);
+	public static JWK parseFromPEMEncoded(final String pemEncoded)
+		throws JOSEException {
+		
+		final List<KeyPair> keys = KeyLoader.parsePemKeys(pemEncoded);
 		if (keys.isEmpty()) {
-			throw new JOSEException("Found no keys in PEM: " + pem);
+			throw new JOSEException("No PEM-encoded keys found");
 		}
 
-		final KeyPair pair = mergeKeyPairs(toKeyPairList(pem));
+		final KeyPair pair = mergeKeyPairs(toKeyPairList(pemEncoded));
 
 		final PublicKey publicKey = pair.getPublic();
 		final PrivateKey privateKey = pair.getPrivate();
@@ -746,8 +760,9 @@ public abstract class JWK implements JSONAware, Serializable {
 			return builder.build();
 		}
 
-		throw new JOSEException("Unsupported PEM keys" + keys);
+		throw new JOSEException("Unsupported algorithm of PEM-encoded key: " + publicKey.getAlgorithm());
 	}
+	
 
 	private static void validateEcCurves(ECPublicKey publicKey, ECPrivateKey privateKey) throws JOSEException {
 		final ECParameterSpec pubParams = publicKey.getParams();
@@ -766,7 +781,8 @@ public abstract class JWK implements JSONAware, Serializable {
 		}
 	}
 
-	private static KeyPair mergeKeyPairs(List<KeyPair> keys) throws JOSEException {
+	
+	private static KeyPair mergeKeyPairs(final List<KeyPair> keys) throws JOSEException {
 		final KeyPair pair;
 		if (keys.size() == 1) {
 			// Assume public key, or private key easy to convert to public,
@@ -776,19 +792,21 @@ public abstract class JWK implements JSONAware, Serializable {
 			// If two keys, assume public + private keys separated
 			pair = twoKeysToKeyPair(keys);
 		} else {
-			throw new JOSEException("Expected key or pair of keys in PEM, got " + keys);
+			throw new JOSEException("Expected key or pair of PEM-encoded keys");
 		}
 		return pair;
 	}
 
+	
 	private static List<KeyPair> toKeyPairList(final String pem) throws JOSEException {
 		final List<KeyPair> keys = KeyLoader.parsePemKeys(pem);
 		if (keys.isEmpty()) {
-			throw new JOSEException("Found no keys in PEM: " + pem);
+			throw new JOSEException("No PEM-encoded keys found");
 		}
 		return keys;
 	}
 
+	
 	private static KeyPair twoKeysToKeyPair(final List<? extends KeyPair> keys) throws JOSEException {
 		final KeyPair key1 = keys.get(0);
 		final KeyPair key2 = keys.get(1);
@@ -797,7 +815,7 @@ public abstract class JWK implements JSONAware, Serializable {
 		} else if (key1.getPrivate() != null && key2.getPublic() != null) {
 			return new KeyPair(key2.getPublic(), key1.getPrivate());
 		} else {
-			throw new JOSEException("Not a private/public pair: " + keys);
+			throw new JOSEException("Not a public/private key pair");
 		}
 	}
 }
