@@ -88,7 +88,7 @@ public class KeyUseTest extends TestCase {
 	public void testInferKeyUseFromX509Cert_RSAENC()
 		throws IOException {
 		
-		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/ietf.crt"), Charset.forName("UTF-8"));
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/resources/sample-certs/ietf.crt"), Charset.forName("UTF-8"));
 		X509Certificate x509Cert = X509CertUtils.parse(pemEncodedCert);
 		assertEquals(KeyUse.ENCRYPTION, KeyUse.from(x509Cert));
 	}
@@ -97,7 +97,7 @@ public class KeyUseTest extends TestCase {
 	public void testInferKeyUseFromX509Cert_ECDH()
 		throws IOException {
 		
-		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/wikipedia.crt"), Charset.forName("UTF-8"));
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/resources/sample-certs/wikipedia.crt"), Charset.forName("UTF-8"));
 		X509Certificate x509Cert = X509CertUtils.parse(pemEncodedCert);
 		assertEquals(KeyUse.ENCRYPTION, KeyUse.from(x509Cert));
 	}

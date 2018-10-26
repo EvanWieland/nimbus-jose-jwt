@@ -48,7 +48,7 @@ public final class TestCredentials {
 
     private static URL getResource(final String resourceName) {
         final ClassLoader loader = TestCredentials.class.getClassLoader();
-        return loader.getResource(resourceName);
+        return loader.getResource("sample-pem-encoded-objects/" + resourceName);
     }
 
     private static String loadUrl(final URL url) {

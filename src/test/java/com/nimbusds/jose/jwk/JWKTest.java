@@ -89,7 +89,7 @@ public class JWKTest extends TestCase {
 	public void testParseRSAJWKFromX509Cert()
 		throws Exception {
 		
-		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/ietf.crt"), Charset.forName("UTF-8"));
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/resources/sample-certs/ietf.crt"), Charset.forName("UTF-8"));
 		X509Certificate cert = X509CertUtils.parse(pemEncodedCert);
 		JWK jwk = JWK.parse(cert);
 		validateJWKFromX509Cert(jwk, KeyType.RSA);
@@ -99,7 +99,7 @@ public class JWKTest extends TestCase {
 	public void testParseECJWKFromX509Cert()
 		throws Exception {
 		
-		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/wikipedia.crt"), Charset.forName("UTF-8"));
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/resources/sample-certs/wikipedia.crt"), Charset.forName("UTF-8"));
 		X509Certificate cert = X509CertUtils.parse(pemEncodedCert);
 		JWK jwk = JWK.parse(cert);
 		validateJWKFromX509Cert(jwk, KeyType.EC);
@@ -110,7 +110,7 @@ public class JWKTest extends TestCase {
 	public void testParseRSAJWKFromX509Cert_pem()
 		throws Exception {
 		
-		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/ietf.crt"), Charset.forName("UTF-8"));
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/resources/sample-certs/ietf.crt"), Charset.forName("UTF-8"));
 		JWK jwk = JWK.parseFromPEMEncodedX509Cert(pemEncodedCert);
 		validateJWKFromX509Cert(jwk, KeyType.RSA);
 	}
@@ -119,7 +119,7 @@ public class JWKTest extends TestCase {
 	public void testParseECJWKFromX509Cert_pem()
 		throws Exception {
 		
-		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/wikipedia.crt"), Charset.forName("UTF-8"));
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/resources/sample-certs/wikipedia.crt"), Charset.forName("UTF-8"));
 		JWK jwk = JWK.parseFromPEMEncodedX509Cert(pemEncodedCert);
 		validateJWKFromX509Cert(jwk, KeyType.EC);
 		assertEquals(Curve.P_256, ((ECKey)jwk).getCurve());

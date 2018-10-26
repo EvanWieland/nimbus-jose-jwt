@@ -86,7 +86,7 @@ public class OpenSSLWithECKeyTest extends TestCase {
 
 		// Extract EC key pair generated with
 		// openssl ecparam -genkey -name prime256v1 -noout -out testprivatekey-ec256.pem
-		KeyPair keyPair = parseKeyPair("./src/test/keys/test-ec256-key.pem");
+		KeyPair keyPair = parseKeyPair("./src/test/resources/sample-pem-encoded-keys/test-ec256-key.pem");
 
 		ECPrivateKey privateKey = (ECPrivateKey)keyPair.getPrivate();
 		privateKey = fixAlg(privateKey); // BC parses key alg as ECDSA instead of EC
@@ -112,7 +112,7 @@ public class OpenSSLWithECKeyTest extends TestCase {
 		// Extract EC key pair generated with
 		// openssl ecparam -genkey -name secp384r1 -noout -out test-ec384-key.pem
 
-		KeyPair keyPair = parseKeyPair("./src/test/keys/test-ec384-key.pem");
+		KeyPair keyPair = parseKeyPair("./src/test/resources/sample-pem-encoded-keys/test-ec384-key.pem");
 
 		ECPrivateKey privateKey = (ECPrivateKey)keyPair.getPrivate();
 		privateKey = fixAlg(privateKey); // BC parses key alg as ECDSA instead of EC
@@ -138,7 +138,7 @@ public class OpenSSLWithECKeyTest extends TestCase {
 		// Extract EC key pair generated with
 		// openssl ecparam -genkey -name secp521r1 -noout -out test-ec512-key.pem
 
-		KeyPair keyPair = parseKeyPair("./src/test/keys/test-ec512-key.pem");
+		KeyPair keyPair = parseKeyPair("./src/test/resources/sample-pem-encoded-keys/test-ec512-key.pem");
 
 		ECPrivateKey privateKey = (ECPrivateKey)keyPair.getPrivate();
 		privateKey = fixAlg(privateKey); // BC parses key alg as ECDSA instead of EC

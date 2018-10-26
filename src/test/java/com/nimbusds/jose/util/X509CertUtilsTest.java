@@ -126,7 +126,7 @@ public class X509CertUtilsTest extends TestCase {
 	public void testParseCertWithECKey()
 		throws Exception {
 		
-		String content = IOUtils.readFileToString(new File("src/test/certs/wikipedia.crt"), Charset.forName("UTF-8"));
+		String content = IOUtils.readFileToString(new File("src/test/resources/sample-certs/wikipedia.crt"), Charset.forName("UTF-8"));
 		
 		X509Certificate cert = X509CertUtils.parse(content);
 		
@@ -155,7 +155,7 @@ public class X509CertUtilsTest extends TestCase {
 	public void testParseCertWithRSAKey()
 		throws Exception {
 		
-		String content = IOUtils.readFileToString(new File("src/test/certs/ietf.crt"), Charset.forName("UTF-8"));
+		String content = IOUtils.readFileToString(new File("src/test/resources/sample-certs/ietf.crt"), Charset.forName("UTF-8"));
 		
 		X509Certificate cert = X509CertUtils.parse(content);
 		

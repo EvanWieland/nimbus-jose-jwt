@@ -845,7 +845,7 @@ public class ECKeyTest extends TestCase {
 		throws Exception {
 		
 		MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/wikipedia.crt"), Charset.forName("UTF-8"));
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/resources/sample-certs/wikipedia.crt"), Charset.forName("UTF-8"));
 		X509Certificate cert = X509CertUtils.parse(pemEncodedCert);
 		ECKey ecKey = ECKey.parse(cert);
 		
@@ -864,7 +864,7 @@ public class ECKeyTest extends TestCase {
 	public void testParseFromX509CertWithRSAPublicKey()
 		throws Exception {
 		
-		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/ietf.crt"), Charset.forName("UTF-8"));
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/resources/sample-certs/ietf.crt"), Charset.forName("UTF-8"));
 		X509Certificate cert = X509CertUtils.parse(pemEncodedCert);
 		
 		try {
@@ -946,7 +946,7 @@ public class ECKeyTest extends TestCase {
 		char[] password = "secret".toCharArray();
 		keyStore.load(null, password);
 		
-		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/wikipedia.crt"), Charset.forName("UTF-8"));
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/resources/sample-certs/wikipedia.crt"), Charset.forName("UTF-8"));
 		X509Certificate cert = X509CertUtils.parse(pemEncodedCert);
 		
 		keyStore.setCertificateEntry("1", cert);
@@ -972,7 +972,7 @@ public class ECKeyTest extends TestCase {
 		char[] password = "secret".toCharArray();
 		keyStore.load(null, password);
 		
-		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/certs/ietf.crt"), Charset.forName("UTF-8"));
+		String pemEncodedCert = IOUtils.readFileToString(new File("src/test/resources/sample-certs/ietf.crt"), Charset.forName("UTF-8"));
 		X509Certificate cert = X509CertUtils.parse(pemEncodedCert);
 		
 		keyStore.setCertificateEntry("1", cert);
