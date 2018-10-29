@@ -86,4 +86,28 @@ public class DefaultJWKSetCacheTest extends TestCase {
 		
 		assertTrue(cache.isExpired());
 	}
+	
+	
+	public void testNoExpiration() {
+		
+		DefaultJWKSetCache cache = new DefaultJWKSetCache(-1L, null);
+		
+		assertEquals(-1L, cache.getLifespan(TimeUnit.HOURS));
+		
+		assertNull(cache.get());
+		
+		assertFalse(cache.isExpired());
+		
+		assertEquals(-1L, cache.getPutTimestamp());
+		
+		JWKSet jwkSet = new JWKSet();
+		
+		cache.put(jwkSet);
+		
+		assertEquals(jwkSet, cache.get());
+		
+		assertTrue(cache.getPutTimestamp() >= new Date().getTime());
+		
+		assertFalse(cache.isExpired());
+	}
 }
