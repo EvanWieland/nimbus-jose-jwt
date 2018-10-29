@@ -106,6 +106,7 @@ public class RemoteJWKSetTest {
 
 		assertEquals(jwkSetURL, jwkSetSource.getJWKSetURL());
 		assertNotNull(jwkSetSource.getResourceRetriever());
+		assertTrue(jwkSetSource.getJWKSetCache() instanceof DefaultJWKSetCache);
 		assertNull(jwkSetSource.getCachedJWKSet());
 
 		List<JWK> matches = jwkSetSource.get(new JWKSelector(new JWKMatcher.Builder().keyID("1").build()), null);
