@@ -904,5 +904,7 @@ version 6.2 (2018-10-26)
     * Adds new JWK.parseFromPEMEncodedX509Cert method.
 
 version 6.3 (2018-11-06)
+    * Allows RemoteJWKSet to be configured with a JWKSetCache, the retrieved
+      JWK set is cached for 5 minutes by the DefaultJWKSetCache (iss #278).
     * Updates JSONObjectUtils to return null on missing member or null member
       value where the Java type permits (iss #282).
