@@ -33,7 +33,7 @@ import net.minidev.json.parser.JSONParser;
  * JSON object helper methods for parsing and typed retrieval of member values.
  *
  * @author Vladimir Dzhuvinov
- * @version 2015-04-15
+ * @version 2018-11-06
  */
 public class JSONObjectUtils {
 
@@ -109,21 +109,16 @@ public class JSONObjectUtils {
 	 * @param clazz The expected class of the JSON object member value. Must
 	 *              not be {@code null}.
 	 *
-	 * @return The JSON object member value.
+	 * @return The JSON object member value, may be {@code null}.
 	 *
-	 * @throws ParseException If the value is missing, {@code null} or not
-	 *                        of the expected type.
+	 * @throws ParseException If the value is not of the expected type.
 	 */
 	@SuppressWarnings("unchecked")
 	private static <T> T getGeneric(final JSONObject o, final String key, final Class<T> clazz)
-			throws ParseException {
-
-		if (! o.containsKey(key)) {
-			throw new ParseException("Missing JSON object member with key \"" + key + "\"", 0);
-		}
+		throws ParseException {
 
 		if (o.get(key) == null) {
-			throw new ParseException("JSON object member with key \"" + key + "\" has null value", 0);
+			return null;
 		}
 
 		Object value = o.get(key);
@@ -142,15 +137,21 @@ public class JSONObjectUtils {
 	 * @param o   The JSON object. Must not be {@code null}.
 	 * @param key The JSON object member key. Must not be {@code null}.
 	 *
-	 * @return The member value.
+	 * @return The JSON object member value.
 	 *
-	 * @throws ParseException If the value is missing, {@code null} or not
-	 *                        of the expected type.
+	 * @throws ParseException If the member is missing, the value is
+	 *                        {@code null} or not of the expected type.
 	 */
 	public static boolean getBoolean(final JSONObject o, final String key)
-			throws ParseException {
+		throws ParseException {
 
-		return getGeneric(o, key, Boolean.class);
+		Boolean value = getGeneric(o, key, Boolean.class);
+		
+		if (value == null) {
+			throw new ParseException("JSON object member with key \"" + key + "\" is missing or null", 0);
+		}
+		
+		return value;
 	}
 
 
@@ -160,15 +161,21 @@ public class JSONObjectUtils {
 	 * @param o   The JSON object. Must not be {@code null}.
 	 * @param key The JSON object member key. Must not be {@code null}.
 	 *
-	 * @return The member value.
+	 * @return The JSON object member value.
 	 *
-	 * @throws ParseException If the value is missing, {@code null} or not
-	 *                        of the expected type.
+	 * @throws ParseException If the member is missing, the value is
+	 *                        {@code null} or not of the expected type.
 	 */
 	public static int getInt(final JSONObject o, final String key)
-			throws ParseException {
+		throws ParseException {
 
-		return getGeneric(o, key, Number.class).intValue();	
+		Number value = getGeneric(o, key, Number.class);
+		
+		if (value == null) {
+			throw new ParseException("JSON object member with key \"" + key + "\" is missing or null", 0);
+		}
+		
+		return value.intValue();
 	}
 
 
@@ -178,15 +185,21 @@ public class JSONObjectUtils {
 	 * @param o   The JSON object. Must not be {@code null}.
 	 * @param key The JSON object member key. Must not be {@code null}.
 	 *
-	 * @return The member value.
+	 * @return The JSON object member value.
 	 *
-	 * @throws ParseException If the value is missing, {@code null} or not
-	 *                        of the expected type.
+	 * @throws ParseException If the member is missing, the value is
+	 *                        {@code null} or not of the expected type.
 	 */
 	public static long getLong(final JSONObject o, final String key)
-			throws ParseException {
+		throws ParseException {
 
-		return getGeneric(o, key, Number.class).longValue();
+		Number value = getGeneric(o, key, Number.class);
+		
+		if (value == null) {
+			throw new ParseException("JSON object member with key \"" + key + "\" is missing or null", 0);
+		}
+		
+		return value.longValue();
 	}
 
 
@@ -196,15 +209,21 @@ public class JSONObjectUtils {
 	 * @param o   The JSON object. Must not be {@code null}.
 	 * @param key The JSON object member key. Must not be {@code null}.
 	 *
-	 * @return The member value.
+	 * @return The JSON object member value, may be {@code null}.
 	 *
-	 * @throws ParseException If the value is missing, {@code null} or not
-	 *                        of the expected type.
+	 * @throws ParseException If the member is missing, the value is
+	 *                        {@code null} or not of the expected type.
 	 */
 	public static float getFloat(final JSONObject o, final String key)
-			throws ParseException {
+		throws ParseException {
 
-		return getGeneric(o, key, Number.class).floatValue();
+		Number value = getGeneric(o, key, Number.class);
+		
+		if (value == null) {
+			throw new ParseException("JSON object member with key \"" + key + "\" is missing or null", 0);
+		}
+		
+		return value.floatValue();
 	}
 
 
@@ -214,15 +233,21 @@ public class JSONObjectUtils {
 	 * @param o   The JSON object. Must not be {@code null}.
 	 * @param key The JSON object member key. Must not be {@code null}.
 	 *
-	 * @return The member value.
+	 * @return The JSON object member value, may be {@code null}.
 	 *
-	 * @throws ParseException If the value is missing, {@code null} or not
-	 *                        of the expected type.
+	 * @throws ParseException If the member is missing, the value is
+	 *                        {@code null} or not of the expected type.
 	 */
 	public static double getDouble(final JSONObject o, final String key)
-			throws ParseException {
+		throws ParseException {
 
-		return getGeneric(o, key, Number.class).doubleValue();
+		Number value = getGeneric(o, key, Number.class);
+		
+		if (value == null) {
+			throw new ParseException("JSON object member with key \"" + key + "\" is missing or null", 0);
+		}
+		
+		return value.doubleValue();
 	}
 
 
@@ -232,13 +257,12 @@ public class JSONObjectUtils {
 	 * @param o   The JSON object. Must not be {@code null}.
 	 * @param key The JSON object member key. Must not be {@code null}.
 	 *
-	 * @return The member value.
+	 * @return The JSON object member value, may be {@code null}.
 	 *
-	 * @throws ParseException If the value is missing, {@code null} or not
-	 *                        of the expected type.
+	 * @throws ParseException If the value is not of the expected type.
 	 */
 	public static String getString(final JSONObject o, final String key)
-			throws ParseException {
+		throws ParseException {
 
 		return getGeneric(o, key, String.class);
 	}
@@ -250,16 +274,21 @@ public class JSONObjectUtils {
 	 * @param o   The JSON object. Must not be {@code null}.
 	 * @param key The JSON object member key. Must not be {@code null}.
 	 *
-	 * @return The member value.
+	 * @return The JSON object member value, may be {@code null}.
 	 *
-	 * @throws ParseException If the value is missing, {@code null} or not
-	 *                        of the expected type.
+	 * @throws ParseException If the value is not of the expected type.
 	 */
 	public static URI getURI(final JSONObject o, final String key)
 			throws ParseException {
 
+		String value = getString(o, key);
+		
+		if (value == null) {
+			return null;
+		}
+		
 		try {
-			return new URI(getGeneric(o, key, String.class));
+			return new URI(value);
 
 		} catch (URISyntaxException e) {
 
@@ -274,10 +303,9 @@ public class JSONObjectUtils {
 	 * @param o   The JSON object. Must not be {@code null}.
 	 * @param key The JSON object member key. Must not be {@code null}.
 	 *
-	 * @return The member value.
+	 * @return The JSON object member value, may be {@code null}.
 	 *
-	 * @throws ParseException If the value is missing, {@code null} or not
-	 *                        of the expected type.
+	 * @throws ParseException If the value is not of the expected type.
 	 */
 	public static JSONArray getJSONArray(final JSONObject o, final String key)
 			throws ParseException {
@@ -292,15 +320,18 @@ public class JSONObjectUtils {
 	 * @param o   The JSON object. Must not be {@code null}.
 	 * @param key The JSON object member key. Must not be {@code null}.
 	 *
-	 * @return The member value.
+	 * @return The JSON object member value, may be {@code null}.
 	 *
-	 * @throws ParseException If the value is missing, {@code null} or not
-	 *                        of the expected type.
+	 * @throws ParseException If the value is not of the expected type.
 	 */
 	public static String[] getStringArray(final JSONObject o, final String key)
 			throws ParseException {
 
 		JSONArray jsonArray = getJSONArray(o, key);
+		
+		if (jsonArray == null) {
+			return null;
+		}
 
 		try {
 			return jsonArray.toArray(new String[0]);
@@ -311,24 +342,28 @@ public class JSONObjectUtils {
 		}
 	}
 
+	
 	/**
 	 * Gets a string list member of a JSON object
 	 * 
 	 * @param o   The JSON object. Must not be {@code null}.
 	 * @param key The JSON object member key. Must not be {@code null}.
 	 *
-	 * @return The member value.
+	 * @return The JSON object member value, may be {@code null}.
 	 *
-	 * @throws ParseException If the value is missing, {@code null} or not
-	 *                        of the expected type.
+	 * @throws ParseException If the value is not of the expected type.
 	 */
 	public static List<String> getStringList(final JSONObject o, final String key) throws ParseException {
 
 		String[] array = getStringArray(o, key);
+		
+		if (array == null) {
+			return null;
+		}
 
 		return Arrays.asList(array);
-
 	}
+	
 
 	/**
 	 * Gets a JSON object member of a JSON object.
@@ -336,10 +371,9 @@ public class JSONObjectUtils {
 	 * @param o   The JSON object. Must not be {@code null}.
 	 * @param key The JSON object member key. Must not be {@code null}.
 	 *
-	 * @return The member value.
+	 * @return The JSON object member value, may be {@code null}.
 	 *
-	 * @throws ParseException If the value is missing, {@code null} or not
-	 *                        of the expected type.
+	 * @throws ParseException If the value is not of the expected type.
 	 */
 	public static JSONObject getJSONObject(final JSONObject o, final String key)
 			throws ParseException {
@@ -351,9 +385,6 @@ public class JSONObjectUtils {
 	/**
 	 * Prevents public instantiation.
 	 */
-	private JSONObjectUtils() {
-
-		// Nothing to do
-	}
+	private JSONObjectUtils() { }
 }
 

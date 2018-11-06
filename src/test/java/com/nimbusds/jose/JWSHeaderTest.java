@@ -22,13 +22,13 @@ import java.net.URI;
 import java.text.ParseException;
 import java.util.*;
 
-import junit.framework.TestCase;
-
 import com.nimbusds.jose.jwk.KeyUse;
-import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
+import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jose.util.JSONObjectUtils;
+import junit.framework.TestCase;
 import net.minidev.json.JSONObject;
 
 
@@ -36,7 +36,7 @@ import net.minidev.json.JSONObject;
  * Tests JWS header parsing and serialisation.
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-01-10
+ * @version 2018-11-06
  */
 public class JWSHeaderTest extends TestCase {
 
@@ -441,6 +441,28 @@ public class JWSHeaderTest extends TestCase {
 		assertEquals("value", jsonObject.get("key"));
 		assertEquals(1, jsonObject.size());
 		assertEquals(2, headerJSONObject.size());
+	}
+	
+	
+	// iss #282
+	public void testParseHeaderWithNullParamValue()
+		throws Exception {
+		
+		String header = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImN0eSI6bnVsbH0";
+		
+		JSONObject jsonObject = JSONObjectUtils.parse(new Base64URL(header).decodeToString());
+		
+		assertEquals("HS256", jsonObject.get("alg"));
+		assertEquals("JWT", jsonObject.get("typ"));
+		assertNull(jsonObject.get("cty"));
+		assertEquals(3, jsonObject.size());
+		
+		JWSHeader jwsHeader = JWSHeader.parse(new Base64URL(header));
+		
+		assertEquals(JWSAlgorithm.HS256, jwsHeader.getAlgorithm());
+		assertEquals(JOSEObjectType.JWT, jwsHeader.getType());
+		assertNull(jwsHeader.getContentType());
+		assertEquals(2, jwsHeader.toJSONObject().size());
 	}
 }
 

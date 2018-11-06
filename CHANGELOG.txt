@@ -902,3 +902,7 @@ version 6.2 (2018-10-26)
       PrivateKeyInfo (PEM header: BEGIN PRIVATE KEY), or matching pair of the
       above.
     * Adds new JWK.parseFromPEMEncodedX509Cert method.
+
+version 6.3 (2018-11-06)
+    * Updates JSONObjectUtils to return null on missing member or null member
+      value where the Java type permits (iss #282).
