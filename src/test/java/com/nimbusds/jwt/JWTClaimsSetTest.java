@@ -33,7 +33,7 @@ import net.minidev.json.JSONObject;
  *
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
- * @version 2018-03-05
+ * @version 2018-10-07
  */
 public class JWTClaimsSetTest extends TestCase {
 
@@ -948,5 +948,19 @@ public class JWTClaimsSetTest extends TestCase {
 		assertTrue(claimsSet.getAudience().isEmpty());
 		assertTrue(claimsSet.getClaims().containsKey("aud"));
 		assertEquals(1, claimsSet.getClaims().size());
+	}
+	
+	
+	public void testAllowNullClaimsInParse() throws ParseException {
+		
+		String claimsJSON = "{\"sub\": null}";
+		
+		JWTClaimsSet jwtClaimsSet = JWTClaimsSet.parse(claimsJSON);
+		
+		assertNull(jwtClaimsSet.getSubject());
+		
+		assertEquals(1, jwtClaimsSet.getClaims().size());
+		
+		assertTrue(jwtClaimsSet.getClaims().containsKey("sub"));
 	}
 }
