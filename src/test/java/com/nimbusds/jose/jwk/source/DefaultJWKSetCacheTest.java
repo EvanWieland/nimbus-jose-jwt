@@ -28,7 +28,7 @@ import junit.framework.TestCase;
 public class DefaultJWKSetCacheTest extends TestCase {
 	
 	
-	public void testDefaultConstructor() {
+	public void testDefaultConstructor() throws InterruptedException {
 		
 		DefaultJWKSetCache cache = new DefaultJWKSetCache();
 		
@@ -47,8 +47,10 @@ public class DefaultJWKSetCacheTest extends TestCase {
 		
 		assertEquals(jwkSet, cache.get());
 		
-		assertTrue(cache.getPutTimestamp() >= new Date().getTime());
+		assertTrue(new Date().getTime() >= cache.getPutTimestamp());
 		
+		Thread.sleep(1L);
+
 		assertFalse(cache.isExpired());
 		
 		
