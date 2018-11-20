@@ -908,3 +908,6 @@ version 6.3 (2018-11-06)
       JWK set is cached for 5 minutes by the DefaultJWKSetCache (iss #278).
     * Updates JSONObjectUtils to return null on missing member or null member
       value where the Java type permits (iss #282).
+
+version 6.3.1 (2018-11-20)
+    * Fixes buggy DefaultJWKSetCache expiration check (iss #285).
