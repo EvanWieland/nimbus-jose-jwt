@@ -133,7 +133,7 @@ public class DefaultJWKSetCache implements JWKSetCache {
 	
 		return putTimestamp > -1 &&
 			lifespan > -1 &&
-			new Date().getTime() > putTimestamp + timeUnit.convert(lifespan, TimeUnit.MILLISECONDS);
+			new Date().getTime() > putTimestamp + TimeUnit.MILLISECONDS.convert(lifespan, timeUnit);
 	}
 	
 	
