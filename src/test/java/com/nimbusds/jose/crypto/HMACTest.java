@@ -24,6 +24,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import javax.crypto.Mac;
 
+import com.nimbusds.jose.crypto.impl.HMAC;
 import com.nimbusds.jose.util.ByteUtils;
 import org.junit.Assert;
 import junit.framework.TestCase;

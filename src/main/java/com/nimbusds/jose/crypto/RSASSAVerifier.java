@@ -24,6 +24,9 @@ import java.security.SignatureException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Set;
 
+import com.nimbusds.jose.crypto.impl.CriticalHeaderParamsDeferral;
+import com.nimbusds.jose.crypto.impl.RSASSA;
+import com.nimbusds.jose.crypto.impl.RSASSAProvider;
 import net.jcip.annotations.ThreadSafe;
 
 import com.nimbusds.jose.*;

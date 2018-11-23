@@ -20,17 +20,15 @@ package com.nimbusds.jose.crypto;
 
 import java.util.Collections;
 import java.util.HashSet;
-
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.nimbusds.jose.util.ByteUtils;
-import junit.framework.TestCase;
-
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
+import com.nimbusds.jose.util.ByteUtils;
+import junit.framework.TestCase;
 
 
 /**

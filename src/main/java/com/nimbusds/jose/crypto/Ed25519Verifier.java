@@ -23,6 +23,8 @@ import java.util.Set;
 
 import com.google.crypto.tink.subtle.Ed25519Verify;
 import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.impl.CriticalHeaderParamsDeferral;
+import com.nimbusds.jose.crypto.impl.EdDSAProvider;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.OctetKeyPair;
 import com.nimbusds.jose.util.Base64URL;

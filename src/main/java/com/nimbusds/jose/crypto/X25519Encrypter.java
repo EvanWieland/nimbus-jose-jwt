@@ -25,6 +25,8 @@ import javax.crypto.SecretKey;
 
 import com.google.crypto.tink.subtle.X25519;
 import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.impl.ECDH;
+import com.nimbusds.jose.crypto.impl.ECDHCryptoProvider;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.OctetKeyPair;
 import com.nimbusds.jose.util.Base64URL;

@@ -23,6 +23,10 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.impl.AlgorithmSupportMessage;
+import com.nimbusds.jose.crypto.impl.ContentCryptoProvider;
+import com.nimbusds.jose.crypto.impl.CriticalHeaderParamsDeferral;
+import com.nimbusds.jose.crypto.impl.DirectCryptoProvider;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.util.Base64URL;
 import net.jcip.annotations.ThreadSafe;

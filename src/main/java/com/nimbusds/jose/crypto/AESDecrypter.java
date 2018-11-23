@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.nimbusds.jose.crypto.impl.*;
 import net.jcip.annotations.ThreadSafe;
 
 import com.nimbusds.jose.*;

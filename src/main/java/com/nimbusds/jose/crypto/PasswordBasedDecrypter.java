@@ -22,6 +22,7 @@ import java.util.Set;
 import javax.crypto.SecretKey;
 
 import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.impl.*;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.StandardCharset;
 import net.jcip.annotations.ThreadSafe;

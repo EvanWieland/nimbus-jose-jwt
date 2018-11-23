@@ -25,6 +25,10 @@ import java.security.interfaces.ECPublicKey;
 import java.util.Set;
 
 import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.impl.AlgorithmSupportMessage;
+import com.nimbusds.jose.crypto.impl.CriticalHeaderParamsDeferral;
+import com.nimbusds.jose.crypto.impl.ECDSA;
+import com.nimbusds.jose.crypto.impl.ECDSAProvider;
 import com.nimbusds.jose.crypto.utils.ECChecks;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;

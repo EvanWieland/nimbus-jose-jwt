@@ -17,18 +17,13 @@
 
 package com.nimbusds.jose.crypto;
 
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import com.google.crypto.tink.subtle.Ed25519Sign;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSObject;
-import com.nimbusds.jose.Payload;
-import com.nimbusds.jose.crypto.Ed25519Signer;
-import com.nimbusds.jose.crypto.Ed25519Verifier;
+import com.nimbusds.jose.*;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.OctetKeyPair;
 import com.nimbusds.jose.util.Base64URL;

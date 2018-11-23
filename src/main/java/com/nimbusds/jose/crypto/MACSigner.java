@@ -24,6 +24,9 @@ import java.util.Set;
 import javax.crypto.SecretKey;
 
 import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.impl.AlgorithmSupportMessage;
+import com.nimbusds.jose.crypto.impl.HMAC;
+import com.nimbusds.jose.crypto.impl.MACProvider;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.ByteUtils;

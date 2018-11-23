@@ -24,6 +24,7 @@ import java.security.interfaces.ECPublicKey;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.crypto.impl.ECDSA;
 import com.nimbusds.jose.jwk.Curve;
 import junit.framework.TestCase;
 

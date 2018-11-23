@@ -19,13 +19,13 @@ package com.nimbusds.jose.crypto;
 
 
 import java.security.PrivateKey;
-import java.security.interfaces.RSAPrivateKey;
 import java.util.Set;
 import javax.crypto.SecretKey;
 
 import static com.nimbusds.jose.jwk.gen.RSAKeyGenerator.MIN_KEY_SIZE_BITS;
 
 import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.impl.*;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.util.Base64URL;
 import net.jcip.annotations.ThreadSafe;

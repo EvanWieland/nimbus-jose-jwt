@@ -28,6 +28,8 @@ import java.util.Set;
 import javax.crypto.SecretKey;
 
 import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.impl.ECDH;
+import com.nimbusds.jose.crypto.impl.ECDHCryptoProvider;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import net.jcip.annotations.ThreadSafe;

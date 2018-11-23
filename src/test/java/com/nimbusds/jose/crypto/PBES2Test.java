@@ -21,10 +21,9 @@ package com.nimbusds.jose.crypto;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
-import junit.framework.TestCase;
-
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
+import junit.framework.TestCase;
 
 
 /**

@@ -24,11 +24,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.impl.MACProvider;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.util.Base64URL;
+import junit.framework.TestCase;
 
 
 /**

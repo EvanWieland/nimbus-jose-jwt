@@ -36,6 +36,7 @@ import java.util.Date;
 import static org.junit.Assert.*;
 
 import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.impl.RSAKeyUtils;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWKSet;

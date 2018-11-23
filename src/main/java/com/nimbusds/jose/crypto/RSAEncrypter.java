@@ -21,6 +21,7 @@ package com.nimbusds.jose.crypto;
 import java.security.interfaces.RSAPublicKey;
 import javax.crypto.SecretKey;
 
+import com.nimbusds.jose.crypto.impl.*;
 import net.jcip.annotations.ThreadSafe;
 
 import com.nimbusds.jose.EncryptionMethod;

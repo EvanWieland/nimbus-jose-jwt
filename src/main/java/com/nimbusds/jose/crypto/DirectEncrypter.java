@@ -21,6 +21,9 @@ package com.nimbusds.jose.crypto;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.nimbusds.jose.crypto.impl.AlgorithmSupportMessage;
+import com.nimbusds.jose.crypto.impl.ContentCryptoProvider;
+import com.nimbusds.jose.crypto.impl.DirectCryptoProvider;
 import net.jcip.annotations.ThreadSafe;
 
 import com.nimbusds.jose.*;
