@@ -36,10 +36,16 @@ import net.jcip.annotations.ThreadSafe;
  * decryption. Uses the BouncyCastle.org provider. This class is thread-safe
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-12-04
+ * @version 2017-11-27
  */
 @ThreadSafe
 public class RSA_OAEP {
+	
+	
+	/**
+	 * The JCA algorithm name for RSA-OAEP.
+	 */
+	private static final String RSA_OEAP_JCA_ALG = "RSA/ECB/OAEPWithSHA-1AndMGF1Padding";
 
 
 	/**
@@ -59,7 +65,7 @@ public class RSA_OAEP {
 		throws JOSEException {
 
 		try {
-			Cipher cipher = CipherHelper.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding", provider);
+			Cipher cipher = CipherHelper.getInstance(RSA_OEAP_JCA_ALG, provider);
 			cipher.init(Cipher.ENCRYPT_MODE, pub, new SecureRandom());
 			return cipher.doFinal(cek.getEncoded());
 			
@@ -93,7 +99,7 @@ public class RSA_OAEP {
 		throws JOSEException {
 
 		try {
-			Cipher cipher = CipherHelper.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding", provider);
+			Cipher cipher = CipherHelper.getInstance(RSA_OEAP_JCA_ALG, provider);
 			cipher.init(Cipher.DECRYPT_MODE, priv);
 			return new SecretKeySpec(cipher.doFinal(encryptedCEK), "AES");
 

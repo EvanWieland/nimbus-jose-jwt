@@ -917,3 +917,7 @@ version 6.4 (2018-11-23)
       the com.nimbusds.jose.crypto package to a new
       com.nimbusds.jose.crypto.impl package and makes them public to enable
       reuse (iss #286).
+
+version 6.4.1 (2018-11-27)
+    * For RSA-OAEP, use the Java standard name OAEPWithSHA-1AndMGF1Padding for
+      both encryption and decryption (iss #288).
