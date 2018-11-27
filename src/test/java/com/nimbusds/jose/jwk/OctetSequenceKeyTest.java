@@ -545,7 +545,7 @@ public class OctetSequenceKeyTest extends TestCase {
 			OctetSequenceKey.load(keyStore, "1", "badpin".toCharArray());
 			fail();
 		} catch (Exception e) {
-			assertEquals("Couldn't retrieve secret key (bad pin?): Given final block not properly padded", e.getMessage());
+			assertTrue(e.getMessage().startsWith("Couldn't retrieve secret key (bad pin?): Given final block not properly padded"));
 			assertTrue(e.getCause() instanceof UnrecoverableKeyException);
 		}
 	}
