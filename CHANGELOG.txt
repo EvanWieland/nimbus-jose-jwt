@@ -746,3 +746,6 @@ version 4.41.2 (2017-08-23)
     * Fixes JWTClaimsSet.getAudience when the "aud" claim is stored internally
       as the special case string representation (issue #236).
 
+version 4.41.3 (2018-11-27)
+    * For RSA-OAEP, use the Java standard name OAEPWithSHA-1AndMGF1Padding for
+      both encryption and decryption (iss #288).
