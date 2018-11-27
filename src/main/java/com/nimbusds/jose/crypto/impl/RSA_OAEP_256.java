@@ -41,10 +41,16 @@ import net.jcip.annotations.ThreadSafe;
  *
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
- * @version 2016-12-04
+ * @version 2017-11-27
  */
 @ThreadSafe
 public class RSA_OAEP_256 {
+	
+	
+	/**
+	 * The JCA algorithm name for RSA-OAEP-256.
+	 */
+	private static final String RSA_OEAP_256_JCA_ALG = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
 
 
 	/**
@@ -67,7 +73,7 @@ public class RSA_OAEP_256 {
 			AlgorithmParameters algp = AlgorithmParametersHelper.getInstance("OAEP", provider);
 			AlgorithmParameterSpec paramSpec = new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, PSource.PSpecified.DEFAULT);
 			algp.init(paramSpec);
-			Cipher cipher = CipherHelper.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding", provider);
+			Cipher cipher = CipherHelper.getInstance(RSA_OEAP_256_JCA_ALG, provider);
 			cipher.init(Cipher.ENCRYPT_MODE, pub, algp);
 			return cipher.doFinal(cek.getEncoded());
 			
@@ -104,7 +110,7 @@ public class RSA_OAEP_256 {
 			AlgorithmParameters algp = AlgorithmParametersHelper.getInstance("OAEP", provider);
 			AlgorithmParameterSpec paramSpec = new OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, PSource.PSpecified.DEFAULT);
 			algp.init(paramSpec);
-			Cipher cipher = CipherHelper.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding", provider);
+			Cipher cipher = CipherHelper.getInstance(RSA_OEAP_256_JCA_ALG, provider);
 			cipher.init(Cipher.DECRYPT_MODE, priv, algp);
 			return new SecretKeySpec(cipher.doFinal(encryptedCEK), "AES");
 
