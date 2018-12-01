@@ -28,7 +28,7 @@ import com.nimbusds.jose.jwk.JWKSet;
  * JSON Web Key (JWK) set cache implementation.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-10-28
+ * @version 2018-12-01
  */
 public class DefaultJWKSetCache implements JWKSetCache {
 	
@@ -98,7 +98,13 @@ public class DefaultJWKSetCache implements JWKSetCache {
 	public void put(final JWKSet jwkSet) {
 		
 		this.jwkSet = jwkSet;
-		putTimestamp = new Date().getTime();
+		
+		if (jwkSet != null) {
+			putTimestamp = new Date().getTime();
+		} else {
+			// cache cleared
+			putTimestamp = -1;
+		}
 	}
 	
 	

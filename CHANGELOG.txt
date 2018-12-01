@@ -921,3 +921,10 @@ version 6.4 (2018-11-23)
 version 6.4.1 (2018-11-27)
     * For RSA-OAEP, use the Java standard name OAEPWithSHA-1AndMGF1Padding for
       both encryption and decryption (iss #288).
+
+version 6.4.2 (2018-12-01)
+    * Clearing the JWKSetCache must undefine the put timestamp (iss #289).
+    * Updates JWKSetCache.put JavaDoc to clarify that putting null clears the
+      cache.
+
+

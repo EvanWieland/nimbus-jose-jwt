@@ -112,4 +112,33 @@ public class DefaultJWKSetCacheTest extends TestCase {
 		
 		assertFalse(cache.isExpired());
 	}
+	
+	
+	// https://bitbucket.org/connect2id/nimbus-jose-jwt/issues/289/clearing-the-jwksetcache-must-undefine-the
+	public void testCacheClearMustUndefinePutTimestamp() {
+		
+		DefaultJWKSetCache cache = new DefaultJWKSetCache();
+		
+		assertNull(cache.get());
+		assertEquals(-1L, cache.getPutTimestamp());
+		assertEquals(DefaultJWKSetCache.DEFAULT_LIFESPAN_MINUTES, cache.getLifespan(TimeUnit.MINUTES));
+		assertFalse(cache.isExpired());
+		
+		
+		JWKSet jwkSet = new JWKSet();
+		
+		cache.put(jwkSet);
+		
+		assertTrue(cache.getPutTimestamp() > 0);
+		assertEquals(DefaultJWKSetCache.DEFAULT_LIFESPAN_MINUTES, cache.getLifespan(TimeUnit.MINUTES));
+		assertFalse(cache.isExpired());
+		
+		// clear cache
+		cache.put(null);
+		
+		assertNull(cache.get());
+		assertEquals(-1L, cache.getPutTimestamp());
+		assertEquals(DefaultJWKSetCache.DEFAULT_LIFESPAN_MINUTES, cache.getLifespan(TimeUnit.MINUTES));
+		assertFalse(cache.isExpired());
+	}
 }
