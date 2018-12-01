@@ -33,7 +33,7 @@ public interface JWKSetCache {
 	/**
 	 * Caches the specified JWK set.
 	 *
-	 * @param jwkSet The JWK set to cache.
+	 * @param jwkSet The JWK set to cache, {@code null} to clear the cache.
 	 */
 	void put(final JWKSet jwkSet);
 	
