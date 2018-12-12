@@ -21,8 +21,8 @@ package com.nimbusds.jose.crypto.impl;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.Provider;
-import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
@@ -41,7 +41,7 @@ import com.nimbusds.jose.jwk.OctetKeyPair;
  * Elliptic Curve Diffie-Hellman key agreement functions and utilities.
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-04-13
+ * @version 2018-12-12
  */
 public class ECDH {
 
@@ -154,7 +154,7 @@ public class ECDH {
 	 * @throws JOSEException If derivation of the shared secret failed.
 	 */
 	public static SecretKey deriveSharedSecret(final ECPublicKey publicKey,
-						   final ECPrivateKey privateKey,
+						   final PrivateKey privateKey,
 						   final Provider provider)
 		throws JOSEException {
 

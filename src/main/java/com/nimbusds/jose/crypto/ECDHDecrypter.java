@@ -18,6 +18,7 @@
 package com.nimbusds.jose.crypto;
 
 
+import java.security.PrivateKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.util.Collections;
@@ -25,7 +26,10 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.crypto.SecretKey;
 
-import com.nimbusds.jose.*;
+import com.nimbusds.jose.CriticalHeaderParamsAware;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWEDecrypter;
+import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.crypto.impl.CriticalHeaderParamsDeferral;
 import com.nimbusds.jose.crypto.impl.ECDH;
 import com.nimbusds.jose.crypto.impl.ECDHCryptoProvider;
@@ -37,8 +41,8 @@ import com.nimbusds.jose.util.Base64URL;
 
 /**
  * Elliptic Curve Diffie-Hellman decrypter of
- * {@link com.nimbusds.jose.JWEObject JWE objects} for curves using EC JWK keys.
- * Expects a private EC key (with a P-256, P-384 or P-521 curve).
+ * {@link com.nimbusds.jose.JWEObject JWE objects} for curves using EC JWK
+ * keys. Expects a private EC key (with a P-256, P-384 or P-521 curve).
  *
  * <p>See RFC 7518
  * <a href="https://tools.ietf.org/html/rfc7518#section-4.6">section 4.6</a>
@@ -79,7 +83,7 @@ import com.nimbusds.jose.util.Base64URL;
  * </ul>
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-04-13
+ * @version 2018-12-12
  */
 public class ECDHDecrypter extends ECDHCryptoProvider implements JWEDecrypter, CriticalHeaderParamsAware {
 
@@ -102,7 +106,7 @@ public class ECDHDecrypter extends ECDHCryptoProvider implements JWEDecrypter, C
 	/**
 	 * The private EC key.
 	 */
-	private final ECPrivateKey privateKey;
+	private final PrivateKey privateKey;
 
 
 	/**
@@ -159,7 +163,30 @@ public class ECDHDecrypter extends ECDHCryptoProvider implements JWEDecrypter, C
 	public ECDHDecrypter(final ECPrivateKey privateKey, final Set<String> defCritHeaders)
 		throws JOSEException {
 
-		super(Curve.forECParameterSpec(privateKey.getParams()));
+		this(privateKey, defCritHeaders, Curve.forECParameterSpec(privateKey.getParams()));
+	}
+
+
+	/**
+	 * Creates a new Elliptic Curve Diffie-Hellman decrypter. This
+	 * constructor can also accept a private EC key located in a PKCS#11
+	 * store that doesn't expose the private key parameters (such as a
+	 * smart card or HSM).
+	 *
+	 * @param privateKey     The private EC key. Must not be {@code null}.
+	 * @param defCritHeaders The names of the critical header parameters
+	 *                       that are deferred to the application for
+	 *                       processing, empty set or {@code null} if none.
+	 * @param curve          The key curve. Must not be {@code null}.
+	 *
+	 * @throws JOSEException If the elliptic curve is not supported.
+	 */
+	public ECDHDecrypter(final PrivateKey privateKey,
+			     final Set<String> defCritHeaders,
+			     final Curve curve)
+		throws JOSEException {
+
+		super(curve);
 
 		critPolicy.setDeferredCriticalHeaderParams(defCritHeaders);
 
@@ -170,9 +197,12 @@ public class ECDHDecrypter extends ECDHCryptoProvider implements JWEDecrypter, C
 	/**
 	 * Returns the private EC key.
 	 *
-	 * @return The private EC key.
+	 * @return The private EC key. Casting to
+	 *         {@link java.security.interfaces.ECPrivateKey} may not be
+	 *         possible if the key is located in a PKCS#11 store that
+	 *         doesn't expose the private key parameters.
 	 */
-	public ECPrivateKey getPrivateKey() {
+	public PrivateKey getPrivateKey() {
 
 		return privateKey;
 	}
@@ -219,8 +249,15 @@ public class ECDHDecrypter extends ECDHCryptoProvider implements JWEDecrypter, C
 		ECPublicKey ephemeralPublicKey = ephemeralKey.toECPublicKey();
 		
 		// Curve check
-		if (! ECChecks.isPointOnCurve(ephemeralPublicKey, getPrivateKey())) {
-			throw new JOSEException("Invalid ephemeral public EC key: Point(s) not on the expected curve");
+		if (getPrivateKey() instanceof ECPrivateKey) {
+			ECPrivateKey ecPrivateKey = (ECPrivateKey)getPrivateKey();
+			if (!ECChecks.isPointOnCurve(ephemeralPublicKey, ecPrivateKey)) {
+				throw new JOSEException("Invalid ephemeral public EC key: Point(s) not on the expected curve");
+			}
+		} else {
+			if (!ECChecks.isPointOnCurve(ephemeralPublicKey, getCurve().toECParameterSpec())) {
+				throw new JOSEException("Invalid ephemeral public EC key: Point(s) not on the expected curve");
+			}
 		}
 
 		// Derive 'Z'
