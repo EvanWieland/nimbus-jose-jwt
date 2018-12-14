@@ -59,9 +59,21 @@ public class DeflateUtils {
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		DeflaterOutputStream def = new DeflaterOutputStream(out, new Deflater(Deflater.DEFLATED, NOWRAP));
-		def.write(bytes);
-		def.close();
+
+		Deflater deflater = null;
+		DeflaterOutputStream def = null;
+		try {
+			deflater = new Deflater(Deflater.DEFLATED, NOWRAP);
+			def = new DeflaterOutputStream(out, deflater);
+			def.write(bytes);
+		} finally {
+			if(def != null) {
+				def.close();
+			}
+			if(deflater != null) {
+				deflater.end();
+			}
+		}
 
 		return out.toByteArray();
 	}
@@ -78,25 +90,35 @@ public class DeflateUtils {
 	 * @throws IOException If decompression failed.
 	 */
 	public static byte[] decompress(final byte[] bytes)
-		throws IOException {
+			throws IOException {
 
-		InflaterInputStream inf = new InflaterInputStream(new ByteArrayInputStream(bytes), new Inflater(NOWRAP));
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		Inflater inflater = null;
+		InflaterInputStream inf = null;
+		try {
+			inflater = new Inflater(NOWRAP);
+			inf = new InflaterInputStream(new ByteArrayInputStream(bytes), inflater);
 
-		// Transfer bytes from the compressed array to the output
-		byte[] buf = new byte[1024];
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		int len;
+			// Transfer bytes from the compressed array to the output
+			byte[] buf = new byte[1024];
 
-		while ((len = inf.read(buf)) > 0) {
+			int len;
 
-			out.write(buf, 0, len);
+			while ((len = inf.read(buf)) > 0) {
+
+				out.write(buf, 0, len);
+			}
+
+			return out.toByteArray();
+		} finally {
+			if(inf != null) {
+				inf.close();
+			}
+			if(inflater != null) {
+				inflater.end();
+			}
 		}
-
-		inf.close();
-		out.close();
-
-		return out.toByteArray();
 	}
 
 
