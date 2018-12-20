@@ -931,3 +931,5 @@ version 6.5 (2018-12-12)
     * Updates ECDHDecrypter with a new constructor to support HSM-based
       KeyStore instances (iss #291).
 
+version 6.5.1 (2018-12-20)
+    * Updates DeflateUtils to prevent a potential memory leak (iss #294).
