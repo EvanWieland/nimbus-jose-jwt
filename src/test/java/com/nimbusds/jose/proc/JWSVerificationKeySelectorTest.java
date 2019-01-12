@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2019, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -203,6 +203,25 @@ public class JWSVerificationKeySelectorTest extends TestCase {
 
 		// Select for header with unexpected JWS alg
 		candidates = keySelector.selectJWSKeys(new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("1").build(), null);
+		assertTrue(candidates.isEmpty());
+	}
+
+	public void testForUnsupported()
+			throws Exception {
+
+		JWSAlgorithm unsupported = JWSAlgorithm.parse("unsupported");
+
+		RSAKey rsa = new RSAKey.Builder(new Base64URL("n"), new Base64URL("e"))
+			.algorithm(unsupported)
+			.keyID("1")
+			.build();
+
+		JWSVerificationKeySelector keySelector = new JWSVerificationKeySelector(
+			unsupported,
+			new ImmutableJWKSet(new JWKSet(rsa))
+		);
+
+		List<Key> candidates = keySelector.selectJWSKeys(new JWSHeader.Builder(unsupported).keyID("1").build(), null);
 		assertTrue(candidates.isEmpty());
 	}
 }

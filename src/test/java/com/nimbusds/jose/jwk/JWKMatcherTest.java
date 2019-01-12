@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2019, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -28,8 +28,12 @@ import java.util.*;
 import javax.crypto.KeyGenerator;
 
 import com.nimbusds.jose.Algorithm;
+import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWEAlgorithm;
+import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.ByteUtils;
 import junit.framework.TestCase;
@@ -878,4 +882,66 @@ public class JWKMatcherTest extends TestCase {
 		assertTrue(matcher.matches(rsa));
 	}
 
+	public void testMatchJWSHeader() {
+		RSAKey rsa = new RSAKey.Builder(new Base64URL("n"), new Base64URL("e"))
+			.algorithm(JWSAlgorithm.RS256)
+			.keyID("Dave")
+			.build();
+
+		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256)
+			.keyID("Dave")
+			.jwk(rsa)
+			.build();
+
+		assertTrue(JWKMatcher.forJWSHeader(header).matches(rsa));
+	}
+
+	public void testMismatchJWSHeader() {
+		RSAKey rsa = new RSAKey.Builder(new Base64URL("n"), new Base64URL("e"))
+			.algorithm(JWSAlgorithm.RS256)
+			.keyID("Dave")
+			.build();
+
+		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.ES256)
+			.keyID("Dave")
+			.jwk(rsa)
+			.build();
+
+		assertFalse(JWKMatcher.forJWSHeader(header).matches(rsa));
+	}
+
+	public void testUnsupportedJWSHeader() {
+		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.parse("unsupported"))
+			.build();
+
+		assertNull(JWKMatcher.forJWSHeader(header));
+	}
+
+	public void testMatchJWEHeader() {
+		RSAKey rsa = new RSAKey.Builder(new Base64URL("n"), new Base64URL("e"))
+			.algorithm(JWEAlgorithm.RSA_OAEP_256)
+			.keyID("Dave")
+			.build();
+
+		JWEHeader header = new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A256GCM)
+			.keyID("Dave")
+			.jwk(rsa)
+			.build();
+
+		assertTrue(JWKMatcher.forJWEHeader(header).matches(rsa));
+	}
+
+	public void testMismatchJWEHeader() {
+		RSAKey rsa = new RSAKey.Builder(new Base64URL("n"), new Base64URL("e"))
+			.algorithm(JWEAlgorithm.RSA_OAEP_256)
+			.keyID("Dave")
+			.build();
+
+		JWEHeader header = new JWEHeader.Builder(JWEAlgorithm.ECDH_ES, EncryptionMethod.A256GCM)
+			.keyID("Dave")
+			.jwk(rsa)
+			.build();
+
+		assertFalse(JWKMatcher.forJWEHeader(header).matches(rsa));
+	}
 }
