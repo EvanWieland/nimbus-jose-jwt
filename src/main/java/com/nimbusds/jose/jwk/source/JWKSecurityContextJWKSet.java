@@ -25,7 +25,7 @@ import com.nimbusds.jose.jwk.JWKSelector;
 import com.nimbusds.jose.jwk.JWKSet;
 
 /**
- * A {@link JWKSource} that is backed by whatever keys are in the {@link JWKSecurityContext}.
+ * A {@link JWKSource} backed by keys found in the {@link JWKSecurityContext}.
  *
  * @author Rob Winch
  * @author Josh Cummings

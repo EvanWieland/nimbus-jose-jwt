@@ -23,8 +23,8 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.proc.SecurityContext;
 
 /**
- * A security context that contains JSON Web Keys (JWK). Typically, this would be used
- * in circumstances when the keys are evaluated outside of token validation.
+ * A security context that contains JSON Web Keys (JWK). Typically, this would
+ * be used when the keys are evaluated outside of token validation.
  *
  * @author Rob Winch
  * @author Josh Cummings
@@ -35,9 +35,10 @@ public class JWKSecurityContext implements SecurityContext {
 	private final List<JWK> keys;
 
 	/**
-	 * Construct a {@code JWKSecurityContext} with the provided parameters
+	 * Constructs a {@code JWKSecurityContext} with the provided
+	 * parameters.
 	 *
-	 * @param keys - The list of keys
+	 * @param keys The list of keys.
 	 */
 	public JWKSecurityContext(final List<JWK> keys) {
 		this.keys = keys;
@@ -48,9 +49,9 @@ public class JWKSecurityContext implements SecurityContext {
 	}
 
 	/**
-	 * Get the list of {@link JWK}s
+	 * Gets the list of {@link JWK}s.
 	 *
-	 * @return the {@code JWK} list
+	 * @return The {@code JWK} list.
 	 */
 	public List<JWK> getKeys() {
 		return keys;
