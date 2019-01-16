@@ -23,6 +23,8 @@ import com.nimbusds.jose.KeySourceException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSelector;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.proc.JWKSecurityContext;
+
 
 /**
  * A {@link JWKSource} backed by keys found in the {@link JWKSecurityContext}.

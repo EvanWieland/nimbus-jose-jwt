@@ -24,6 +24,8 @@ import java.util.List;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKMatcher;
 import com.nimbusds.jose.jwk.JWKSelector;
+import com.nimbusds.jose.proc.JWKSecurityContext;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
