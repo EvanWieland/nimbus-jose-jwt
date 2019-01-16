@@ -933,3 +933,8 @@ version 6.5 (2018-12-12)
 
 version 6.5.1 (2018-12-20)
     * Updates DeflateUtils to prevent a potential memory leak (iss #294).
+
+version 6.6 (2019-01-16)
+    * Adds new JWKSecurityContext and JWKSecurityContextJWKSet classes to
+      enable passing of keys through the SecurityContext (iss #296).
+
