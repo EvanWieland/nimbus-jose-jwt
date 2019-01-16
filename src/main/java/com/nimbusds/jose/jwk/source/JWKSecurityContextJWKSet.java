@@ -37,7 +37,7 @@ public class JWKSecurityContextJWKSet implements JWKSource<JWKSecurityContext> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public List<JWK> get(JWKSelector jwkSelector, JWKSecurityContext context) throws KeySourceException {
+	public List<JWK> get(final JWKSelector jwkSelector, final JWKSecurityContext context) throws KeySourceException {
 		if (context == null) {
 			throw new IllegalArgumentException("Security Context must not be null");
 		}

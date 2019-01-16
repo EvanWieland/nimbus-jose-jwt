@@ -39,7 +39,7 @@ public class JWKSecurityContext implements SecurityContext {
 	 *
 	 * @param keys - The list of keys
 	 */
-	public JWKSecurityContext(List<JWK> keys) {
+	public JWKSecurityContext(final List<JWK> keys) {
 		this.keys = keys;
 
 		if (keys == null) {
