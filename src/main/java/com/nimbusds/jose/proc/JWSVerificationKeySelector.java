@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2019, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -90,25 +90,8 @@ public class JWSVerificationKeySelector<C extends SecurityContext> extends Abstr
 		if (! getExpectedJWSAlgorithm().equals(jwsHeader.getAlgorithm())) {
 			// Unexpected JWS alg
 			return null;
-		} else if (JWSAlgorithm.Family.RSA.contains(getExpectedJWSAlgorithm()) || JWSAlgorithm.Family.EC.contains(getExpectedJWSAlgorithm())) {
-			// RSA or EC key matcher
-			return new JWKMatcher.Builder()
-					.keyType(KeyType.forAlgorithm(getExpectedJWSAlgorithm()))
-					.keyID(jwsHeader.getKeyID())
-					.keyUses(KeyUse.SIGNATURE, null)
-					.algorithms(getExpectedJWSAlgorithm(), null)
-					.x509CertSHA256Thumbprint(jwsHeader.getX509CertSHA256Thumbprint())
-					.build();
-		} else if (JWSAlgorithm.Family.HMAC_SHA.contains(getExpectedJWSAlgorithm())) {
-			// HMAC secret matcher
-			return new JWKMatcher.Builder()
-					.keyType(KeyType.forAlgorithm(getExpectedJWSAlgorithm()))
-					.keyID(jwsHeader.getKeyID())
-					.privateOnly(true)
-					.algorithms(getExpectedJWSAlgorithm(), null)
-					.build();
 		} else {
-			return null; // Unsupported algorithm
+			return JWKMatcher.forJWSHeader(jwsHeader);
 		}
 	}
 

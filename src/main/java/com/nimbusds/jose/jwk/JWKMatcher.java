@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2019, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -21,6 +21,9 @@ package com.nimbusds.jose.jwk;
 import java.util.*;
 
 import com.nimbusds.jose.Algorithm;
+import com.nimbusds.jose.JWEHeader;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.util.Base64URL;
 import net.jcip.annotations.Immutable;
 
@@ -956,7 +959,53 @@ public class JWKMatcher {
 		this.curves = curves;
 		this.x5tS256s = x5tS256s;
 	}
-	
+
+	/**
+	 * Returns a {@link JWKMatcher} based on the given {@link JWEHeader}.
+	 *
+	 * @param jweHeader the header upon which to begin the builder
+	 * @return a {@code JWKMatcher} based on the given header
+	 */
+	public static JWKMatcher forJWEHeader(final JWEHeader jweHeader) {
+
+		return new JWKMatcher.Builder()
+			.keyType(KeyType.forAlgorithm(jweHeader.getAlgorithm()))
+			.keyID(jweHeader.getKeyID())
+			.keyUses(KeyUse.ENCRYPTION, null)
+			.algorithms(jweHeader.getAlgorithm(), null)
+			.build();
+	}
+
+	/**
+	 * Returns a {@link JWKMatcher} based on the given {@link JWSHeader}.
+	 *
+	 * @param jwsHeader the header upon which to begin the builder
+	 * @return a {@code JWKMatcher} based on the given header
+	 */
+	public static JWKMatcher forJWSHeader(final JWSHeader jwsHeader) {
+
+		JWSAlgorithm algorithm = jwsHeader.getAlgorithm();
+		if (JWSAlgorithm.Family.RSA.contains(algorithm) || JWSAlgorithm.Family.EC.contains(algorithm)) {
+			// RSA or EC key matcher
+			return new JWKMatcher.Builder()
+				.keyType(KeyType.forAlgorithm(algorithm))
+				.keyID(jwsHeader.getKeyID())
+				.keyUses(KeyUse.SIGNATURE, null)
+				.algorithms(algorithm, null)
+				.x509CertSHA256Thumbprint(jwsHeader.getX509CertSHA256Thumbprint())
+				.build();
+		} else if (JWSAlgorithm.Family.HMAC_SHA.contains(algorithm)) {
+			// HMAC secret matcher
+			return new JWKMatcher.Builder()
+				.keyType(KeyType.forAlgorithm(algorithm))
+				.keyID(jwsHeader.getKeyID())
+				.privateOnly(true)
+				.algorithms(algorithm, null)
+				.build();
+		} else {
+			return null; // Unsupported algorithm
+		}
+	}
 
 	/**
 	 * Returns the key types to match.
