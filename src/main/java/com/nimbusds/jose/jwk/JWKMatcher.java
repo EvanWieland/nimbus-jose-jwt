@@ -963,8 +963,24 @@ public class JWKMatcher {
 	/**
 	 * Returns a {@link JWKMatcher} based on the given {@link JWEHeader}.
 	 *
-	 * @param jweHeader the header upon which to begin the builder
-	 * @return a {@code JWKMatcher} based on the given header
+	 * <p>The {@link JWKMatcher} is configured as follows:
+	 *
+	 * <ul>
+	 *     <li>The key type to match is determined by the JWE algorithm
+	 *         (alg).
+	 *     <li>The key ID to match is set by the JWE header key ID (kid)
+	 *         parameter (if set).
+	 *     <li>The key uses to match are set to encryption or not
+	 *         specified.
+	 *     <li>The key algorithm to match is set to the JWE algorithm (alg)
+	 *         or not specified.
+	 * </ul>
+	 *
+	 * <p>Other JWE header parameters are not taken into account.
+	 *
+	 * @param jweHeader The header to use.
+	 *
+	 * @return A {@code JWKMatcher} based on the given header.
 	 */
 	public static JWKMatcher forJWEHeader(final JWEHeader jweHeader) {
 
@@ -979,8 +995,26 @@ public class JWKMatcher {
 	/**
 	 * Returns a {@link JWKMatcher} based on the given {@link JWSHeader}.
 	 *
-	 * @param jwsHeader the header upon which to begin the builder
-	 * @return a {@code JWKMatcher} based on the given header
+	 * <p>The {@link JWKMatcher} is configured as follows:
+	 *
+	 * <ul>
+	 *     <li>The key type to match is determined by the JWS algorithm
+	 *         (alg).
+	 *     <li>The key ID to match is set by the JWS header key ID (kid)
+	 *         parameter (if set).
+	 *     <li>The key uses to match are set to signature or not specified.
+	 *     <li>The key algorithm to match is set to the JWS algorithm (alg)
+	 *         or not specified.
+	 *     <li>The X.509 certificate SHA-256 thumbprint to match is set to
+	 *         the x5t#S256 parameter (if set).
+	 * </ul>
+	 *
+	 * <p>Other JWS header parameters are not taken into account.
+	 *
+	 * @param jwsHeader The header to use.
+	 *
+	 * @return A {@code JWKMatcher} based on the given header, {@code null}
+	 *         if the JWS algorithm is not supported.
 	 */
 	public static JWKMatcher forJWSHeader(final JWSHeader jwsHeader) {
 
