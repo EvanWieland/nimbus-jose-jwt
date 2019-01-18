@@ -938,3 +938,6 @@ version 6.6 (2019-01-16)
     * Adds new JWKSecurityContext and JWKSecurityContextJWKSet classes to
       enable passing of keys through the SecurityContext (iss #296).
 
+version 6.7 (2019-01-16)
+    * Adds new JWKMatcher.forJWSHeader and JWKMatcher.forJWEHeader helper
+      methods (iss #296).
