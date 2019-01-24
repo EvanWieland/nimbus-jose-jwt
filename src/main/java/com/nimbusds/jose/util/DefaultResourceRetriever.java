@@ -140,9 +140,9 @@ public class DefaultResourceRetriever extends AbstractRestrictedResourceRetrieve
 	 * underlying HTTP implementation and the setting of the
 	 * {@code keep.alive} system property.
 	 *
-	 * @return If {@code true} the disconnect method of the underlying
-	 *         {@link HttpURLConnection} will be called after trying to
-	 *         retrieve the resource.
+	 * If {@code true} the disconnect method of the underlying
+	 * {@link HttpURLConnection} will be called after trying to
+	 * retrieve the resource.
 	 */
 	public void setDisconnectsAfterUse(final boolean disconnectAfterUse) {
 		
