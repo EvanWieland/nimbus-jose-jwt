@@ -70,6 +70,7 @@ import com.nimbusds.jose.util.Base64URL;
  *
  * @author Tim McLean
  * @author Vladimir Dzhuvinov
+ * @author Fernando González Callejas
  * @version 2019-01-24
  */
 public abstract class ECDHCryptoProvider extends BaseJWEProvider {
@@ -167,17 +168,23 @@ public abstract class ECDHCryptoProvider extends BaseJWEProvider {
 	}
 
 	/**
-	 * Encrypts the specified plaintext using the specified shared secret ("Z").
+	 * Encrypts the specified plaintext using the specified shared secret
+	 * ("Z").
 	 */
 	protected JWECryptoParts encryptWithZ(final JWEHeader header, final SecretKey Z, final byte[] clearText)
-			throws JOSEException {
+		throws JOSEException {
+		
 		return this.encryptWithZ(header, Z, clearText, null);
 	}
 
 	/**
-	 * Encrypts the specified plaintext using the specified shared secret ("Z") and, if provided, the content encryption key (CEK).
+	 * Encrypts the specified plaintext using the specified shared secret
+	 * ("Z") and, if provided, the content encryption key (CEK).
 	 */
-	protected JWECryptoParts encryptWithZ(final JWEHeader header, final SecretKey Z, final byte[] clearText, SecretKey contentEncryptionKey)
+	protected JWECryptoParts encryptWithZ(final JWEHeader header,
+					      final SecretKey Z,
+					      final byte[] clearText,
+					      final SecretKey contentEncryptionKey)
 		throws JOSEException {
 
 		final JWEAlgorithm alg = header.getAlgorithm();

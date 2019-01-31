@@ -89,6 +89,7 @@ import net.jcip.annotations.ThreadSafe;
  *
  * @author Tim McLean
  * @author Vladimir Dzhuvinov
+ * @author Fernando González Callejas
  * @version 2019-01-24
  */
 @ThreadSafe
@@ -128,7 +129,8 @@ public class ECDHEncrypter extends ECDHCryptoProvider implements JWEEncrypter {
 	 *
 	 * @throws JOSEException If the elliptic curve is not supported.
 	 */
-	public ECDHEncrypter(final ECPublicKey publicKey) throws JOSEException {
+	public ECDHEncrypter(final ECPublicKey publicKey)
+		throws JOSEException {
 
 		this(publicKey, null);
 	}
@@ -141,7 +143,8 @@ public class ECDHEncrypter extends ECDHCryptoProvider implements JWEEncrypter {
 	 *
 	 * @throws JOSEException If the elliptic curve is not supported.
 	 */
-	public ECDHEncrypter(final ECKey ecJWK) throws JOSEException {
+	public ECDHEncrypter(final ECKey ecJWK) throws
+		JOSEException {
 
 		super(ecJWK.getCurve());
 
@@ -150,8 +153,8 @@ public class ECDHEncrypter extends ECDHCryptoProvider implements JWEEncrypter {
 	}
 	
 	/**
-	 * Creates a new Elliptic Curve Diffie-Hellman encrypter with an optionally specified content
-	 * encryption key (CEK).
+	 * Creates a new Elliptic Curve Diffie-Hellman encrypter with an
+	 * optionally specified content encryption key (CEK).
 	 *
 	 * @param publicKey            The public EC key. Must not be
 	 *                             {@code null}.
@@ -161,9 +164,10 @@ public class ECDHEncrypter extends ECDHCryptoProvider implements JWEEncrypter {
 	 *                             for the JWE encryption method ("enc").
 	 *                             If {@code null} a CEK will be generated
 	 *                             for each JWE.
-	 * @throws JOSEException 	   If the elliptic curve is not supported.
+	 * @throws JOSEException       If the elliptic curve is not supported.
 	 */
-	public ECDHEncrypter(final ECPublicKey publicKey, final SecretKey contentEncryptionKey) throws JOSEException {
+	public ECDHEncrypter(final ECPublicKey publicKey, final SecretKey contentEncryptionKey)
+		throws JOSEException {
 		
 		super(Curve.forECParameterSpec(publicKey.getParams()));
 		
