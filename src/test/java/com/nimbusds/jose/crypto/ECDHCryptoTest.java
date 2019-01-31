@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2019, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -26,29 +26,44 @@ import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECParameterSpec;
 import java.util.Collections;
 import java.util.HashSet;
+
+import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.nimbusds.jose.*;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
+import org.jose4j.jwe.JsonWebEncryption;
+
+import com.nimbusds.jose.EncryptionMethod;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWEAlgorithm;
+import com.nimbusds.jose.JWEHeader;
+import com.nimbusds.jose.JWEObject;
+import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
-import com.nimbusds.jose.crypto.impl.*;
+import com.nimbusds.jose.crypto.impl.AAD;
+import com.nimbusds.jose.crypto.impl.AESCBC;
+import com.nimbusds.jose.crypto.impl.AESGCM;
+import com.nimbusds.jose.crypto.impl.AESKW;
+import com.nimbusds.jose.crypto.impl.AuthenticatedCipherText;
+import com.nimbusds.jose.crypto.impl.ConcatKDF;
+import com.nimbusds.jose.crypto.impl.ECDH;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.ByteUtils;
 import com.nimbusds.jose.util.Container;
+
 import junit.framework.TestCase;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
-import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.jose4j.jwe.JsonWebEncryption;
 
 
 /**
  * Tests ECDH encryption and decryption.
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-04-13
+ * @version 2019-01-24
  */
 public class ECDHCryptoTest extends TestCase {
 
@@ -138,7 +153,47 @@ public class ECDHCryptoTest extends TestCase {
 
 		assertEquals("Hello world!", jweObject.getPayload().toString());
 	}
+	
+	/**
+	 * Test ECDH Encrypter with provided CEK encryption and decryption cycle.
+	 * 
+	 * @throws Exception
+	 */
+	public void testCycle_ECDH_ES_Curve_P256_A128KW_WithCekSpecified() throws Exception {
+		ECKey ecJWK = generateECJWK(Curve.P_256);
+		JWEHeader header = new JWEHeader.Builder(JWEAlgorithm.ECDH_ES_A128KW, EncryptionMethod.A128GCM).
+				agreementPartyUInfo(Base64URL.encode("Alice")).
+				agreementPartyVInfo(Base64URL.encode("Bob")).
+				build();
 
+		JWEObject jweObject = new JWEObject(header, new Payload("Hello world!"));
+
+		KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+		keyGenerator.init(EncryptionMethod.A128GCM.cekBitLength());
+		SecretKey cek = keyGenerator.generateKey();
+		
+		ECDHEncrypter encrypter = new ECDHEncrypter(ecJWK.toECPublicKey(), cek);
+		encrypter.getJCAContext().setContentEncryptionProvider(BouncyCastleProviderSingleton.getInstance());
+		jweObject.encrypt(encrypter);
+
+		ECKey epk = (ECKey) jweObject.getHeader().getEphemeralPublicKey();
+		assertEquals(Curve.P_256, epk.getCurve());
+		assertNotNull(epk.getX());
+		assertNotNull(epk.getY());
+		assertNull(epk.getD());
+
+		assertNotNull(jweObject.getEncryptedKey());
+
+		String jwe = jweObject.serialize();
+
+		jweObject = JWEObject.parse(jwe);
+
+		ECDHDecrypter decrypter = new ECDHDecrypter(ecJWK.toECPrivateKey());
+		decrypter.getJCAContext().setContentEncryptionProvider(BouncyCastleProviderSingleton.getInstance());
+		jweObject.decrypt(decrypter);
+
+		assertEquals("Hello world!", jweObject.getPayload().toString());
+	}
 
 	public void testCycle_ECDH_ES_Curve_P384()
 		throws Exception {

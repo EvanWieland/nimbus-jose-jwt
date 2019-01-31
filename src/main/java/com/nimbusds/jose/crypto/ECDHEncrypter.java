@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2019, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -18,20 +18,29 @@
 package com.nimbusds.jose.crypto;
 
 
-import java.security.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECParameterSpec;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
 import javax.crypto.SecretKey;
 
-import com.nimbusds.jose.*;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWECryptoParts;
+import com.nimbusds.jose.JWEEncrypter;
+import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.crypto.impl.ECDH;
 import com.nimbusds.jose.crypto.impl.ECDHCryptoProvider;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
+
 import net.jcip.annotations.ThreadSafe;
 
 
@@ -80,7 +89,7 @@ import net.jcip.annotations.ThreadSafe;
  *
  * @author Tim McLean
  * @author Vladimir Dzhuvinov
- * @version 2018-07-12
+ * @version 2019-01-24
  */
 @ThreadSafe
 public class ECDHEncrypter extends ECDHCryptoProvider implements JWEEncrypter {
@@ -106,6 +115,11 @@ public class ECDHEncrypter extends ECDHCryptoProvider implements JWEEncrypter {
 	 */
 	private final ECPublicKey publicKey;
 
+	/**
+	 * The externally supplied AES content encryption key (CEK) to use,
+	 * {@code null} to generate a CEK for each JWE.
+	 */
+	private final SecretKey contentEncryptionKey;
 
 	/**
 	 * Creates a new Elliptic Curve Diffie-Hellman encrypter.
@@ -114,12 +128,9 @@ public class ECDHEncrypter extends ECDHCryptoProvider implements JWEEncrypter {
 	 *
 	 * @throws JOSEException If the elliptic curve is not supported.
 	 */
-	public ECDHEncrypter(final ECPublicKey publicKey)
-		throws JOSEException {
+	public ECDHEncrypter(final ECPublicKey publicKey) throws JOSEException {
 
-		super(Curve.forECParameterSpec(publicKey.getParams()));
-
-		this.publicKey = publicKey;
+		this(publicKey, null);
 	}
 
 
@@ -130,12 +141,43 @@ public class ECDHEncrypter extends ECDHCryptoProvider implements JWEEncrypter {
 	 *
 	 * @throws JOSEException If the elliptic curve is not supported.
 	 */
-	public ECDHEncrypter(final ECKey ecJWK)
-		throws JOSEException {
+	public ECDHEncrypter(final ECKey ecJWK) throws JOSEException {
 
 		super(ecJWK.getCurve());
 
 		publicKey = ecJWK.toECPublicKey();
+		contentEncryptionKey = null;
+	}
+	
+	/**
+	 * Creates a new Elliptic Curve Diffie-Hellman encrypter with an optionally specified content
+	 * encryption key (CEK).
+	 *
+	 * @param publicKey            The public EC key. Must not be
+	 *                             {@code null}.
+	 * @param contentEncryptionKey The content encryption key (CEK) to use.
+	 *                             If specified its algorithm must be "AES"
+	 *                             and its length must match the expected
+	 *                             for the JWE encryption method ("enc").
+	 *                             If {@code null} a CEK will be generated
+	 *                             for each JWE.
+	 * @throws JOSEException 	   If the elliptic curve is not supported.
+	 */
+	public ECDHEncrypter(final ECPublicKey publicKey, final SecretKey contentEncryptionKey) throws JOSEException {
+		
+		super(Curve.forECParameterSpec(publicKey.getParams()));
+		
+		this.publicKey = publicKey;
+
+		if (contentEncryptionKey != null) {
+			if (contentEncryptionKey.getAlgorithm() == null || !contentEncryptionKey.getAlgorithm().equals("AES")) {
+				throw new IllegalArgumentException("The algorithm of the content encryption key (CEK) must be AES");
+			} else {
+				this.contentEncryptionKey = contentEncryptionKey;
+			}
+		} else {
+			this.contentEncryptionKey = null;
+		}
 	}
 
 
@@ -177,7 +219,7 @@ public class ECDHEncrypter extends ECDHCryptoProvider implements JWEEncrypter {
 			ephemeralPrivateKey,
 			getJCAContext().getKeyEncryptionProvider());
 
-		return encryptWithZ(updatedHeader, Z, clearText);
+		return encryptWithZ(updatedHeader, Z, clearText, contentEncryptionKey);
 	}
 
 

@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd and contributors.
+ * Copyright 2012-2019, Connect2id Ltd and contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -21,9 +21,14 @@ package com.nimbusds.jose.crypto.impl;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
 import javax.crypto.SecretKey;
 
-import com.nimbusds.jose.*;
+import com.nimbusds.jose.EncryptionMethod;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWEAlgorithm;
+import com.nimbusds.jose.JWECryptoParts;
+import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.util.Base64URL;
 
@@ -65,7 +70,7 @@ import com.nimbusds.jose.util.Base64URL;
  *
  * @author Tim McLean
  * @author Vladimir Dzhuvinov
- * @version 2018-07-12
+ * @version 2019-01-24
  */
 public abstract class ECDHCryptoProvider extends BaseJWEProvider {
 
@@ -161,11 +166,18 @@ public abstract class ECDHCryptoProvider extends BaseJWEProvider {
 		return curve;
 	}
 
-
 	/**
 	 * Encrypts the specified plaintext using the specified shared secret ("Z").
 	 */
 	protected JWECryptoParts encryptWithZ(final JWEHeader header, final SecretKey Z, final byte[] clearText)
+			throws JOSEException {
+		return this.encryptWithZ(header, Z, clearText, null);
+	}
+
+	/**
+	 * Encrypts the specified plaintext using the specified shared secret ("Z") and, if provided, the content encryption key (CEK).
+	 */
+	protected JWECryptoParts encryptWithZ(final JWEHeader header, final SecretKey Z, final byte[] clearText, SecretKey contentEncryptionKey)
 		throws JOSEException {
 
 		final JWEAlgorithm alg = header.getAlgorithm();
@@ -183,7 +195,11 @@ public abstract class ECDHCryptoProvider extends BaseJWEProvider {
 			cek = sharedKey;
 			encryptedKey = null;
 		} else if (algMode.equals(ECDH.AlgorithmMode.KW)) {
-			cek = ContentCryptoProvider.generateCEK(enc, getJCAContext().getSecureRandom());
+			if(contentEncryptionKey != null) { // Use externally supplied CEK
+				cek = contentEncryptionKey;
+			} else { // Generate the CEK according to the enc method
+				cek = ContentCryptoProvider.generateCEK(enc, getJCAContext().getSecureRandom());
+			}
 			encryptedKey = Base64URL.encode(AESKW.wrapCEK(cek, sharedKey, getJCAContext().getKeyEncryptionProvider()));
 		} else {
 			throw new JOSEException("Unexpected JWE ECDH algorithm mode: " + algMode);
