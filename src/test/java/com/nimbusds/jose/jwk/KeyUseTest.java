@@ -42,22 +42,37 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
  * Tests the key use enumeration.
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-12-06
+ * @version 2019-02-06
  */
 public class KeyUseTest extends TestCase {
 
 
-	public void testIdentifiers() {
+	public void testConstantIdentifiers() {
 
 		assertEquals("sig", KeyUse.SIGNATURE.identifier());
+		assertEquals("sig", KeyUse.SIGNATURE.getValue());
 		assertEquals("sig", KeyUse.SIGNATURE.toString());
 
 		assertEquals("enc", KeyUse.ENCRYPTION.identifier());
+		assertEquals("enc", KeyUse.ENCRYPTION.getValue());
 		assertEquals("enc", KeyUse.ENCRYPTION.toString());
+	}
+	
+	
+	public void testCustomIdentifier()
+		throws ParseException {
+		
+		KeyUse tls = new KeyUse("tls");
+		assertEquals("tls", tls.identifier());
+		assertEquals("tls", tls.getValue());
+		assertEquals("tls", tls.toString());
+		
+		assertEquals("tls", KeyUse.parse("tls").identifier());
+		assertTrue(tls.equals(new KeyUse("tls")));
 	}
 
 
-	public void testParse()
+	public void testParseConstants()
 		throws ParseException {
 
 		assertEquals(KeyUse.SIGNATURE, KeyUse.parse("sig"));
@@ -65,15 +80,28 @@ public class KeyUseTest extends TestCase {
 	}
 
 
-	public void testParseException() {
+	public void testParseException_empty() {
 
 		try {
-			KeyUse.parse("no-such-use");
+			KeyUse.parse("");
 
 			fail();
 
 		} catch (ParseException e) {
-			// ok
+			assertEquals("JWK use value must not be empty or blank", e.getMessage());
+		}
+	}
+
+
+	public void testParseException_blank() {
+
+		try {
+			KeyUse.parse("  ");
+
+			fail();
+
+		} catch (ParseException e) {
+			assertEquals("JWK use value must not be empty or blank", e.getMessage());
 		}
 	}
 

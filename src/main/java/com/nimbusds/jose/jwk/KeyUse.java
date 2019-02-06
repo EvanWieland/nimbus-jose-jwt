@@ -20,6 +20,7 @@ package com.nimbusds.jose.jwk;
 
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
+import java.util.Objects;
 
 
 /**
@@ -34,21 +35,21 @@ import java.text.ParseException;
  * </ul>
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-12-06
+ * @version 2019-02-06
  */
-public enum KeyUse {
+public final class KeyUse {
 
 
 	/**
 	 * Signature.
 	 */
-	SIGNATURE("sig"),
+	public static final KeyUse SIGNATURE = new KeyUse("sig");
 
 
 	/**
 	 * Encryption.
 	 */
-	ENCRYPTION("enc");
+	public static final KeyUse ENCRYPTION = new KeyUse("enc");
 
 
 	/**
@@ -63,7 +64,7 @@ public enum KeyUse {
 	 * @param identifier The public key use identifier. Must not be
 	 *                   {@code null}.
 	 */
-	KeyUse(final String identifier) {
+	public KeyUse(final String identifier) {
 
 		if (identifier == null)
 			throw new IllegalArgumentException("The key use identifier must not be null");
@@ -81,6 +82,15 @@ public enum KeyUse {
 
 		return identifier;
 	}
+	
+	
+	/**
+	 * @see #identifier()
+	 */
+	public String getValue() {
+		
+		return identifier();
+	}
 
 
 	/**
@@ -91,8 +101,23 @@ public enum KeyUse {
 
 		return identifier();
 	}
-
-
+	
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof KeyUse)) return false;
+		KeyUse keyUse = (KeyUse) o;
+		return Objects.equals(identifier, keyUse.identifier);
+	}
+	
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(identifier);
+	}
+	
+	
 	/**
 	 * Parses a public key use from the specified JWK {@code use} parameter
 	 * value.
@@ -110,15 +135,20 @@ public enum KeyUse {
 		if (s == null) {
 			return null;
 		}
-
-		for (KeyUse use: KeyUse.values()) {
-
-			if (s.equals(use.identifier)) {
-				return use;
-			}
+		
+		if (s.equals(SIGNATURE.identifier())) {
+			return SIGNATURE;
 		}
-
-		throw new ParseException("Invalid JWK use: " + s, 0);
+		
+		if (s.equals(ENCRYPTION.identifier())) {
+			return ENCRYPTION;
+		}
+		
+		if (s.trim().isEmpty()) {
+			throw new ParseException("JWK use value must not be empty or blank", 0);
+		}
+		
+		return new KeyUse(s);
 	}
 	
 	

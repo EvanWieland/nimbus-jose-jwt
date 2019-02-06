@@ -945,3 +945,8 @@ version 6.7 (2019-01-16)
 version 6.8 (2019-01-31)
 	* Updates the ECDHEncrypter to enable the Content Encryption Key (CEK) to
       be passed directly (iss #292).
+
+version 7.0 (2019-02-06)
+    * Makes KeyUse a non-enum class to allow values other than "sig" and "enc",
+      see RFC 7517, section 4.2 (iss #297). Adds new KeyUse.getValue method
+      alias for KeyUse.identifier().
