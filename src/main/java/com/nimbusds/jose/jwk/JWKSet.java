@@ -320,6 +320,10 @@ public class JWKSet {
 		throws ParseException {
 
 		JSONArray keyArray = JSONObjectUtils.getJSONArray(json, "keys");
+		
+		if (keyArray == null) {
+			throw new ParseException("Missing required \"keys\" member", 0);
+		}
 
 		List<JWK> keys = new LinkedList<>();
 

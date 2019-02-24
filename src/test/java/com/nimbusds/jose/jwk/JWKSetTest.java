@@ -64,7 +64,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
  *
  * @author Vladimir Dzhuvinov
  * @author Vedran Pavic
- * @version 2018-04-26
+ * @version 2019-02-24
  */
 public class JWKSetTest extends TestCase {
 	
@@ -996,6 +996,17 @@ public class JWKSetTest extends TestCase {
 			jwkSet.getAdditionalMembers().put("key", "value");
 		} catch (UnsupportedOperationException e) {
 			assertNull(e.getMessage());
+		}
+	}
+	
+	
+	public void testParse_missingKeysField() {
+		
+		try {
+			JWKSet.parse("{}");
+			fail();
+		} catch (ParseException e) {
+			assertEquals("Missing required \"keys\" member", e.getMessage());
 		}
 	}
 }

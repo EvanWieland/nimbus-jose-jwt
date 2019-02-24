@@ -950,3 +950,7 @@ version 7.0 (2019-02-06)
     * Makes KeyUse a non-enum class to allow values other than "sig" and "enc",
       see RFC 7517, section 4.2 (iss #297). Adds new KeyUse.getValue method
       alias for KeyUse.identifier().
+
+version 7.0.1 (2019-02-24)
+    * Fixes NPE on parsing a JWKSet from a JSON object with missing "keys"
+      member (iss #300).
