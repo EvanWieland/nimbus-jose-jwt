@@ -38,7 +38,7 @@ abstract class BaseJWEProvider implements JWEProvider {
 
 
 	/**
-	 * The supported algorithms by the JWE provider intance.
+	 * The supported algorithms by the JWE provider instance.
 	 */
 	private final Set<JWEAlgorithm> algs;
 
