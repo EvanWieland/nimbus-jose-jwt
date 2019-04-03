@@ -18,16 +18,24 @@
 package com.nimbusds.jose.jwk;
 
 
+import java.io.File;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.security.KeyStore;
+import java.security.MessageDigest;
+import java.security.cert.X509Certificate;
 import java.util.*;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jose.util.IOUtils;
+import com.nimbusds.jose.util.X509CertUtils;
 import junit.framework.TestCase;
 import net.minidev.json.JSONObject;
 import org.junit.Assert;
+
+import static org.junit.Assert.assertNotEquals;
 
 
 public class OctetKeyPairTest extends TestCase {
@@ -461,5 +469,59 @@ public class OctetKeyPairTest extends TestCase {
 				assertTrue(e.getCause() instanceof IllegalArgumentException);
 			}
 		}
+	}
+
+	public void testEqualsSuccess()
+			throws Exception {
+
+		//Given
+		String json = "{\n" +
+				"    \"kty\" : \"OKP\",\n" +
+				"    \"crv\" : \"Ed25519\",\n" +
+				"    \"x\"   : \"11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo\",\n" +
+				"    \"d\"   : \"nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A\",\n" +
+				"    \"use\" : \"sig\",\n" +
+				"    \"kid\" : \"1\"\n" +
+				"  }";
+
+		OctetKeyPair okpA = OctetKeyPair.parse(json);
+		OctetKeyPair okpB = OctetKeyPair.parse(json);
+
+		//When
+
+		//Then
+		assertEquals(okpA, okpB);
+	}
+
+	public void testEqualsFailure()
+			throws Exception {
+
+		//Given
+		String jsonA = "{\n" +
+				"    \"kty\" : \"OKP\",\n" +
+				"    \"crv\" : \"Ed25519\",\n" +
+				"    \"x\"   : \"11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo\",\n" +
+				"    \"d\"   : \"nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A\",\n" +
+				"    \"use\" : \"sig\",\n" +
+				"    \"kid\" : \"1\"\n" +
+				"  }";
+
+		OctetKeyPair okpA = OctetKeyPair.parse(jsonA);
+
+		String jsonB = "{\n" +
+				"    \"kty\" : \"OKP\",\n" +
+				"    \"crv\" : \"Ed25519\",\n" +
+				"    \"x\"   : \"ewrewrewr\",\n" +
+				"    \"d\"   : \"werewrwerw\",\n" +
+				"    \"use\" : \"sig\",\n" +
+				"    \"kid\" : \"1\"\n" +
+				"  }";
+
+		OctetKeyPair okpB = OctetKeyPair.parse(jsonB);
+
+		//When
+
+		//Then
+		assertNotEquals(okpA, okpB);
 	}
 }

@@ -43,6 +43,9 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThat;
+
 
 /**
  * Tests the RSA JWK class.
@@ -1519,5 +1522,104 @@ public class RSAKeyTest extends TestCase {
 		assertEquals(2048, senderJWK.size());
 		assertEquals("123", senderJWK.getKeyID());
 		assertEquals(KeyUse.SIGNATURE, senderJWK.getKeyUse());
+	}
+
+	public void testEqualsSuccess()
+			throws Exception {
+
+		//Given
+		String json = "{   \"kty\" : \"RSA\",\n" +
+				"   \"n\"   : \"0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx\n" +
+				"            4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMs\n" +
+				"            tn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2\n" +
+				"            QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbI\n" +
+				"            SD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqb\n" +
+				"            w0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw\",\n" +
+				"   \"e\"   : \"AQAB\",\n" +
+				"   \"d\"   : \"X4cTteJY_gn4FYPsXB8rdXix5vwsg1FLN5E3EaG6RJoVH-HLLKD9\n" +
+				"            M7dx5oo7GURknchnrRweUkC7hT5fJLM0WbFAKNLWY2vv7B6NqXSzUvxT0_YSfqij\n" +
+				"            wp3RTzlBaCxWp4doFk5N2o8Gy_nHNKroADIkJ46pRUohsXywbReAdYaMwFs9tv8d\n" +
+				"            _cPVY3i07a3t8MN6TNwm0dSawm9v47UiCl3Sk5ZiG7xojPLu4sbg1U2jx4IBTNBz\n" +
+				"            nbJSzFHK66jT8bgkuqsk0GjskDJk19Z4qwjwbsnn4j2WBii3RL-Us2lGVkY8fkFz\n" +
+				"            me1z0HbIkfz0Y6mqnOYtqc0X4jfcKoAC8Q\",\n" +
+				"   \"p\"   : \"83i-7IvMGXoMXCskv73TKr8637FiO7Z27zv8oj6pbWUQyLPQBQxtPV\n" +
+				"            nwD20R-60eTDmD2ujnMt5PoqMrm8RfmNhVWDtjjMmCMjOpSXicFHj7XOuVIYQyqV\n" +
+				"            WlWEh6dN36GVZYk93N8Bc9vY41xy8B9RzzOGVQzXvNEvn7O0nVbfs\",\n" +
+				"   \"q\"   : \"3dfOR9cuYq-0S-mkFLzgItgMEfFzB2q3hWehMuG0oCuqnb3vobLyum\n" +
+				"            qjVZQO1dIrdwgTnCdpYzBcOfW5r370AFXjiWft_NGEiovonizhKpo9VVS78TzFgx\n" +
+				"            kIdrecRezsZ-1kYd_s1qDbxtkDEgfAITAG9LUnADun4vIcb6yelxk\",\n" +
+				"   \"dp\"  : \"G4sPXkc6Ya9y8oJW9_ILj4xuppu0lzi_H7VTkS8xj5SdX3coE0oim\n" +
+				"            YwxIi2emTAue0UOa5dpgFGyBJ4c8tQ2VF402XRugKDTP8akYhFo5tAA77Qe_Nmtu\n" +
+				"            YZc3C3m3I24G2GvR5sSDxUyAN2zq8Lfn9EUms6rY3Ob8YeiKkTiBj0\",\n" +
+				"   \"dq\"  : \"s9lAH9fggBsoFR8Oac2R_E2gw282rT2kGOAhvIllETE1efrA6huUU\n" +
+				"            vMfBcMpn8lqeW6vzznYY5SSQF7pMdC_agI3nG8Ibp1BUb0JUiraRNqUfLhcQb_d9\n" +
+				"            GF4Dh7e74WbRsobRonujTYN1xCaP6TO61jvWrX-L18txXw494Q_cgk\",\n" +
+				"   \"qi\"  : \"GyM_p6JrXySiz1toFgKbWV-JdI3jQ4ypu9rbMWx3rQJBfmt0FoYzg\n" +
+				"            UIZEVFEcOqwemRN81zoDAaa-Bk0KWNGDjJHZDdDmFhW3AN7lI-puxk_mHZGJ11rx\n" +
+				"            yR8O55XLSe3SPmRfKwZI6yU24ZxvQKFYItdldUKGzO6Ia6zTKhAVRU\",\n" +
+				"   \"alg\" : \"RS256\",\n" +
+				"   \"kid\" : \"2011-04-29\"\n" +
+				" }";
+		RSAKey keyA = RSAKey.parse(json.replaceAll("\n", ""));
+		RSAKey keyB = RSAKey.parse(json.replaceAll("\n", ""));
+
+		//When
+
+		//Then
+		assertEquals(keyA, keyB);
+	}
+
+	public void testEqualsFailure()
+			throws Exception {
+
+		//Given
+		String jsonA = "{   \"kty\" : \"RSA\",\n" +
+				"   \"n\"   : \"0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx\n" +
+				"            4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMs\n" +
+				"            tn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2\n" +
+				"            QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbI\n" +
+				"            SD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqb\n" +
+				"            w0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw\",\n" +
+				"   \"e\"   : \"AQAB\",\n" +
+				"   \"d\"   : \"X4cTteJY_gn4FYPsXB8rdXix5vwsg1FLN5E3EaG6RJoVH-HLLKD9\n" +
+				"            M7dx5oo7GURknchnrRweUkC7hT5fJLM0WbFAKNLWY2vv7B6NqXSzUvxT0_YSfqij\n" +
+				"            wp3RTzlBaCxWp4doFk5N2o8Gy_nHNKroADIkJ46pRUohsXywbReAdYaMwFs9tv8d\n" +
+				"            _cPVY3i07a3t8MN6TNwm0dSawm9v47UiCl3Sk5ZiG7xojPLu4sbg1U2jx4IBTNBz\n" +
+				"            nbJSzFHK66jT8bgkuqsk0GjskDJk19Z4qwjwbsnn4j2WBii3RL-Us2lGVkY8fkFz\n" +
+				"            me1z0HbIkfz0Y6mqnOYtqc0X4jfcKoAC8Q\",\n" +
+				"   \"p\"   : \"83i-7IvMGXoMXCskv73TKr8637FiO7Z27zv8oj6pbWUQyLPQBQxtPV\n" +
+				"            nwD20R-60eTDmD2ujnMt5PoqMrm8RfmNhVWDtjjMmCMjOpSXicFHj7XOuVIYQyqV\n" +
+				"            WlWEh6dN36GVZYk93N8Bc9vY41xy8B9RzzOGVQzXvNEvn7O0nVbfs\",\n" +
+				"   \"q\"   : \"3dfOR9cuYq-0S-mkFLzgItgMEfFzB2q3hWehMuG0oCuqnb3vobLyum\n" +
+				"            qjVZQO1dIrdwgTnCdpYzBcOfW5r370AFXjiWft_NGEiovonizhKpo9VVS78TzFgx\n" +
+				"            kIdrecRezsZ-1kYd_s1qDbxtkDEgfAITAG9LUnADun4vIcb6yelxk\",\n" +
+				"   \"dp\"  : \"G4sPXkc6Ya9y8oJW9_ILj4xuppu0lzi_H7VTkS8xj5SdX3coE0oim\n" +
+				"            YwxIi2emTAue0UOa5dpgFGyBJ4c8tQ2VF402XRugKDTP8akYhFo5tAA77Qe_Nmtu\n" +
+				"            YZc3C3m3I24G2GvR5sSDxUyAN2zq8Lfn9EUms6rY3Ob8YeiKkTiBj0\",\n" +
+				"   \"dq\"  : \"s9lAH9fggBsoFR8Oac2R_E2gw282rT2kGOAhvIllETE1efrA6huUU\n" +
+				"            vMfBcMpn8lqeW6vzznYY5SSQF7pMdC_agI3nG8Ibp1BUb0JUiraRNqUfLhcQb_d9\n" +
+				"            GF4Dh7e74WbRsobRonujTYN1xCaP6TO61jvWrX-L18txXw494Q_cgk\",\n" +
+				"   \"qi\"  : \"GyM_p6JrXySiz1toFgKbWV-JdI3jQ4ypu9rbMWx3rQJBfmt0FoYzg\n" +
+				"            UIZEVFEcOqwemRN81zoDAaa-Bk0KWNGDjJHZDdDmFhW3AN7lI-puxk_mHZGJ11rx\n" +
+				"            yR8O55XLSe3SPmRfKwZI6yU24ZxvQKFYItdldUKGzO6Ia6zTKhAVRU\",\n" +
+				"   \"alg\" : \"RS256\",\n" +
+				"   \"kid\" : \"2011-04-29\"\n" +
+				" }";
+		RSAKey keyA = RSAKey.parse(jsonA.replaceAll("\n", ""));
+
+		String jsonB = "{\n" +
+				"      \"kty\": \"RSA\",\n" +
+				"      \"d\": \"Y03dVLbCCgWpiZnzUyT1E_JuQkM9-Kl9ice2Yp_8ex-ywZHF1GvYYBsKyKjAf3o_dua5XX9IDILK2TJZ2uhWefaEPMhh1OL4rveEoq4-jU3kdax-_8WJ8r-gatoUXl-IyDePiMZGgd4uTLzqF752-qtPEBmbfQK7ndP1z6h5t2fUA-h_Z6DIXuguci-2I_mDu9QA4tRUdwClDRVY8J6tNj8YhZiz6xdtCkbDeonDTvOGmmDJNStkp4WVzpE_D09cudLMAz8_g2_y6j_Jq6EGhrVLP85JEfJI3YBpGGgOdQMRIqm0xp8xjY9Pz5bIc3yCbpWV2FeJyk3eKXtQCpSPgQ\",\n" +
+				"      \"e\": \"AQAB\",\n" +
+				"      \"n\": \"w1-xUupu_rLsGPUaFYk0ZYhMNhWQ-scT4DlNPvuPDV2ocfWe1Jl2kuOz0o_UKmmSCMsTDZ2IzT79gJL2qCcNGwFsXOcgvaUYxM2HUF7QP6rM9afLhyHR99m4t1sptfXlLUqNPYC2iexH_HVzabaokyRfKxiFKFs-L1Jns1HddkkWbATCnRAEMOMAqtFRLNwpX4qtEfENie7DCMZE6Sjz-grz4Z1f7-AzIvW3EzNOpxYZcLONfFC0iyLHIadcMln73pb7iXUKGLdvFcmtEmSoF6KfrC1SM_s_02NtaIFXzKhVG4c-1iBijhTprPC3Q4Q6cEKLROAyGnrsAg6ByzlsNQ\",\n" +
+				"      \"alg\" : \"RS256\",\n" +
+				"      \"kid\" : \"2011-04-29\"\n" +
+				"    }";
+		RSAKey keyB = RSAKey.parse(jsonB.replaceAll("\n", ""));
+
+		//When
+
+		//Then
+		assertNotEquals(keyA, keyB);
 	}
 }

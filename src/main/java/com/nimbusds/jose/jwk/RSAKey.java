@@ -2244,4 +2244,27 @@ public final class RSAKey extends JWK implements AsymmetricJWK {
 			return rsaJWK;
 		}
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof RSAKey)) return false;
+		if (!super.equals(o)) return false;
+		RSAKey rsaKey = (RSAKey) o;
+		return Objects.equals(n, rsaKey.n) &&
+				Objects.equals(e, rsaKey.e) &&
+				Objects.equals(d, rsaKey.d) &&
+				Objects.equals(p, rsaKey.p) &&
+				Objects.equals(q, rsaKey.q) &&
+				Objects.equals(dp, rsaKey.dp) &&
+				Objects.equals(dq, rsaKey.dq) &&
+				Objects.equals(qi, rsaKey.qi) &&
+				Objects.equals(oth, rsaKey.oth) &&
+				Objects.equals(privateKey, rsaKey.privateKey);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), n, e, d, p, q, dp, dq, qi, oth, privateKey);
+	}
 }

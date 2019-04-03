@@ -23,6 +23,7 @@ import java.security.*;
 import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -646,5 +647,19 @@ public final class OctetSequenceKey extends JWK implements SecretJWK {
 			.keyID(alias)
 			.keyStore(keyStore)
 			.build();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof OctetSequenceKey)) return false;
+		if (!super.equals(o)) return false;
+		OctetSequenceKey that = (OctetSequenceKey) o;
+		return Objects.equals(k, that.k);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), k);
 	}
 }

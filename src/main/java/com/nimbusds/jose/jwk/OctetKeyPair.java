@@ -69,7 +69,7 @@ import net.minidev.json.JSONObject;
  *   "kty" : "OKP",
  *   "crv" : "Ed25519",
  *   "x"   : "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo",
- *   "d"   : "nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A"
+ *   "d"   : "nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A",
  *   "use" : "sig",
  *   "kid" : "1"
  * }
@@ -839,5 +839,26 @@ public class OctetKeyPair extends JWK implements AsymmetricJWK, CurveBasedJWK {
 			// Conflicting 'use' and 'key_ops'
 			throw new ParseException(ex.getMessage(), 0);
 		}
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof OctetKeyPair)) return false;
+		if (!super.equals(o)) return false;
+		OctetKeyPair that = (OctetKeyPair) o;
+		return Objects.equals(crv, that.crv) &&
+				Objects.equals(x, that.x) &&
+				Arrays.equals(decodedX, that.decodedX) &&
+				Objects.equals(d, that.d) &&
+				Arrays.equals(decodedD, that.decodedD);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = Objects.hash(super.hashCode(), crv, x, d);
+		result = 31 * result + Arrays.hashCode(decodedX);
+		result = 31 * result + Arrays.hashCode(decodedD);
+		return result;
 	}
 }

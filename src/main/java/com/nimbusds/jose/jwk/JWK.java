@@ -21,6 +21,7 @@ package com.nimbusds.jose.jwk;
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.util.*;
+import com.nimbusds.jose.util.Base64;
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONObject;
 
@@ -35,11 +36,7 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.*;
 import java.security.spec.ECParameterSpec;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -819,5 +816,28 @@ public abstract class JWK implements JSONAware, Serializable {
 		} else {
 			throw new JOSEException("Not a public/private key pair");
 		}
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof JWK)) return false;
+		JWK jwk = (JWK) o;
+		return Objects.equals(kty, jwk.kty) &&
+				Objects.equals(use, jwk.use) &&
+				Objects.equals(ops, jwk.ops) &&
+				Objects.equals(alg, jwk.alg) &&
+				Objects.equals(kid, jwk.kid) &&
+				Objects.equals(x5u, jwk.x5u) &&
+				Objects.equals(x5t, jwk.x5t) &&
+				Objects.equals(x5t256, jwk.x5t256) &&
+				Objects.equals(x5c, jwk.x5c) &&
+				Objects.equals(parsedX5c, jwk.parsedX5c) &&
+				Objects.equals(keyStore, jwk.keyStore);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(kty, use, ops, alg, kid, x5u, x5t, x5t256, x5c, parsedX5c, keyStore);
 	}
 }

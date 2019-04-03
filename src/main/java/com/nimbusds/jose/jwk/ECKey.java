@@ -1554,4 +1554,22 @@ public final class ECKey extends JWK implements AsymmetricJWK, CurveBasedJWK {
 			return ecJWK;
 		}
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof ECKey)) return false;
+		if (!super.equals(o)) return false;
+		ECKey ecKey = (ECKey) o;
+		return Objects.equals(crv, ecKey.crv) &&
+				Objects.equals(x, ecKey.x) &&
+				Objects.equals(y, ecKey.y) &&
+				Objects.equals(d, ecKey.d) &&
+				Objects.equals(privateKey, ecKey.privateKey);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), crv, x, y, d, privateKey);
+	}
 }
