@@ -747,7 +747,7 @@ public abstract class JWK implements JSONAware, Serializable {
 			final ECKey.Builder builder = new ECKey.Builder(curve, (ECPublicKey) publicKey);
 
 			if (privateKey != null) {
-				builder.privateKey(privateKey);
+				builder.privateKey((ECPrivateKey) privateKey);
 			}
 			return builder.build();
 		}
@@ -755,7 +755,7 @@ public abstract class JWK implements JSONAware, Serializable {
 		if (publicKey instanceof RSAPublicKey) {
 			final RSAKey.Builder builder = new RSAKey.Builder((RSAPublicKey) publicKey);
 			if (privateKey instanceof RSAPrivateKey) {
-				builder.privateKey(privateKey);
+				builder.privateKey((RSAPrivateKey) privateKey);
 			} else if (privateKey != null) {
 				throw new JOSEException("Unsupported RSA private key type: " + privateKey);
 			}

@@ -312,6 +312,11 @@ public class JWKTest extends TestCase {
 		RSAKey rsaKey = (RSAKey) JWK.parseFromPEMEncodedObjects(SamplePEMEncodedObjects.RSA_PRIVATE_KEY_PEM);
 		assertEquals(KeyType.RSA, rsaKey.getKeyType());
 		assertTrue(rsaKey.isPrivate());
+		assertNotNull(rsaKey.getModulus());
+		assertNotNull(rsaKey.getPrivateExponent());
+		assertNotNull(rsaKey.getFirstCRTCoefficient());
+		assertNotNull(rsaKey.getFirstFactorCRTExponent());
+		assertNotNull(rsaKey.getFirstPrimeFactor());
 	}
 
 	public void testParsePemRsaPrivateKeyPlusCert() throws JOSEException {
@@ -337,6 +342,7 @@ public class JWKTest extends TestCase {
 		ECKey ecKey = (ECKey) JWK.parseFromPEMEncodedObjects(SamplePEMEncodedObjects.EC_PRIVATE_KEY_PEM);
 		assertEquals(KeyType.EC, ecKey.getKeyType());
 		assertTrue(ecKey.isPrivate());
+		assertNotNull(ecKey.getD());
 	}
 
 	public void testParsePemEcPrivateKeyPlusCert() throws JOSEException {

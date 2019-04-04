@@ -1267,7 +1267,7 @@ public class RSAKeyTest extends TestCase {
 		assertEquals("1", json.get("kid"));
 		assertEquals(Base64URL.encode(publicKey.getPublicExponent()).toString(), json.get("e"));
 		assertEquals(Base64URL.encode(publicKey.getModulus()).toString(), json.get("n"));
-		assertEquals(4, json.size());
+		assertEquals(10, json.size());
 	}
 	
 	

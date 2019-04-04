@@ -24,10 +24,7 @@ import java.net.URI;
 import java.security.*;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAMultiPrimePrivateCrtKey;
-import java.security.interfaces.RSAPrivateCrtKey;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+import java.security.interfaces.*;
 import java.security.spec.*;
 import java.text.ParseException;
 import java.util.*;
@@ -556,7 +553,10 @@ public final class RSAKey extends JWK implements AsymmetricJWK {
 		 * @return This builder.
 		 */
 		public Builder privateKey(final PrivateKey priv) {
-			
+			if (priv instanceof RSAPrivateKey) {
+				return privateKey((RSAPrivateKey) priv);
+			}
+
 			if (! "RSA".equalsIgnoreCase(priv.getAlgorithm())) {
 				throw new IllegalArgumentException("The private key algorithm must be RSA");
 			}
