@@ -29,12 +29,15 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import static org.junit.Assert.assertNotEquals;
+
+import junit.framework.TestCase;
+import net.minidev.json.JSONObject;
+
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.Base64URL;
-import junit.framework.TestCase;
-import net.minidev.json.JSONObject;
 
 
 /**
@@ -546,5 +549,51 @@ public class OctetSequenceKeyTest extends TestCase {
 					e.getMessage().contains("Couldn't retrieve secret key (bad pin?)"));
 			assertTrue(e.getCause() instanceof UnrecoverableKeyException);
 		}
+	}
+
+	public void testEqualsSuccess()
+			throws Exception {
+
+		//Given
+		String json ="{"+
+				"\"kty\":\"oct\","+
+				"\"kid\":\"018c0ae5-4d9b-471b-bfd6-eef314bc7037\","+
+				"\"use\":\"sig\","+
+				"\"k\":\"hJtXIZ2uSN5kbQfbtTNWbpdmhkV8FJG-Onbc6mxCcYg\""+
+				"}";
+
+		OctetSequenceKey jwkA = OctetSequenceKey.parse(json);
+		OctetSequenceKey jwkB = OctetSequenceKey.parse(json);
+
+		//When
+
+		//Then
+		assertEquals(jwkA, jwkB);
+	}
+
+	public void testEqualsFailure()
+			throws Exception {
+
+		//Given
+		String jsonA ="{"+
+				"\"kty\":\"oct\","+
+				"\"kid\":\"018c0ae5-4d9b-471b-bfd6-eef314bc7037\","+
+				"\"use\":\"sig\","+
+				"\"k\":\"hJtXIZ2uSN5kbQfbtTNWbpdmhkV8FJG-Onbc6mxCcYg\""+
+				"}";
+		OctetSequenceKey jwkA = OctetSequenceKey.parse(jsonA);
+
+		String jsonB ="{"+
+				"\"kty\":\"oct\","+
+				"\"kid\":\"018c0ae5-4d9b-471b-bfd6-eef314bc7037\","+
+				"\"use\":\"sig\","+
+				"\"k\":\"werewrwerewr\""+
+				"}";
+		OctetSequenceKey jwkB = OctetSequenceKey.parse(jsonB);
+
+		//When
+
+		//Then
+		assertNotEquals(jwkA, jwkB);
 	}
 }

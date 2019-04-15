@@ -32,11 +32,8 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
-import com.nimbusds.jose.util.Base64;
-import com.nimbusds.jose.util.*;
+import static org.junit.Assert.assertNotEquals;
+
 import junit.framework.TestCase;
 import net.minidev.json.JSONObject;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -45,6 +42,12 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
+import com.nimbusds.jose.util.Base64;
+import com.nimbusds.jose.util.*;
 
 
 /**
@@ -1105,5 +1108,57 @@ public class ECKeyTest extends TestCase {
 		} catch (InvalidKeySpecException e) {
 			assertEquals("invalid KeySpec: x value invalid for SecP256R1FieldElement", e.getMessage());
 		}
+	}
+
+	public void testEqualsSuccess()
+			throws Exception {
+
+		//Given
+		String jsonA = "{\n" +
+				"    \"kty\" : \"EC\",\n" +
+				"    \"crv\" : \"P-256\",\n" +
+				"    \"x\"   : \"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\n" +
+				"    \"y\"   : \"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\n" +
+				"    \"use\" : \"enc\",\n" +
+				"    \"kid\" : \"1\"\n" +
+				"  }";
+		ECKey ecKeyA = ECKey.parse(jsonA.replaceAll("\n", ""));
+		ECKey ecKeyB = ECKey.parse(jsonA.replaceAll("\n", ""));
+
+		//When
+
+		//Then
+		assertEquals(ecKeyA, ecKeyB);
+	}
+
+	public void testEqualsFailure()
+			throws Exception {
+
+		//Given
+		String jsonA = "{\n" +
+				"    \"kty\" : \"EC\",\n" +
+				"    \"crv\" : \"P-256\",\n" +
+				"    \"x\"   : \"MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4\",\n" +
+				"    \"y\"   : \"4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM\",\n" +
+				"    \"use\" : \"enc\",\n" +
+				"    \"kid\" : \"1\"\n" +
+				"  }";
+		ECKey ecKeyA = ECKey.parse(jsonA.replaceAll("\n", ""));
+
+		String jsonB = "{\n" +
+				"      \"kty\": \"EC\",\n" +
+				"      \"d\": \"l3zQlaKsoql3cBEQzVpFnWIyHyGRh_C3cc0l3iqnljE\",\n" +
+				"      \"crv\": \"P-256\",\n" +
+				"      \"x\": \"LE9B4rxnp-1kzJsDBM-UYTsewGooMgt1Pi_czT_E7SI\",\n" +
+				"      \"y\": \"fs_LRmTZVHRUZintk-BLOpIjOjxTmVXF9ddrwNuRH9U\",\n" +
+				"      \"use\" : \"enc\",\n" +
+				"      \"kid\" : \"1\"\n" +
+				"    }";
+		ECKey ecKeyB = ECKey.parse(jsonB.replaceAll("\n", ""));
+
+		//When
+
+		//Then
+		assertNotEquals(ecKeyA, ecKeyB);
 	}
 }

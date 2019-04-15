@@ -965,3 +965,5 @@ version 7.1 (2019-04-15)
     * RSAKey.Builder.privateKey(java.security.PrivateKey) will first check if
       the key is an instance of java.security.RSAPrivate key and call the
       appropriate builder method method instead (pr #48).
+    * Overrides equals and hashCode for JWK, RSAKey, ECKey, OctetSequenceKey
+      and OctetKeyPair classes (pr #47).

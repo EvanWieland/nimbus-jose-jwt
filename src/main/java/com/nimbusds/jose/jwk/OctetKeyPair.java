@@ -27,14 +27,15 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.*;
 
+import net.jcip.annotations.Immutable;
+import net.minidev.json.JSONObject;
+
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.ByteUtils;
 import com.nimbusds.jose.util.JSONObjectUtils;
-import net.jcip.annotations.Immutable;
-import net.minidev.json.JSONObject;
 
 
 /**
@@ -69,7 +70,7 @@ import net.minidev.json.JSONObject;
  *   "kty" : "OKP",
  *   "crv" : "Ed25519",
  *   "x"   : "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo",
- *   "d"   : "nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A"
+ *   "d"   : "nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A",
  *   "use" : "sig",
  *   "kid" : "1"
  * }
@@ -85,7 +86,7 @@ import net.minidev.json.JSONObject;
  * </pre>
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-02-27
+ * @version 2019-04-15
  */
 @Immutable
 public class OctetKeyPair extends JWK implements AsymmetricJWK, CurveBasedJWK {
@@ -839,5 +840,28 @@ public class OctetKeyPair extends JWK implements AsymmetricJWK, CurveBasedJWK {
 			// Conflicting 'use' and 'key_ops'
 			throw new ParseException(ex.getMessage(), 0);
 		}
+	}
+
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof OctetKeyPair)) return false;
+		if (!super.equals(o)) return false;
+		OctetKeyPair that = (OctetKeyPair) o;
+		return Objects.equals(crv, that.crv) &&
+				Objects.equals(x, that.x) &&
+				Arrays.equals(decodedX, that.decodedX) &&
+				Objects.equals(d, that.d) &&
+				Arrays.equals(decodedD, that.decodedD);
+	}
+
+	
+	@Override
+	public int hashCode() {
+		int result = Objects.hash(super.hashCode(), crv, x, d);
+		result = 31 * result + Arrays.hashCode(decodedX);
+		result = 31 * result + Arrays.hashCode(decodedD);
+		return result;
 	}
 }

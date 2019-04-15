@@ -30,6 +30,10 @@ import java.security.spec.*;
 import java.text.ParseException;
 import java.util.*;
 
+import net.jcip.annotations.Immutable;
+import net.minidev.json.JSONObject;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.crypto.utils.ECChecks;
@@ -37,9 +41,6 @@ import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.BigIntegerUtils;
 import com.nimbusds.jose.util.JSONObjectUtils;
-import net.jcip.annotations.Immutable;
-import net.minidev.json.JSONObject;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 
 
 /**
@@ -1557,5 +1558,25 @@ public final class ECKey extends JWK implements AsymmetricJWK, CurveBasedJWK {
 		} else {
 			return ecJWK;
 		}
+	}
+
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof ECKey)) return false;
+		if (!super.equals(o)) return false;
+		ECKey ecKey = (ECKey) o;
+		return Objects.equals(crv, ecKey.crv) &&
+				Objects.equals(x, ecKey.x) &&
+				Objects.equals(y, ecKey.y) &&
+				Objects.equals(d, ecKey.d) &&
+				Objects.equals(privateKey, ecKey.privateKey);
+	}
+
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), crv, x, y, d, privateKey);
 	}
 }

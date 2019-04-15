@@ -24,18 +24,22 @@ import java.net.URI;
 import java.security.*;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.*;
+import java.security.interfaces.RSAMultiPrimePrivateCrtKey;
+import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.*;
 import java.text.ParseException;
 import java.util.*;
+
+import net.jcip.annotations.Immutable;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.*;
-import net.jcip.annotations.Immutable;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
 
 
 /**
@@ -2243,5 +2247,30 @@ public final class RSAKey extends JWK implements AsymmetricJWK {
 		} else {
 			return rsaJWK;
 		}
+	}
+
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof RSAKey)) return false;
+		if (!super.equals(o)) return false;
+		RSAKey rsaKey = (RSAKey) o;
+		return Objects.equals(n, rsaKey.n) &&
+				Objects.equals(e, rsaKey.e) &&
+				Objects.equals(d, rsaKey.d) &&
+				Objects.equals(p, rsaKey.p) &&
+				Objects.equals(q, rsaKey.q) &&
+				Objects.equals(dp, rsaKey.dp) &&
+				Objects.equals(dq, rsaKey.dq) &&
+				Objects.equals(qi, rsaKey.qi) &&
+				Objects.equals(oth, rsaKey.oth) &&
+				Objects.equals(privateKey, rsaKey.privateKey);
+	}
+
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), n, e, d, p, q, dp, dq, qi, oth, privateKey);
 	}
 }

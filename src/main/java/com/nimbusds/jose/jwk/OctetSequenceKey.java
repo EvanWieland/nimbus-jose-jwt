@@ -23,15 +23,17 @@ import java.security.*;
 import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import net.jcip.annotations.Immutable;
+import net.minidev.json.JSONObject;
+
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.util.*;
-import net.jcip.annotations.Immutable;
-import net.minidev.json.JSONObject;
 
 
 /**
@@ -62,7 +64,7 @@ import net.minidev.json.JSONObject;
  * 
  * @author Justin Richer
  * @author Vladimir Dzhuvinov
- * @version 2017-06-01
+ * @version 2019-04-15
  */
 @Immutable
 public final class OctetSequenceKey extends JWK implements SecretJWK {
@@ -646,5 +648,21 @@ public final class OctetSequenceKey extends JWK implements SecretJWK {
 			.keyID(alias)
 			.keyStore(keyStore)
 			.build();
+	}
+
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof OctetSequenceKey)) return false;
+		if (!super.equals(o)) return false;
+		OctetSequenceKey that = (OctetSequenceKey) o;
+		return Objects.equals(k, that.k);
+	}
+
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), k);
 	}
 }
