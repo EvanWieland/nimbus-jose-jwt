@@ -76,7 +76,7 @@ import java.util.Set;
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
  * @author Stefan Larsson
- * @version 2018-10-26
+ * @version 2019-04-15
  */
 public abstract class JWK implements JSONAware, Serializable {
 

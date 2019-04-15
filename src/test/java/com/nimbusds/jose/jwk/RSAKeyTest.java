@@ -25,15 +25,12 @@ import java.nio.charset.Charset;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.*;
+import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.RSAPrivateKeySpec;
 import java.util.*;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
-import com.nimbusds.jose.util.Base64;
-import com.nimbusds.jose.util.*;
 import junit.framework.TestCase;
 import net.minidev.json.JSONObject;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -43,12 +40,18 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
+import com.nimbusds.jose.util.Base64;
+import com.nimbusds.jose.util.*;
+
 
 /**
  * Tests the RSA JWK class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-09-07
+ * @version 2019-04-15
  */
 public class RSAKeyTest extends TestCase {
 
@@ -1244,10 +1247,28 @@ public class RSAKeyTest extends TestCase {
 		
 		KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
 		gen.initialize(1024);
-		KeyPair kp = gen.generateKeyPair();
+		final KeyPair kp = gen.generateKeyPair();
 		
 		RSAPublicKey publicKey = (RSAPublicKey) kp.getPublic();
-		PrivateKey privateKey = kp.getPrivate(); // simulate private key with inaccessible key material
+		PrivateKey privateKey = new PrivateKey() {
+			// simulate private PKCS#11 key with inaccessible key material
+			@Override
+			public String getAlgorithm() {
+				return kp.getPrivate().getAlgorithm();
+			}
+			
+			
+			@Override
+			public String getFormat() {
+				return kp.getPrivate().getFormat();
+			}
+			
+			
+			@Override
+			public byte[] getEncoded() {
+				return new byte[0];
+			}
+		};
 		
 		RSAKey rsaJWK = new RSAKey.Builder(publicKey)
 			.privateKey(privateKey)
@@ -1258,16 +1279,16 @@ public class RSAKeyTest extends TestCase {
 		assertEquals(privateKey, rsaJWK.toPrivateKey());
 		assertTrue(rsaJWK.isPrivate());
 		
-		kp = rsaJWK.toKeyPair();
-		assertNotNull(kp.getPublic());
-		assertEquals(privateKey, kp.getPrivate());
+		KeyPair kpOut = rsaJWK.toKeyPair();
+		assertNotNull(kpOut.getPublic());
+		assertEquals(privateKey, kpOut.getPrivate());
 		
 		JSONObject json = rsaJWK.toJSONObject();
 		assertEquals("RSA", json.get("kty"));
 		assertEquals("1", json.get("kid"));
 		assertEquals(Base64URL.encode(publicKey.getPublicExponent()).toString(), json.get("e"));
 		assertEquals(Base64URL.encode(publicKey.getModulus()).toString(), json.get("n"));
-		assertEquals(10, json.size());
+		assertEquals(4, json.size());
 	}
 	
 	

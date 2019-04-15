@@ -128,7 +128,7 @@ import net.minidev.json.JSONObject;
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
  * @author Cedric Staub
- * @version 2018-02-27
+ * @version 2019-04-15
  */
 @Immutable
 public final class RSAKey extends JWK implements AsymmetricJWK {

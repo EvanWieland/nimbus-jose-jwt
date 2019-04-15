@@ -51,7 +51,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
  * Tests the EC JWK class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-03-28
+ * @version 2019-04-15
  */
 public class ECKeyTest extends TestCase {
 
@@ -757,10 +757,28 @@ public class ECKeyTest extends TestCase {
 		
 		KeyPairGenerator gen = KeyPairGenerator.getInstance("EC");
 		gen.initialize(Curve.P_256.toECParameterSpec());
-		KeyPair kp = gen.generateKeyPair();
+		final KeyPair kp = gen.generateKeyPair();
 		
 		ECPublicKey publicKey = (ECPublicKey) kp.getPublic();
-		PrivateKey privateKey = kp.getPrivate(); // simulate private key with inaccessible key material
+		PrivateKey privateKey = new PrivateKey() {
+			// simulate private PKCS#11 key with inaccessible key material
+			@Override
+			public String getAlgorithm() {
+				return kp.getPrivate().getAlgorithm();
+			}
+			
+			
+			@Override
+			public String getFormat() {
+				return kp.getPrivate().getFormat();
+			}
+			
+			
+			@Override
+			public byte[] getEncoded() {
+				return new byte[0];
+			}
+		};
 		
 		ECKey ecJWK = new ECKey.Builder(Curve.P_256, publicKey)
 			.privateKey(privateKey)
@@ -771,9 +789,9 @@ public class ECKeyTest extends TestCase {
 		assertEquals(privateKey, ecJWK.toPrivateKey());
 		assertTrue(ecJWK.isPrivate());
 		
-		kp = ecJWK.toKeyPair();
-		assertNotNull(kp.getPublic());
-		assertEquals(privateKey, kp.getPrivate());
+		KeyPair kpOut = ecJWK.toKeyPair();
+		assertNotNull(kpOut.getPublic());
+		assertEquals(privateKey, kpOut.getPrivate());
 		
 		JSONObject json = ecJWK.toJSONObject();
 		assertEquals("EC", json.get("kty"));
@@ -781,7 +799,7 @@ public class ECKeyTest extends TestCase {
 		assertEquals("P-256", json.get("crv"));
 		assertNotNull(json.get("x"));
 		assertNotNull(json.get("y"));
-		assertEquals(6, json.size());
+		assertEquals(5, json.size());
 	}
 	
 	

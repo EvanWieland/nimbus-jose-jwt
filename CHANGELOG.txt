@@ -954,3 +954,14 @@ version 7.0 (2019-02-06)
 version 7.0.1 (2019-02-24)
     * Fixes NPE on parsing a JWKSet from a JSON object with missing "keys"
       member (iss #300).
+
+version 7.1 (2019-04-15)
+    * Fixes JWK.parseFromPEMEncodedObjects to include private key parameters
+      (if available) in the output JWK rather than just a reference to the
+      java.security.PrivateKey (pr #48).
+    * ECKey.Builder.privateKey(java.security.PrivateKey) will first check if
+      the key is an instance of java.security.ECPrivate key and call the
+      appropriate builder method method instead (pr #48).
+    * RSAKey.Builder.privateKey(java.security.PrivateKey) will first check if
+      the key is an instance of java.security.RSAPrivate key and call the
+      appropriate builder method method instead (pr #48).

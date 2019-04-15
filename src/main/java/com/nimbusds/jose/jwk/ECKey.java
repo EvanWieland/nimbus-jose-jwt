@@ -105,7 +105,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
  *
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
- * @version 2018-03-28
+ * @version 2019-04-15
  */
 @Immutable
 public final class ECKey extends JWK implements AsymmetricJWK, CurveBasedJWK {
