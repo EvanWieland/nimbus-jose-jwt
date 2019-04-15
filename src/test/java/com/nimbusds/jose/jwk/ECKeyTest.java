@@ -781,7 +781,7 @@ public class ECKeyTest extends TestCase {
 		assertEquals("P-256", json.get("crv"));
 		assertNotNull(json.get("x"));
 		assertNotNull(json.get("y"));
-		assertEquals(5, json.size());
+		assertEquals(6, json.size());
 	}
 	
 	

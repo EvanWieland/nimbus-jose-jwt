@@ -350,7 +350,11 @@ public final class ECKey extends JWK implements AsymmetricJWK, CurveBasedJWK {
 		 * @return This builder.
 		 */
 		public Builder privateKey(final PrivateKey priv) {
-			
+
+			if (priv instanceof ECPrivateKey) {
+				return privateKey((ECPrivateKey) priv);
+			}
+
 			if (! "EC".equalsIgnoreCase(priv.getAlgorithm())) {
 				throw new IllegalArgumentException("The private key algorithm must be EC");
 			}
