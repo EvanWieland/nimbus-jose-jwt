@@ -967,3 +967,4 @@ version 7.1 (2019-04-15)
       appropriate builder method method instead (pr #48).
     * Overrides equals and hashCode for JWK, RSAKey, ECKey, OctetSequenceKey
       and OctetKeyPair classes (pr #47).
+    * Overrides equals and hashCode for JWTClaimsSet (pr #49).

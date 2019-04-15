@@ -72,7 +72,7 @@ import net.minidev.json.JSONObject;
  *
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
- * @version 2018-08-23
+ * @version 2019-04-15
  */
 @Immutable
 public final class JWTClaimsSet implements Serializable {
@@ -957,6 +957,7 @@ public final class JWTClaimsSet implements Serializable {
 		return parse(JSONObjectUtils.parse(s));
 	}
 
+	
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -965,6 +966,7 @@ public final class JWTClaimsSet implements Serializable {
 		return Objects.equals(claims, that.claims);
 	}
 
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(claims);
