@@ -963,4 +963,13 @@ public class JWTClaimsSetTest extends TestCase {
 		
 		assertTrue(jwtClaimsSet.getClaims().containsKey("sub"));
 	}
+
+	public void testEquals() throws ParseException {
+
+		String json = "{\"sub\":\"alice\",\"irt\":true,\"rft\":\"YWxpY2U.aHR0cDovL2NsaWVudDEuZXhhbXBsZS5jb20.rsKHqBpyEh-MMtllO7chHg\",\"aud\":[\"http:\\/\\/userinfo.example.com\"],\"iss\":\"http:\\/\\/oidc.example.com\",\"ate\":\"IDENTIFIER\",\"lng\":true,\"iat\":1420544052,\"cid\":\"http:\\/\\/client1.example.com\"}";
+		JWTClaimsSet claimsA = JWTClaimsSet.parse(json);
+		JWTClaimsSet claimsB = JWTClaimsSet.parse(json);
+
+		assertEquals(claimsB, claimsA);
+	}
 }

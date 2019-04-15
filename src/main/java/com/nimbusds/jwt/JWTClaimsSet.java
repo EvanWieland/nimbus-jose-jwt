@@ -956,4 +956,17 @@ public final class JWTClaimsSet implements Serializable {
 
 		return parse(JSONObjectUtils.parse(s));
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof JWTClaimsSet)) return false;
+		JWTClaimsSet that = (JWTClaimsSet) o;
+		return Objects.equals(claims, that.claims);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(claims);
+	}
 }
