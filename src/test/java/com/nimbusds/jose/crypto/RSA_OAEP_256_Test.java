@@ -20,6 +20,7 @@ package com.nimbusds.jose.crypto;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.Provider;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
@@ -29,14 +30,17 @@ import javax.crypto.SecretKey;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
+import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
+
 import junit.framework.TestCase;
 
 
 public class RSA_OAEP_256_Test extends TestCase {
 	
 	
-	public void testRoundTripWithAllWithEncs()
+	public void testRoundTripWithAllWithEncs_keysJava()
 		throws Exception {
 		
 		KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
@@ -45,41 +49,104 @@ public class RSA_OAEP_256_Test extends TestCase {
 		RSAPublicKey publicKey = (RSAPublicKey)kp.getPublic();
 		RSAPrivateKey privateKey = (RSAPrivateKey)kp.getPrivate();
 		
-		List<EncryptionMethod> encs = Arrays.asList(
-			EncryptionMethod.A128CBC_HS256,
-			EncryptionMethod.A192CBC_HS384,
-			EncryptionMethod.A256CBC_HS512,
-			EncryptionMethod.A128GCM,
-			EncryptionMethod.A192GCM,
-			EncryptionMethod.A256GCM,
-			EncryptionMethod.A128CBC_HS256_DEPRECATED,
-			EncryptionMethod.A256CBC_HS512_DEPRECATED);
+		for (Provider provider: Arrays.asList(null, BouncyCastleProviderSingleton.getInstance())) {
+			
+			List<EncryptionMethod> encs = Arrays.asList(
+				EncryptionMethod.A128CBC_HS256,
+				EncryptionMethod.A192CBC_HS384,
+				EncryptionMethod.A256CBC_HS512,
+				EncryptionMethod.A128GCM,
+				EncryptionMethod.A192GCM,
+				EncryptionMethod.A256GCM,
+				EncryptionMethod.A128CBC_HS256_DEPRECATED,
+				EncryptionMethod.A256CBC_HS512_DEPRECATED);
+			
+			RSAEncrypter encrypter = new RSAEncrypter(publicKey);
+			
+			RSADecrypter decrypter = new RSADecrypter(privateKey);
+			
+			if (provider != null) {
+				encrypter.getJCAContext().setProvider(provider);
+				decrypter.getJCAContext().setProvider(provider);
+			}
+			
+			for (EncryptionMethod enc : encs) {
+				
+				JWEObject jwe = new JWEObject(
+					new JWEHeader(JWEAlgorithm.RSA_OAEP_256, enc),
+					new Payload("Hello, world!"));
+				
+				assertEquals(JWEObject.State.UNENCRYPTED, jwe.getState());
+				
+				jwe.encrypt(encrypter);
+				
+				assertEquals(JWEObject.State.ENCRYPTED, jwe.getState());
+				
+				String jweString = jwe.serialize();
+				
+				jwe = JWEObject.parse(jweString);
+				
+				jwe.decrypt(decrypter);
+				
+				assertEquals(JWEObject.State.DECRYPTED, jwe.getState());
+				
+				assertEquals("Hello, world!", jwe.getPayload().toString());
+			}
+		}
+	}
+	
+	
+	public void testRoundTripWithAllWithEncs_keysJWK()
+		throws Exception {
 		
-		RSAEncrypter encrypter = new RSAEncrypter(publicKey);
+		RSAKey privateJWK = new RSAKeyGenerator(2048)
+			.keyUse(KeyUse.ENCRYPTION)
+			.generate();
+		RSAKey publicJWK = privateJWK.toPublicJWK();
 		
-		RSADecrypter decrypter = new RSADecrypter(privateKey);
-		
-		for (EncryptionMethod enc: encs) {
+		for (Provider provider: Arrays.asList(null, BouncyCastleProviderSingleton.getInstance())) {
 			
-			JWEObject jwe = new JWEObject(
-				new JWEHeader(JWEAlgorithm.RSA_OAEP_256, enc),
-				new Payload("Hello, world!"));
+			List<EncryptionMethod> encs = Arrays.asList(
+				EncryptionMethod.A128CBC_HS256,
+				EncryptionMethod.A192CBC_HS384,
+				EncryptionMethod.A256CBC_HS512,
+				EncryptionMethod.A128GCM,
+				EncryptionMethod.A192GCM,
+				EncryptionMethod.A256GCM,
+				EncryptionMethod.A128CBC_HS256_DEPRECATED,
+				EncryptionMethod.A256CBC_HS512_DEPRECATED);
 			
-			assertEquals(JWEObject.State.UNENCRYPTED, jwe.getState());
+			RSAEncrypter encrypter = new RSAEncrypter(publicJWK);
 			
-			jwe.encrypt(encrypter);
+			RSADecrypter decrypter = new RSADecrypter(privateJWK);
 			
-			assertEquals(JWEObject.State.ENCRYPTED, jwe.getState());
+			if (provider != null) {
+				encrypter.getJCAContext().setProvider(provider);
+				decrypter.getJCAContext().setProvider(provider);
+			}
 			
-			String jweString = jwe.serialize();
-			
-			jwe = JWEObject.parse(jweString);
-			
-			jwe.decrypt(decrypter);
-			
-			assertEquals(JWEObject.State.DECRYPTED, jwe.getState());
-			
-			assertEquals("Hello, world!", jwe.getPayload().toString());
+			for (EncryptionMethod enc : encs) {
+				
+				JWEObject jwe = new JWEObject(
+					new JWEHeader(JWEAlgorithm.RSA_OAEP_256, enc),
+					new Payload("Hello, world!"));
+				
+				assertEquals(JWEObject.State.UNENCRYPTED, jwe.getState());
+				
+				jwe.encrypt(encrypter);
+				
+				assertEquals(JWEObject.State.ENCRYPTED, jwe.getState());
+				
+				String jweString = jwe.serialize();
+				
+				jwe = JWEObject.parse(jweString);
+				
+				jwe.decrypt(decrypter);
+				
+				assertEquals(JWEObject.State.DECRYPTED, jwe.getState());
+				
+				assertEquals("Hello, world!", jwe.getPayload().toString());
+			}
 		}
 	}
 	
