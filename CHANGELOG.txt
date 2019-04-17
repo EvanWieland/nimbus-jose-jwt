@@ -972,3 +972,5 @@ version 7.1 (2019-04-15)
 version 7.2 (2019-04-17)
     * Updates RSAKeyGenerator and ECKeyGenerator to accept PKCS#11 based
       KeyStore instances.
+    * Increases the default HTTP connect and read timeouts in RemoteJWKSet to
+      500ms.

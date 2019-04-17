@@ -62,8 +62,8 @@ public class RemoteJWKSetTest {
 
 	@Test
 	public void testConstants() {
-		assertEquals(250, RemoteJWKSet.DEFAULT_HTTP_CONNECT_TIMEOUT);
-		assertEquals(250, RemoteJWKSet.DEFAULT_HTTP_READ_TIMEOUT);
+		assertEquals(500, RemoteJWKSet.DEFAULT_HTTP_CONNECT_TIMEOUT);
+		assertEquals(500, RemoteJWKSet.DEFAULT_HTTP_READ_TIMEOUT);
 		assertEquals(50 * 1024, RemoteJWKSet.DEFAULT_HTTP_SIZE_LIMIT);
 	}
 
@@ -332,7 +332,7 @@ public class RemoteJWKSetTest {
 
 		URL jwkSetURL = new URL("http://localhost:" + port() + "/jwks.json");
 
-		onRequest().respond().withDelay(300, TimeUnit.MILLISECONDS);
+		onRequest().respond().withDelay(800, TimeUnit.MILLISECONDS);
 
 		RemoteJWKSet jwkSetSource = new RemoteJWKSet(jwkSetURL, null);
 

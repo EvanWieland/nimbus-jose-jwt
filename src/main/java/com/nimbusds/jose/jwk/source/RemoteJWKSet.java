@@ -50,16 +50,16 @@ public class RemoteJWKSet<C extends SecurityContext> implements JWKSource<C> {
 
 	/**
 	 * The default HTTP connect timeout for JWK set retrieval, in
-	 * milliseconds. Set to 250 milliseconds.
+	 * milliseconds. Set to 500 milliseconds.
 	 */
-	public static final int DEFAULT_HTTP_CONNECT_TIMEOUT = 250;
+	public static final int DEFAULT_HTTP_CONNECT_TIMEOUT = 500;
 
 
 	/**
 	 * The default HTTP read timeout for JWK set retrieval, in
-	 * milliseconds. Set to 250 milliseconds.
+	 * milliseconds. Set to 500 milliseconds.
 	 */
-	public static final int DEFAULT_HTTP_READ_TIMEOUT = 250;
+	public static final int DEFAULT_HTTP_READ_TIMEOUT = 500;
 
 
 	/**
