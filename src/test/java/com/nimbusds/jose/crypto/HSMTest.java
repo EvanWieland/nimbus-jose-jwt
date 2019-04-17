@@ -437,6 +437,8 @@ public class HSMTest {
 	@Test
 	public void testAvailableAlgs() {
 		
+		if (! ENABLE) return;
+		
 		Provider hsmProvider = loadHSMProvider(HSM_CONFIG);
 		
 		System.out.println("Properties:");
