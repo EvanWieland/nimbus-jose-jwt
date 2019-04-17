@@ -22,7 +22,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECParameterSpec;
 
@@ -44,7 +43,7 @@ import com.nimbusds.jose.jwk.ECKey;
  * </ul>
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-07-15
+ * @version 2019-04-17
  */
 public class ECKeyGenerator extends JWKGenerator<ECKey> {
 	
@@ -90,11 +89,8 @@ public class ECKeyGenerator extends JWKGenerator<ECKey> {
 		
 		KeyPair kp = generator.generateKeyPair();
 		
-		ECPublicKey pub = (ECPublicKey) kp.getPublic();
-		ECPrivateKey priv = (ECPrivateKey) kp.getPrivate();
-		
-		ECKey.Builder builder = new ECKey.Builder(crv, pub)
-			.privateKey(priv)
+		ECKey.Builder builder = new ECKey.Builder(crv, (ECPublicKey) kp.getPublic())
+			.privateKey(kp.getPrivate())
 			.keyUse(use)
 			.keyOperations(ops)
 			.algorithm(alg)

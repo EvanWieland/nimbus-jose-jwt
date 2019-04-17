@@ -35,16 +35,6 @@ import java.util.Date;
 
 import static org.junit.Assert.*;
 
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.impl.RSAKeyUtils;
-import com.nimbusds.jose.jwk.Curve;
-import com.nimbusds.jose.jwk.ECKey;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.util.Base64URL;
-import com.nimbusds.jose.util.X509CertUtils;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
@@ -52,12 +42,21 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.Test;
 
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.impl.RSAKeyUtils;
+import com.nimbusds.jose.jwk.*;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
+import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jose.util.X509CertUtils;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+
 
 /**
- * HSM test with Nitrokey.
+ * HSM tests with Nitrokey.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-10-11
+ * @version 2019-04-17
  */
 public class HSMTest {
 	
@@ -68,7 +67,7 @@ public class HSMTest {
 	private static final String HSM_CONFIG =
 		"name = NitroKeyHSM\n" +
 		"library = /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so\n" +
-		"slotListIndex = 0\n" +
+		"slotListIndex = 1\n" +
 		"attributes(*,CKO_PRIVATE_KEY,CKK_RSA) = {\n" +
 		"  CKA_SIGN = true\n" +
 		"}\n" +
@@ -471,5 +470,33 @@ public class HSMTest {
 		PrivateKey privateKey = (PrivateKey)hsmKeyStore.getKey(keyID, "".toCharArray());
 		
 		assertEquals(-1, RSAKeyUtils.keyBitLength(privateKey));
+	}
+	
+	
+	@Test
+	public void testRSAKeyGenerator() throws Exception {
+		
+		if (! ENABLE) return;
+		
+		Provider hsmProvider = loadHSMProvider(HSM_CONFIG);
+		
+		KeyStore hsmKeyStore = loadHSMKeyStore(hsmProvider, HSM_PIN);
+		
+		String keyID = generateRandomKeyID();
+		
+		RSAKey rsaJWK = new RSAKeyGenerator(2048)
+			.keyStore(hsmKeyStore)
+			.keyUse(KeyUse.SIGNATURE)
+			.keyID(keyID)
+			.generate();
+		
+		JWSObject jwsObject = new JWSObject(new JWSHeader(JWSAlgorithm.RS256), new Payload("Hello, world"));
+		JWSSigner signer = new RSASSASigner(rsaJWK);
+		signer.getJCAContext().setProvider(hsmProvider);
+		jwsObject.sign(signer);
+		
+		assertTrue(jwsObject.verify(new RSASSAVerifier(rsaJWK)));
+		
+		hsmKeyStore.deleteEntry(keyID);
 	}
 }

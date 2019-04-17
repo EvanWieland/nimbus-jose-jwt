@@ -21,7 +21,6 @@ package com.nimbusds.jose.jwk.gen;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
 import com.nimbusds.jose.JOSEException;
@@ -32,7 +31,7 @@ import com.nimbusds.jose.jwk.RSAKey;
  * RSA JSON Web Key (JWK) generator.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-07-20
+ * @version 2019-04-17
  */
 public class RSAKeyGenerator extends JWKGenerator<RSAKey> {
 	
@@ -97,11 +96,8 @@ public class RSAKeyGenerator extends JWKGenerator<RSAKey> {
 		
 		KeyPair kp = generator.generateKeyPair();
 		
-		RSAPublicKey pub = (RSAPublicKey) kp.getPublic();
-		RSAPrivateKey priv = (RSAPrivateKey) kp.getPrivate();
-		
-		RSAKey.Builder builder = new RSAKey.Builder(pub)
-			.privateKey(priv)
+		RSAKey.Builder builder = new RSAKey.Builder((RSAPublicKey) kp.getPublic())
+			.privateKey(kp.getPrivate())
 			.keyUse(use)
 			.keyOperations(ops)
 			.algorithm(alg)
