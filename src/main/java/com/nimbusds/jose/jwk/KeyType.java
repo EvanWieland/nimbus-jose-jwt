@@ -200,6 +200,10 @@ public final class KeyType implements JSONAware, Serializable {
 	 */
 	public static KeyType parse(final String s) {
 
+		if (s == null) {
+			throw new IllegalArgumentException("The key type to parse must not be null");
+		}
+
 		if (s.equals(EC.getValue())) {
 			return EC;
 		} else if (s.equals(RSA.getValue())) {
