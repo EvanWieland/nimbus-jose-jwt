@@ -95,4 +95,19 @@ public class KeyTypeTest extends TestCase {
 
 		assertNull(KeyType.forAlgorithm(new Algorithm("custom")));
 	}
+
+	/**
+	 * Test that the factory method throws an IllegalArgumentException when called with null.
+	 */
+	public void testIllegalArgumentException() {
+
+		try {
+
+			KeyType.parse(null);
+			fail();
+
+		} catch (IllegalArgumentException e) {
+			assertEquals("The key type to parse must not be null", e.getMessage());
+		}
+	}
 }
