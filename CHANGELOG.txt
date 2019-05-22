@@ -974,3 +974,7 @@ version 7.2 (2019-04-17)
       KeyStore instances.
     * Increases the default HTTP connect and read timeouts in RemoteJWKSet to
       500ms.
+
+version 7.2.1 (2019-05-22)
+    * KeyType.parse(null) should throw IllegalArgumentException instead of
+      NullPointerException (iss #307).
