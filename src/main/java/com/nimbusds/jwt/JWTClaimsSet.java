@@ -65,7 +65,7 @@ import net.minidev.json.JSONObject;
  * <pre>
  * JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
  *     .subject("joe")
- *     .expirationDate(new Date(1300819380 * 1000l)
+ *     .expirationTime(new Date(1300819380 * 1000l)
  *     .claim("http://example.com/is_root", true)
  *     .build();
  * </pre>
