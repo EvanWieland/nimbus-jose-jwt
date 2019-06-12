@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2019, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -116,6 +116,48 @@ public class DefaultJWTProcessorTest extends TestCase {
 		assertEquals("https://openid.c2id.com", processor.process(jwt.serialize(), null).getIssuer());
 	}
 
+
+	public void testVerifyClaimsCustomJOSEObjectKeySelectorAllow()
+			throws Exception {
+
+		JWTClaimsSet claims = new JWTClaimsSet.Builder()
+				.issuer("https://openid.c2id.com")
+				.subject("alice")
+				.build();
+
+		SignedJWT jwt = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claims);
+
+		byte[] keyBytes = new byte[32];
+		new SecureRandom().nextBytes(keyBytes);
+		final SecretKey key = new SecretKeySpec(keyBytes, "HMAC");
+
+		jwt.sign(new MACSigner(key));
+
+		ConfigurableJWTProcessor<SimpleSecurityContext> processor = new DefaultJWTProcessor<>();
+
+		processor.setJWSObjectKeySelector(new JOSEObjectKeySelector<SimpleSecurityContext>() {
+			@Override
+			public List<? extends Key> selectKeys(JOSEObject jose, SimpleSecurityContext context) throws KeySourceException {
+				return Collections.singletonList(key);
+			}
+		});
+
+		processor.setJWTClaimsSetVerifier(new JWTClaimsSetVerifier<SimpleSecurityContext>() {
+			@Override
+			public void verify(JWTClaimsSet claimsSet, SimpleSecurityContext context)
+					throws BadJWTException {
+
+				if (claimsSet.getIssuer() == null || !claimsSet.getIssuer().equals("https://openid.c2id.com"))
+					throw new BadJWTException("Unexpected/missing issuer");
+			}
+		});
+
+		assertNotNull(processor.getJWTClaimsSetVerifier());
+		assertNull(processor.getJWTClaimsVerifier());
+
+		assertEquals("alice", processor.process(jwt.serialize(), null).getSubject());
+		assertEquals("https://openid.c2id.com", processor.process(jwt.serialize(), null).getIssuer());
+	}
 
 	public void testVerifyClaimsAllow_deprecated()
 		throws Exception {
@@ -592,8 +634,10 @@ public class DefaultJWTProcessorTest extends TestCase {
 		try {
 			processor.process(jws, null);
 			fail();
-		} catch (BadJOSEException e) {
-			assertEquals("Signed JWT rejected: No JWS key selector is configured", e.getMessage());
+		} catch (KeySourceException e) {
+			assertTrue(e.getCause() instanceof BadJOSEException);
+			BadJOSEException bje = (BadJOSEException) e.getCause();
+			assertEquals("Signed JWT rejected: No JWS key selector is configured", bje.getMessage());
 		}
 	}
 
