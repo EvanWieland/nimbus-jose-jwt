@@ -27,16 +27,16 @@ package com.nimbusds.jose.proc;
  *     <li>To verify JWS objects:
  *         <ul>
  *             <li>Key selector to determine key candidate(s) for JWS
- *                 verification based on the JWS header and application-
- *                 specific context information.
+ *                 verification based on the JWS header, payload and / or
+ *                 application-specific context information.
  *             <li>Factory to construct a JWS verifier for a given key
  *                 candidate and JWS header information.
  *         </ul>
- *     <li>To decrypt JWT objects:
+ *     <li>To decrypt JWE objects:
  *         <ul>
  *             <li>Key selector to determine key candidate(s) for JWE
- *                 decryption based on the JWS header and application-specific
- *                 context information.
+ *                 decryption based on the JWE header and / or
+ *                 application-specific context information.
  *             <li>Factory to construct a JWE decrypter for a given key
  *                 candidate and JWE header information.
  *         </ul>

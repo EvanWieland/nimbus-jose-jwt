@@ -37,16 +37,17 @@ import net.jcip.annotations.ThreadSafe;
  * <p>Must be configured with the following:
  *
  * <ol>
- *     <li>To verify JWS objects: A {@link JWSKeySelector JWS key selector} to
- *     determine the key candidate(s) for the signature verification. The key
- *     selection procedure is application-specific and may involve key ID
- *     lookup, a certificate check and / or other information supplied in the
- *     message {@link SecurityContext context}.</li>
+ *     <li>To verify JWS objects: A JWS key selector using the
+ *     {@link JWSKeySelector header} or the {@link JOSEObjectKeySelector header
+ *     and payload} to determine the key candidate(s) for the signature
+ *     verification. The key selection procedure is application-specific and
+ *     may involve key ID lookup, a certificate check and / or some
+ *     {@link SecurityContext context}.</li>
  *
- *     <li>To decrypt JWE objects: A {@link JWEKeySelector JWE key selector} to
- *     determine the key candidate(s) for decryption. The key selection
- *     procedure is application-specific and may involve key ID lookup, a
- *     certificate check and / or other information supplied in the message
+ *     <li>To decrypt JWE objects: A JWE key selector using the
+ *     {@link JWEKeySelector header} to determine the key candidate(s) for
+ *     decryption. The key selection procedure is application-specific and may
+ *     involve key ID lookup, a certificate check and / or some
  *     {@link SecurityContext context}.</li>
  * </ol>
  *
@@ -71,7 +72,7 @@ import net.jcip.annotations.ThreadSafe;
  * {@link com.nimbusds.jwt.proc.DefaultJWTProcessor} class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-06-15
+ * @version 2019-06-15
  */
 @ThreadSafe
 public class DefaultJOSEProcessor<C extends SecurityContext> implements ConfigurableJOSEProcessor<C>{
@@ -99,7 +100,7 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 		new BadJOSEException("JWE object rejected: No matching decrypter(s) found");
 
 	/**
-	 * The JWSObject key selector
+	 * The JWSObject key selector.
 	 */
 	private JOSEObjectKeySelector<C> jwsObjectKeySelector = new JOSEObjectKeySelector<C>() {
 		@Override
