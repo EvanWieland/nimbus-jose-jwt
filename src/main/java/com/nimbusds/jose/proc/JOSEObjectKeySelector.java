@@ -26,8 +26,8 @@ import com.nimbusds.jose.KeySourceException;
 
 
 /**
- * Interface for selecting key candidates for processing a JOSE object.
- * Applications should utilise this interface or a similar framework to
+ * Interface for selecting key candidates for processing a JOSE (JWS or JWE)
+ * object. Applications should utilise this interface or a similar framework to
  * determine whether a received JOSE object is eligible for further processing.
  *
  * <p>The interface supports keys selection based on:
