@@ -32,12 +32,20 @@ import com.nimbusds.jose.KeySourceException;
  * eligible for {@link com.nimbusds.jose.JWSVerifier verification} and further
  * processing.
  *
- * <p>The key selection should be based on application specific criteria, such
- * as recognised header parameters referencing the key (e.g. {@code kid},
- * {@code x5t}) and / or the JWS object {@link SecurityContext}.
+ * <p>The interface supports keys selection based on:
+ *
+ * <ul>
+ *     <li>Recognised header parameters referencing the key (e.g. {@code kid},
+ *         {@code x5t}).
+ *     <li>Additional {@link SecurityContext}, if required and set by the
+ *         application (e.g. endpoint where the JWS object was received).
+ * </ul>
  *
  * <p>See JSON Web Signature (JWS), Appendix D. Notes on Key Selection for
  * suggestions.
+ *
+ * <p>For a key selector that also includes the JWS payload (e.g. issuer
+ * ({@code iss}) claim in a signed JWT) see {@link JOSEObjectKeySelector}.
  *
  * <p>Possible key types:
  *

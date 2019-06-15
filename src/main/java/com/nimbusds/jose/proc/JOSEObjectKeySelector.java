@@ -27,13 +27,19 @@ import com.nimbusds.jose.KeySourceException;
 
 /**
  * Interface for selecting key candidates for processing a JOSE object.
- * Applications should utilise this interface or a similar
- * framework to determine whether a received JOSE object is eligible for further
- * processing.
+ * Applications should utilise this interface or a similar framework to
+ * determine whether a received JOSE object is eligible for further processing.
  *
- * <p>The key selection should be based on application specific criteria, such
- * as recognised header parameters referencing the key (e.g. {@code kid},
- * {@code x5t}) and / or the JOSE object {@link SecurityContext}.
+ * <p>The interface supports keys selection based on:
+ *
+ * <ul>
+ *     <li>Recognised header parameters referencing the key (e.g. {@code kid},
+ *         {@code x5t}).
+ *     <li>JOSE object payload parameter (e.g. issuer ({@code iss}) claim in a
+ *         signed JWT).
+ *     <li>Additional {@link SecurityContext}, if required and set by the
+ *         application (e.g. endpoint where the JOSE object was received).
+ * </ul>
  *
  * <p>Possible key types:
  *
@@ -50,7 +56,8 @@ public interface JOSEObjectKeySelector<C extends SecurityContext>  {
 
 
 	/**
-	 * Selects key candidates for verifying a JWS object or decrypting a JWE object.
+	 * Selects key candidates for verifying a JWS object or decrypting a
+	 * JWE object.
 	 *
 	 * @param jose    The JOSE object. Must not be
 	 *                {@code null}.

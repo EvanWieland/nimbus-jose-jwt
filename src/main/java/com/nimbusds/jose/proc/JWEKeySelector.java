@@ -18,7 +18,6 @@
 package com.nimbusds.jose.proc;
 
 
-import java.io.IOException;
 import java.security.Key;
 import java.util.List;
 
@@ -33,9 +32,14 @@ import com.nimbusds.jose.KeySourceException;
  * eligible for {@link com.nimbusds.jose.JWEDecrypter decryption} and further 
  * processing.
  *
- * <p>The key selection should be based on application specific criteria, such
- * as recognised header parameters referencing the key (e.g. {@code kid},
- * {@code x5t}) and / or the JWE object {@link SecurityContext}.
+ * <p>The interface supports keys selection based on:
+ *
+ * <ul>
+ *     <li>Recognised header parameters referencing the key (e.g. {@code kid},
+ *         {@code x5t}).
+ *     <li>Additional {@link SecurityContext}, if required and set by the
+ *         application (e.g. endpoint where the JWE object was received).
+ * </ul>
  *
  * <p>See JSON Web Signature (JWE), Appendix D. Notes on Key Selection for
  * suggestions.

@@ -83,7 +83,7 @@ import com.nimbusds.jwt.*;
  * {@link com.nimbusds.jose.proc.DefaultJOSEProcessor} class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-05-05
+ * @version 2019-06-15
  */
 public class DefaultJWTProcessor<C extends SecurityContext>
 	implements ConfigurableJWTProcessor<C> {
@@ -113,9 +113,9 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 		new BadJOSEException("Encrypted JWT rejected: No matching decrypter(s) found");
 
 	/**
-	 * The SignedJWT key selector
+	 * The SignedJWT key selector.
 	 */
-	private JOSEObjectKeySelector<C> signedJwtKeySelector = new JOSEObjectKeySelector<C>() {
+	private JOSEObjectKeySelector<C> signedJWTKeySelector = new JOSEObjectKeySelector<C>() {
 		@Override
 		public List<? extends Key> selectKeys(JOSEObject jose, C context) throws KeySourceException {
 			if (jwsKeySelector == null) {
@@ -177,18 +177,21 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 		this.jwsKeySelector = jwsKeySelector;
 	}
 
+	
 	@Override
 	public JOSEObjectKeySelector<C> getJWSObjectKeySelector() {
 
-		return signedJwtKeySelector;
+		return signedJWTKeySelector;
 	}
 
+	
 	@Override
 	public void setJWSObjectKeySelector(final JOSEObjectKeySelector<C> signedJwtKeySelector) {
 
-		this.signedJwtKeySelector = signedJwtKeySelector;
+		this.signedJWTKeySelector = signedJwtKeySelector;
 	}
 
+	
 	@Override
 	public JWEKeySelector<C> getJWEKeySelector() {
 
