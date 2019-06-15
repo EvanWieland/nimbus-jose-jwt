@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2019, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -24,8 +24,11 @@ import java.util.List;
 import java.util.ListIterator;
 
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObject;
 import com.nimbusds.jose.JWEDecrypter;
+import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.KeySourceException;
 import com.nimbusds.jose.crypto.factories.DefaultJWEDecrypterFactory;
 import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
 import com.nimbusds.jose.proc.*;
@@ -110,6 +113,22 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 		new BadJOSEException("Encrypted JWT rejected: No matching decrypter(s) found");
 
 	/**
+	 * The SignedJWT key selector
+	 */
+	private JOSEObjectKeySelector<C> signedJwtKeySelector = new JOSEObjectKeySelector<C>() {
+		@Override
+		public List<? extends Key> selectKeys(JOSEObject jose, C context) throws KeySourceException {
+			if (jwsKeySelector == null) {
+				throw new KeySourceException("Failed to select keys", NO_JWS_KEY_SELECTOR_EXCEPTION);
+			}
+			if (!(jose instanceof JWSObject)) {
+				throw new KeySourceException("JOSEObject must be a JWSObject");
+			}
+			return jwsKeySelector.selectJWSKeys(((JWSObject) jose).getHeader(), context);
+		}
+	};
+
+	/**
 	 * The JWS key selector.
 	 */
 	private JWSKeySelector<C> jwsKeySelector;
@@ -158,6 +177,17 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 		this.jwsKeySelector = jwsKeySelector;
 	}
 
+	@Override
+	public JOSEObjectKeySelector<C> getJWSObjectKeySelector() {
+
+		return signedJwtKeySelector;
+	}
+
+	@Override
+	public void setJWSObjectKeySelector(final JOSEObjectKeySelector<C> signedJwtKeySelector) {
+
+		this.signedJwtKeySelector = signedJwtKeySelector;
+	}
 
 	@Override
 	public JWEKeySelector<C> getJWEKeySelector() {
@@ -311,7 +341,7 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 	public JWTClaimsSet process(final SignedJWT signedJWT, final C context)
 		throws BadJOSEException, JOSEException {
 
-		if (getJWSKeySelector() == null) {
+		if (getJWSObjectKeySelector() == null) {
 			// JWS key selector may have been deliberately omitted
 			throw NO_JWS_KEY_SELECTOR_EXCEPTION;
 		}
@@ -320,7 +350,7 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 			throw NO_JWS_VERIFIER_FACTORY_EXCEPTION;
 		}
 
-		List<? extends Key> keyCandidates = getJWSKeySelector().selectJWSKeys(signedJWT.getHeader(), context);
+		List<? extends Key> keyCandidates = getJWSObjectKeySelector().selectKeys(signedJWT, context);
 
 		if (keyCandidates == null || keyCandidates.isEmpty()) {
 			throw NO_JWS_KEY_CANDIDATES_EXCEPTION;

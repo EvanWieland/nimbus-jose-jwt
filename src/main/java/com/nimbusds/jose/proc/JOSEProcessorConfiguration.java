@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2019, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -47,6 +47,9 @@ package com.nimbusds.jose.proc;
  */
 public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 
+	JOSEObjectKeySelector<C> getJWSObjectKeySelector();
+
+	void setJWSObjectKeySelector(final JOSEObjectKeySelector<C> JOSEObjectKeySelector);
 
 	/**
 	 * Gets the JWS key selector.

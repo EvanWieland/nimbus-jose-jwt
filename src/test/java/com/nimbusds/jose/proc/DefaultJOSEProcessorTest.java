@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2019, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -86,6 +86,30 @@ public class DefaultJOSEProcessorTest extends TestCase {
 		assertEquals("Hello world!", processor.process(jwsObject.serialize(), null).toString());
 	}
 
+	public void testProcessJWSCustomJWSObjectKeySelector()
+			throws Exception {
+
+		JWSObject jwsObject = new JWSObject(new JWSHeader(JWSAlgorithm.HS256), new Payload("Hello world!"));
+
+		byte[] keyBytes = new byte[32];
+		new SecureRandom().nextBytes(keyBytes);
+
+		final SecretKey key = new SecretKeySpec(keyBytes, "HMAC");
+
+		jwsObject.sign(new MACSigner(key));
+
+		ConfigurableJOSEProcessor<SimpleSecurityContext> processor = new DefaultJOSEProcessor<>();
+
+		processor.setJWSObjectKeySelector(new JOSEObjectKeySelector<SimpleSecurityContext>() {
+			@Override
+			public List<? extends Key> selectKeys(JOSEObject jose, SimpleSecurityContext context) {
+				return Collections.singletonList(key);
+			}
+		});
+
+		assertEquals("Hello world!", processor.process(jwsObject, null).toString());
+		assertEquals("Hello world!", processor.process(jwsObject.serialize(), null).toString());
+	}
 
 	public void testProcessInvalidJWS()
 		throws Exception {
@@ -525,8 +549,10 @@ public class DefaultJOSEProcessorTest extends TestCase {
 		try {
 			processor.process(jws, null);
 			fail();
-		} catch (BadJOSEException e) {
-			assertEquals("JWS object rejected: No JWS key selector is configured", e.getMessage());
+		} catch (KeySourceException e) {
+			assertTrue(e.getCause() instanceof BadJOSEException);
+			BadJOSEException bje = (BadJOSEException) e.getCause();
+			assertEquals("JWS object rejected: No JWS key selector is configured", bje.getMessage());
 		}
 	}
 

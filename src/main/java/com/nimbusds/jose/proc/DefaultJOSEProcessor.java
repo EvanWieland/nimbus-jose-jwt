@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2016, Connect2id Ltd.
+ * Copyright 2012-2019, Connect2id Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -98,6 +98,21 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 	private static final BadJOSEException NO_MATCHING_DECRYPTERS_EXCEPTION =
 		new BadJOSEException("JWE object rejected: No matching decrypter(s) found");
 
+	/**
+	 * The JWSObject key selector
+	 */
+	private JOSEObjectKeySelector<C> jwsObjectKeySelector = new JOSEObjectKeySelector<C>() {
+		@Override
+		public List<? extends Key> selectKeys(JOSEObject jose, C context) throws KeySourceException {
+			if (jwsKeySelector == null) {
+				throw new KeySourceException("Failed to select keys", NO_JWS_KEY_SELECTOR_EXCEPTION);
+			}
+			if (!(jose instanceof JWSObject)) {
+				throw new KeySourceException("JOSEObject must be a JWSObject");
+			}
+			return jwsKeySelector.selectJWSKeys(((JWSObject) jose).getHeader(), context);
+		}
+	};
 
 	/**
 	 * The JWS key selector.
@@ -122,6 +137,17 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 	 */
 	private JWEDecrypterFactory jweDecrypterFactory = new DefaultJWEDecrypterFactory();
 
+	@Override
+	public JOSEObjectKeySelector<C> getJWSObjectKeySelector() {
+
+		return jwsObjectKeySelector;
+	}
+
+	@Override
+	public void setJWSObjectKeySelector(final JOSEObjectKeySelector<C> jwsObjectKeySelector) {
+
+		this.jwsObjectKeySelector = jwsObjectKeySelector;
+	}
 
 	@Override
 	public JWSKeySelector<C> getJWSKeySelector() {
@@ -220,7 +246,7 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 	public Payload process(final JWSObject jwsObject, C context)
 		throws BadJOSEException, JOSEException {
 
-		if (getJWSKeySelector() == null) {
+		if (getJWSObjectKeySelector() == null) {
 			// JWS key selector may have been deliberately omitted
 			throw NO_JWS_KEY_SELECTOR_EXCEPTION;
 		}
@@ -229,7 +255,7 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 			throw NO_JWS_VERIFIER_FACTORY_EXCEPTION;
 		}
 
-		List<? extends Key> keyCandidates = getJWSKeySelector().selectJWSKeys(jwsObject.getHeader(), context);
+		List<? extends Key> keyCandidates = getJWSObjectKeySelector().selectKeys(jwsObject, context);
 
 		if (keyCandidates == null || keyCandidates.isEmpty()) {
 			throw NO_JWS_KEY_CANDIDATES_EXCEPTION;
