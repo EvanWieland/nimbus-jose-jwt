@@ -29,6 +29,8 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import junit.framework.TestCase;
+
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.AESEncrypter;
 import com.nimbusds.jose.crypto.DirectEncrypter;
@@ -47,7 +49,6 @@ import com.nimbusds.jose.jwk.source.RemoteJWKSet;
 import com.nimbusds.jose.proc.*;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jwt.*;
-import junit.framework.TestCase;
 
 
 /**
@@ -115,38 +116,39 @@ public class DefaultJWTProcessorTest extends TestCase {
 		assertEquals("alice", processor.process(jwt.serialize(), null).getSubject());
 		assertEquals("https://openid.c2id.com", processor.process(jwt.serialize(), null).getIssuer());
 	}
-
-
-	public void testVerifyClaimsCustomJOSEObjectKeySelectorAllow()
-			throws Exception {
-
-		JWTClaimsSet claims = new JWTClaimsSet.Builder()
-				.issuer("https://openid.c2id.com")
-				.subject("alice")
-				.build();
-
+	
+	
+	public void testProcessWithClaimsAwareKeySelector()
+		throws Exception {
+		
+		final JWTClaimsSet claims = new JWTClaimsSet.Builder()
+			.issuer("https://openid.c2id.com")
+			.subject("alice")
+			.build();
+		
 		SignedJWT jwt = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claims);
-
+		
 		byte[] keyBytes = new byte[32];
 		new SecureRandom().nextBytes(keyBytes);
 		final SecretKey key = new SecretKeySpec(keyBytes, "HMAC");
-
+		
 		jwt.sign(new MACSigner(key));
-
+		
 		ConfigurableJWTProcessor<SimpleSecurityContext> processor = new DefaultJWTProcessor<>();
-
-		processor.setJWSObjectKeySelector(new JOSEObjectKeySelector<SimpleSecurityContext>() {
+		
+		processor.setJWTClaimsSetAwareJWSKeySelector(new JWTClaimsSetAwareJWSKeySelector<SimpleSecurityContext>() {
 			@Override
-			public List<? extends Key> selectKeys(JOSEObject jose, SimpleSecurityContext context) throws KeySourceException {
+			public List<? extends Key> selectKeys(JWSHeader header, JWTClaimsSet parsedClaimsSet, SimpleSecurityContext context) {
+				assertEquals(claims, parsedClaimsSet);
 				return Collections.singletonList(key);
 			}
 		});
-
+		
 		processor.setJWTClaimsSetVerifier(new JWTClaimsSetVerifier<SimpleSecurityContext>() {
 			@Override
 			public void verify(JWTClaimsSet claimsSet, SimpleSecurityContext context)
-					throws BadJWTException {
-
+				throws BadJWTException {
+				
 				if (claimsSet.getIssuer() == null || !claimsSet.getIssuer().equals("https://openid.c2id.com"))
 					throw new BadJWTException("Unexpected/missing issuer");
 			}
@@ -158,6 +160,53 @@ public class DefaultJWTProcessorTest extends TestCase {
 		assertEquals("alice", processor.process(jwt.serialize(), null).getSubject());
 		assertEquals("https://openid.c2id.com", processor.process(jwt.serialize(), null).getIssuer());
 	}
+	
+	
+	
+	public void testProcessWithClaimsAwareKeySelector_noKeyCandidates()
+		throws Exception {
+		
+		final JWTClaimsSet claims = new JWTClaimsSet.Builder()
+			.issuer("https://openid.c2id.com")
+			.subject("alice")
+			.build();
+		
+		SignedJWT jwt = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claims);
+		
+		byte[] keyBytes = new byte[32];
+		new SecureRandom().nextBytes(keyBytes);
+		final SecretKey key = new SecretKeySpec(keyBytes, "HMAC");
+		
+		jwt.sign(new MACSigner(key));
+		
+		ConfigurableJWTProcessor<SimpleSecurityContext> processor = new DefaultJWTProcessor<>();
+		
+		processor.setJWTClaimsSetAwareJWSKeySelector(new JWTClaimsSetAwareJWSKeySelector<SimpleSecurityContext>() {
+			@Override
+			public List<? extends Key> selectKeys(JWSHeader header, JWTClaimsSet parsedClaimsSet, SimpleSecurityContext context) {
+				assertEquals(claims, parsedClaimsSet);
+				return Collections.emptyList();
+			}
+		});
+		
+		processor.setJWTClaimsSetVerifier(new JWTClaimsSetVerifier<SimpleSecurityContext>() {
+			@Override
+			public void verify(JWTClaimsSet claimsSet, SimpleSecurityContext context)
+				throws BadJWTException {
+				
+				if (claimsSet.getIssuer() == null || !claimsSet.getIssuer().equals("https://openid.c2id.com"))
+					throw new BadJWTException("Unexpected/missing issuer");
+			}
+		});
+
+		try {
+			processor.process(jwt.serialize(), null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("Signed JWT rejected: Another algorithm expected, or no matching key(s) found", e.getMessage());
+		}
+	}
+	
 
 	public void testVerifyClaimsAllow_deprecated()
 		throws Exception {
@@ -634,10 +683,8 @@ public class DefaultJWTProcessorTest extends TestCase {
 		try {
 			processor.process(jws, null);
 			fail();
-		} catch (KeySourceException e) {
-			assertTrue(e.getCause() instanceof BadJOSEException);
-			BadJOSEException bje = (BadJOSEException) e.getCause();
-			assertEquals("Signed JWT rejected: No JWS key selector is configured", bje.getMessage());
+		} catch (BadJOSEException e) {
+			assertEquals("Signed JWT rejected: No JWS key selector is configured", e.getMessage());
 		}
 	}
 

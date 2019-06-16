@@ -29,7 +29,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import junit.framework.TestCase;
-
 import net.minidev.json.JSONObject;
 
 import com.nimbusds.jose.*;
@@ -85,31 +84,7 @@ public class DefaultJOSEProcessorTest extends TestCase {
 		assertEquals("Hello world!", processor.process(jwsObject, null).toString());
 		assertEquals("Hello world!", processor.process(jwsObject.serialize(), null).toString());
 	}
-
-	public void testProcessJWSCustomJWSObjectKeySelector()
-			throws Exception {
-
-		JWSObject jwsObject = new JWSObject(new JWSHeader(JWSAlgorithm.HS256), new Payload("Hello world!"));
-
-		byte[] keyBytes = new byte[32];
-		new SecureRandom().nextBytes(keyBytes);
-
-		final SecretKey key = new SecretKeySpec(keyBytes, "HMAC");
-
-		jwsObject.sign(new MACSigner(key));
-
-		ConfigurableJOSEProcessor<SimpleSecurityContext> processor = new DefaultJOSEProcessor<>();
-
-		processor.setJWSObjectKeySelector(new JOSEObjectKeySelector<SimpleSecurityContext>() {
-			@Override
-			public List<? extends Key> selectKeys(JOSEObject jose, SimpleSecurityContext context) {
-				return Collections.singletonList(key);
-			}
-		});
-
-		assertEquals("Hello world!", processor.process(jwsObject, null).toString());
-		assertEquals("Hello world!", processor.process(jwsObject.serialize(), null).toString());
-	}
+	
 
 	public void testProcessInvalidJWS()
 		throws Exception {
@@ -549,10 +524,8 @@ public class DefaultJOSEProcessorTest extends TestCase {
 		try {
 			processor.process(jws, null);
 			fail();
-		} catch (KeySourceException e) {
-			assertTrue(e.getCause() instanceof BadJOSEException);
-			BadJOSEException bje = (BadJOSEException) e.getCause();
-			assertEquals("JWS object rejected: No JWS key selector is configured", bje.getMessage());
+		} catch (BadJOSEException e) {
+			assertEquals("JWS object rejected: No JWS key selector is configured", e.getMessage());
 		}
 	}
 

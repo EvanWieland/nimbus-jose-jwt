@@ -55,9 +55,27 @@ import com.nimbusds.jose.proc.SecurityContext;
  * </ul>
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-07-25
+ * @version 2019-06-16
  */
 public interface JWTProcessorConfiguration<C extends SecurityContext> extends JOSEProcessorConfiguration<C> {
+	
+	
+	/**
+	 * Gets the JWT claims set aware JWS key selector.
+	 *
+	 * @return The JWT claims set aware JWS key selector, {@code null} if
+	 *         not specified.
+	 */
+	JWTClaimsSetAwareJWSKeySelector<C> getJWTClaimsSetAwareJWSKeySelector();
+	
+	
+	/**
+	 * Sets the JWT claims set aware JWS key selector.
+	 *
+	 * @param jwsKeySelector The JWT claims set aware JWS key selector,
+	 *                       {@code null} if not specified.
+	 */
+	void setJWTClaimsSetAwareJWSKeySelector(final JWTClaimsSetAwareJWSKeySelector<C> jwsKeySelector);
 
 
 	/**

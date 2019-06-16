@@ -1,7 +1,7 @@
 /*
  * nimbus-jose-jwt
  *
- * Copyright 2012-2019, Connect2id Ltd.
+ * Copyright 2012-2016, Connect2id Ltd and contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of the
@@ -15,31 +15,34 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package com.nimbusds.jose.proc;
+package com.nimbusds.jwt.proc;
 
 
 import java.security.Key;
 import java.util.List;
 
-import com.nimbusds.jose.JOSEObject;
+import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.KeySourceException;
+import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jwt.JWTClaimsSet;
 
 
 /**
- * Interface for selecting key candidates for processing a JOSE (JWS or JWE)
- * object. Applications should utilise this interface or a similar framework to
- * determine whether a received JOSE object is eligible for further processing.
+ * Interface for selecting key candidates for processing a signed JWT which
+ * provides access to the JWT claims set in addition to the JWS header.
  *
  * <p>The interface supports keys selection based on:
  *
  * <ul>
- *     <li>Recognised header parameters referencing the key (e.g. {@code kid},
- *         {@code x5t}).
- *     <li>JOSE object payload parameter (e.g. issuer ({@code iss}) claim in a
- *         signed JWT).
+ *     <li>Recognised header parameter(s) referencing the key (e.g.
+ *         {@code kid}, {@code x5t}).
+ *     <li>JWT claim(s) (e.g. issuer ({@code iss}) to locate a JWK set).
  *     <li>Additional {@link SecurityContext}, if required and set by the
- *         application (e.g. endpoint where the JOSE object was received).
+ *         application (e.g. endpoint where the JWT was received).
  * </ul>
+ *
+ * <p>See the simpler {@link com.nimbusds.jose.proc.JWSKeySelector} if the
+ * application doesn't use JWT claim(s) to select the key candidates.
  *
  * <p>Possible key types:
  *
@@ -49,20 +52,20 @@ import com.nimbusds.jose.KeySourceException;
  *     <li>{@link java.security.interfaces.ECPublicKey} public EC keys.
  * </ul>
  *
- * @author Josh Cummings
- * @version 2019-06-12
+ * @author Vladimir Dzhuvinov
+ * @version 2019-06-16
  */
-public interface JOSEObjectKeySelector<C extends SecurityContext>  {
-
-
+public interface JWTClaimsSetAwareJWSKeySelector<C extends SecurityContext> {
+	
+	
 	/**
-	 * Selects key candidates for verifying a JWS object or decrypting a
-	 * JWE object.
+	 * Selects key candidates for verifying a signed JWT.
 	 *
-	 * @param jose    The JOSE object. Must not be
-	 *                {@code null}.
-	 * @param context Optional context of the JOSE object, {@code null} if
-	 *                not required.
+	 * @param header    The JWS header. Must not be {@code null}.
+	 * @param claimsSet The JWT claims set (not verified). Must not be
+	 *                  {@code null}.
+	 * @param context   Optional context of the JOSE object, {@code null}
+	 *                  if not required.
 	 *
 	 * @return The key candidates in trial order, empty list if none.
 	 *
@@ -70,6 +73,7 @@ public interface JOSEObjectKeySelector<C extends SecurityContext>  {
 	 *                            encountered, e.g. on remote JWK
 	 *                            retrieval.
 	 */
-	List<? extends Key> selectKeys(final JOSEObject jose, final C context)
+	List<? extends Key> selectKeys(final JWSHeader header, final JWTClaimsSet  claimsSet, final C context)
 		throws KeySourceException;
 }
+

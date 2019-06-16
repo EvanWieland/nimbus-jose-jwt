@@ -44,8 +44,9 @@ import com.nimbusds.jose.KeySourceException;
  * <p>See JSON Web Signature (JWS), Appendix D. Notes on Key Selection for
  * suggestions.
  *
- * <p>For a key selector that also includes the JWS payload (e.g. issuer
- * ({@code iss}) claim in a signed JWT) see {@link JOSEObjectKeySelector}.
+ * <p>For a key selector for signed JWTs that also uses the claims set (e.g.
+ * issuer ({@code iss}) claim) see
+ * {@link com.nimbusds.jwt.proc.JWTClaimsSetAwareJWSKeySelector}.
  *
  * <p>Possible key types:
  *

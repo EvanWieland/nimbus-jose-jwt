@@ -979,3 +979,12 @@ version 7.2.1 (2019-05-22)
     * KeyType.parse(null) should throw IllegalArgumentException instead of
       NullPointerException (iss #307).
     * Updates to com.google.crypto.tink:tink:1.2.2
+
+version 7.3 (2019-06-16)
+    * New JWTClaimsSetAwareJWSKeySelector interface for selecting key
+      candidates for validation of signed JWTs which provides access to the
+      JWT claims in addition to the JWS header. Can be useful in cases such as
+      multi-tenant applications where the JWK set to use for the JWS validation
+      is determined by the JWT issuer (iss) claim. Adds an appropriate getter
+      and setter for the JWTClaimsSetAwareJWSKeySelector to the
+      JWTProcessorConfiguration interface (breaking change).

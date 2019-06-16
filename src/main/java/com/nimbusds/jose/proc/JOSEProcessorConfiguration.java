@@ -43,27 +43,9 @@ package com.nimbusds.jose.proc;
  * </ul>
  *
  * @author Vladimir Dzhuvinov
- * @author Josh Cummings
- * @version 2019-06-15
+ * @version 2015-08-22
  */
 public interface JOSEProcessorConfiguration <C extends SecurityContext> {
-	
-	
-	/**
-	 * Gets the JOSE object key selector.
-	 *
-	 * @return The JOSE object key selector, {@code null} if not specified.
-	 */
-	JOSEObjectKeySelector<C> getJWSObjectKeySelector();
-	
-	
-	/**
-	 * Sets the JOSE object key selector.
-	 *
-	 * @param JOSEObjectKeySelector The JOSE object key selector,
-	 *                              {@code null} if not specified.
-	 */
-	void setJWSObjectKeySelector(final JOSEObjectKeySelector<C> JOSEObjectKeySelector);
 
 	
 	/**

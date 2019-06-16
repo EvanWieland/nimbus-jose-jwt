@@ -23,10 +23,11 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.ListIterator;
 
+import net.jcip.annotations.ThreadSafe;
+
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.factories.DefaultJWEDecrypterFactory;
 import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
-import net.jcip.annotations.ThreadSafe;
 
 
 /**
@@ -38,11 +39,10 @@ import net.jcip.annotations.ThreadSafe;
  *
  * <ol>
  *     <li>To verify JWS objects: A JWS key selector using the
- *     {@link JWSKeySelector header} or the {@link JOSEObjectKeySelector header
- *     and payload} to determine the key candidate(s) for the signature
- *     verification. The key selection procedure is application-specific and
- *     may involve key ID lookup, a certificate check and / or some
- *     {@link SecurityContext context}.</li>
+ *     {@link JWSKeySelector header} to determine the key candidate(s) for the
+ *     signature verification. The key selection procedure is
+ *     application-specific and may involve key ID lookup, a certificate check
+ *     and / or some {@link SecurityContext context}.</li>
  *
  *     <li>To decrypt JWE objects: A JWE key selector using the
  *     {@link JWEKeySelector header} to determine the key candidate(s) for
@@ -72,7 +72,7 @@ import net.jcip.annotations.ThreadSafe;
  * {@link com.nimbusds.jwt.proc.DefaultJWTProcessor} class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2019-06-15
+ * @version 2019-06-16
  */
 @ThreadSafe
 public class DefaultJOSEProcessor<C extends SecurityContext> implements ConfigurableJOSEProcessor<C>{
@@ -98,22 +98,7 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 		new BadJOSEException("JWS object rejected: No matching verifier(s) found");
 	private static final BadJOSEException NO_MATCHING_DECRYPTERS_EXCEPTION =
 		new BadJOSEException("JWE object rejected: No matching decrypter(s) found");
-
-	/**
-	 * The JWSObject key selector.
-	 */
-	private JOSEObjectKeySelector<C> jwsObjectKeySelector = new JOSEObjectKeySelector<C>() {
-		@Override
-		public List<? extends Key> selectKeys(JOSEObject jose, C context) throws KeySourceException {
-			if (jwsKeySelector == null) {
-				throw new KeySourceException("Failed to select keys", NO_JWS_KEY_SELECTOR_EXCEPTION);
-			}
-			if (!(jose instanceof JWSObject)) {
-				throw new KeySourceException("JOSEObject must be a JWSObject");
-			}
-			return jwsKeySelector.selectJWSKeys(((JWSObject) jose).getHeader(), context);
-		}
-	};
+	
 
 	/**
 	 * The JWS key selector.
@@ -137,18 +122,7 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 	 * The JWE decrypter factory.
 	 */
 	private JWEDecrypterFactory jweDecrypterFactory = new DefaultJWEDecrypterFactory();
-
-	@Override
-	public JOSEObjectKeySelector<C> getJWSObjectKeySelector() {
-
-		return jwsObjectKeySelector;
-	}
-
-	@Override
-	public void setJWSObjectKeySelector(final JOSEObjectKeySelector<C> jwsObjectKeySelector) {
-
-		this.jwsObjectKeySelector = jwsObjectKeySelector;
-	}
+	
 
 	@Override
 	public JWSKeySelector<C> getJWSKeySelector() {
@@ -247,7 +221,7 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 	public Payload process(final JWSObject jwsObject, C context)
 		throws BadJOSEException, JOSEException {
 
-		if (getJWSObjectKeySelector() == null) {
+		if (getJWSKeySelector() == null) {
 			// JWS key selector may have been deliberately omitted
 			throw NO_JWS_KEY_SELECTOR_EXCEPTION;
 		}
@@ -256,7 +230,7 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 			throw NO_JWS_VERIFIER_FACTORY_EXCEPTION;
 		}
 
-		List<? extends Key> keyCandidates = getJWSObjectKeySelector().selectKeys(jwsObject, context);
+		List<? extends Key> keyCandidates = getJWSKeySelector().selectJWSKeys(jwsObject.getHeader(), context);
 
 		if (keyCandidates == null || keyCandidates.isEmpty()) {
 			throw NO_JWS_KEY_CANDIDATES_EXCEPTION;

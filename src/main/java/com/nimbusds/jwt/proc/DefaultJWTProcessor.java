@@ -23,12 +23,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.ListIterator;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JOSEObject;
-import com.nimbusds.jose.JWEDecrypter;
-import com.nimbusds.jose.JWSObject;
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.KeySourceException;
+import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.factories.DefaultJWEDecrypterFactory;
 import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
 import com.nimbusds.jose.proc.*;
@@ -44,10 +39,11 @@ import com.nimbusds.jwt.*;
  *
  * <ol>
  *     <li>To process signed JWTs: A JWS key selector using the
- *     {@link JWSKeySelector header} or the {@link JOSEObjectKeySelector header
- *     and claims set} to determine the key candidate(s) for the signature
- *     verification. The key selection procedure is application-specific and
- *     may involve key ID lookup, a certificate check and / or some
+ *     {@link JWSKeySelector header} or the
+ *     {@link JWTClaimsSetAwareJWSKeySelector header and claims set} to
+ *     determine the key candidate(s) for the signature verification. The key
+ *     selection procedure is application-specific and may involve key ID
+ *     lookup, a certificate check and / or some
  *     {@link SecurityContext context}.</li>
  *
  *     <li>To process encrypted JWTs: A JWE key selector using the
@@ -84,7 +80,7 @@ import com.nimbusds.jwt.*;
  * {@link com.nimbusds.jose.proc.DefaultJOSEProcessor} class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2019-06-15
+ * @version 2019-06-16
  */
 public class DefaultJWTProcessor<C extends SecurityContext>
 	implements ConfigurableJWTProcessor<C> {
@@ -114,25 +110,16 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 		new BadJOSEException("Encrypted JWT rejected: No matching decrypter(s) found");
 
 	/**
-	 * The SignedJWT key selector.
-	 */
-	private JOSEObjectKeySelector<C> signedJWTKeySelector = new JOSEObjectKeySelector<C>() {
-		@Override
-		public List<? extends Key> selectKeys(JOSEObject jose, C context) throws KeySourceException {
-			if (jwsKeySelector == null) {
-				throw new KeySourceException("Failed to select keys", NO_JWS_KEY_SELECTOR_EXCEPTION);
-			}
-			if (!(jose instanceof JWSObject)) {
-				throw new KeySourceException("JOSEObject must be a JWSObject");
-			}
-			return jwsKeySelector.selectJWSKeys(((JWSObject) jose).getHeader(), context);
-		}
-	};
-
-	/**
 	 * The JWS key selector.
 	 */
 	private JWSKeySelector<C> jwsKeySelector;
+	
+	
+	/**
+	 * The JWT claims aware JWS key selector, alternative to
+	 * {@link #jwsKeySelector}.
+	 */
+	private JWTClaimsSetAwareJWSKeySelector<C> claimsSetAwareJWSKeySelector;
 
 
 	/**
@@ -177,21 +164,21 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 
 		this.jwsKeySelector = jwsKeySelector;
 	}
-
+	
 	
 	@Override
-	public JOSEObjectKeySelector<C> getJWSObjectKeySelector() {
-
-		return signedJWTKeySelector;
+	public JWTClaimsSetAwareJWSKeySelector<C> getJWTClaimsSetAwareJWSKeySelector() {
+		
+		return claimsSetAwareJWSKeySelector;
 	}
-
+	
 	
 	@Override
-	public void setJWSObjectKeySelector(final JOSEObjectKeySelector<C> signedJwtKeySelector) {
-
-		this.signedJWTKeySelector = signedJwtKeySelector;
+	public void setJWTClaimsSetAwareJWSKeySelector(final JWTClaimsSetAwareJWSKeySelector<C> jwsKeySelector) {
+	
+		this.claimsSetAwareJWSKeySelector = jwsKeySelector;
 	}
-
+	
 	
 	@Override
 	public JWEKeySelector<C> getJWEKeySelector() {
@@ -265,40 +252,43 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 		this.claimsVerifier = null; // clear official verifier
 		this.deprecatedClaimsVerifier = claimsVerifier;
 	}
-
-
-	/**
-	 * Verifies the claims of the specified JWT.
-	 *
-	 * @param jwt     The JWT. Must be in a state which allows the claims
-	 *                to be extracted.
-	 * @param context Optional context, {@code null} if not required.
-	 *
-	 * @return The JWT claims set.
-	 *
-	 * @throws BadJWTException If the JWT claims are invalid or rejected.
-	 */
-	private JWTClaimsSet verifyAndReturnClaims(final JWT jwt, final C context)
+	
+	
+	private JWTClaimsSet extractJWTClaimsSet(final JWT jwt)
 		throws BadJWTException {
-
-		JWTClaimsSet claimsSet;
-
+		
 		try {
-			claimsSet = jwt.getJWTClaimsSet();
-
+			return jwt.getJWTClaimsSet();
 		} catch (ParseException e) {
 			// Payload not a JSON object
 			throw new BadJWTException(e.getMessage(), e);
 		}
+	}
 
+
+	private JWTClaimsSet verifyClaims(final JWTClaimsSet claimsSet, final C context)
+		throws BadJWTException {
+		
 		if (getJWTClaimsSetVerifier() != null) {
 			getJWTClaimsSetVerifier().verify(claimsSet, context);
 		} else if (getJWTClaimsVerifier() != null) {
 			// Fall back to deprecated claims verifier
 			getJWTClaimsVerifier().verify(claimsSet);
 		}
-
 		return claimsSet;
+	}
+	
+	
+	private List<? extends Key> selectKeys(final JWSHeader header, final JWTClaimsSet claimsSet, final C context)
+		throws KeySourceException, BadJOSEException {
+		
+		if (getJWTClaimsSetAwareJWSKeySelector() != null) {
+			return getJWTClaimsSetAwareJWSKeySelector().selectKeys(header, claimsSet, context);
+		} else if (getJWSKeySelector() != null) {
+			return getJWSKeySelector().selectJWSKeys(header, context);
+		} else {
+			throw NO_JWS_KEY_SELECTOR_EXCEPTION;
+		}
 	}
 
 
@@ -333,9 +323,7 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 
 	@Override
 	public JWTClaimsSet process(final PlainJWT plainJWT, final C context)
-		throws BadJOSEException, JOSEException {
-
-		verifyAndReturnClaims(plainJWT, context); // just check claims, no return
+		throws BadJOSEException {
 
 		throw PLAIN_JWT_REJECTED_EXCEPTION;
 	}
@@ -345,7 +333,7 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 	public JWTClaimsSet process(final SignedJWT signedJWT, final C context)
 		throws BadJOSEException, JOSEException {
 
-		if (getJWSObjectKeySelector() == null) {
+		if (getJWSKeySelector() == null && getJWTClaimsSetAwareJWSKeySelector() == null) {
 			// JWS key selector may have been deliberately omitted
 			throw NO_JWS_KEY_SELECTOR_EXCEPTION;
 		}
@@ -353,8 +341,10 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 		if (getJWSVerifierFactory() == null) {
 			throw NO_JWS_VERIFIER_FACTORY_EXCEPTION;
 		}
+		
+		JWTClaimsSet claimsSet = extractJWTClaimsSet(signedJWT);
 
-		List<? extends Key> keyCandidates = getJWSObjectKeySelector().selectKeys(signedJWT, context);
+		List<? extends Key> keyCandidates = selectKeys(signedJWT.getHeader(), claimsSet, context);
 
 		if (keyCandidates == null || keyCandidates.isEmpty()) {
 			throw NO_JWS_KEY_CANDIDATES_EXCEPTION;
@@ -373,7 +363,7 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 			final boolean validSignature = signedJWT.verify(verifier);
 
 			if (validSignature) {
-				return verifyAndReturnClaims(signedJWT, context);
+				return verifyClaims(claimsSet, context);
 			}
 
 			if (! it.hasNext()) {
@@ -442,7 +432,8 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 				return process(signedJWTPayload, context);
 			}
 
-			return verifyAndReturnClaims(encryptedJWT, context);
+			JWTClaimsSet claimsSet = extractJWTClaimsSet(encryptedJWT);
+			return verifyClaims(claimsSet, context);
 		}
 
 		throw NO_MATCHING_DECRYPTERS_EXCEPTION;
