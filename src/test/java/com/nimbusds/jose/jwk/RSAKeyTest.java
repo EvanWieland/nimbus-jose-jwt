@@ -34,6 +34,7 @@ import java.util.*;
 import static org.junit.Assert.assertNotEquals;
 
 import junit.framework.TestCase;
+import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
@@ -53,7 +54,7 @@ import com.nimbusds.jose.util.*;
  * Tests the RSA JWK class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2019-04-15
+ * @version 2019-06-24
  */
 public class RSAKeyTest extends TestCase {
 
@@ -1643,5 +1644,22 @@ public class RSAKeyTest extends TestCase {
 
 		//Then
 		assertNotEquals(keyA, keyB);
+	}
+	
+	
+	public void testRSAKeyRoundtripWithX5c() throws Exception {
+		
+		RSAKey rsaKey = RSAKey.parse(
+			"{\"kty\":\"RSA\",\"x5t#S256\":\"QOjjUwPhfMBMIT2zn5nrUxc4GocujsSHziKh-FlvmiU\",\"e\":\"AQAB\",\"kid\":\"18031265869169735523\",\"x5c\":[\"MIIDljCCAn4CCQD6O+zGNny3YzANBgkqhkiG9w0BAQsFADCBpTELMAkGA1UEBhMCQkUxEDAOBgNVBAgTB0JlbGdpdW0xETAPBgNVBAcTCEJydXNzZWxzMRwwGgYDVQQKExNFdXJvcGVhbiBDb21taXNzaW9uMRAwDgYDVQQLEwdTRkMyMDE0MR8wHQYDVQQDExZTRkMyMDE0IENBIERFVkVMT1BNRU5UMSAwHgYJKoZIhvcNAQkBFhF2YW53b2JlQHlhaG9vLkNvbTAeFw0xNjEwMTgxNTE4NTdaFw0yNjEwMTYxNTE4NTdaMHQxCzAJBgNVBAYTAkJFMRAwDgYDVQQIEwdCRUxHSVVNMREwDwYDVQQHEwhCcnVzc2VsczEcMBoGA1UEChMTRXVyb3BlYW4gQ29tbWlzc2lvbjEQMA4GA1UECxMHU0ZDMjAxNDEQMA4GA1UEAxMHdmFud29iZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMC7n95a0Yp\\/anE2ya3VhUjJ8KhoC8mAiblGJYMPsB2QfLKJEoZ2eSCD\\/GwkxufEb8UPauQDFogMshUZwwZ08k0OXywh3a9xO9zI+CCz23TNvueACQzWbtwWrx6lU5ljOOhBdt+c\\/CRXXgG2kH+hhs8MaV5KgN6iPf0HilH3QP2pwLNVLrupm\\/0r9CwuEc\\/wWLbi1nLno366vn\\/+jdsuxSrWnr\\/S8SCY3+L6CzZfhWMzF1SrsiCn+v6MirAwcG2IckNomGiL+X7PjObOSIWDVa7G9\\/Ouh4EaZN0w\\/zUvMSZ8mXkTo\\/Qk48kQlzm\\/KoQpEcoa9Dng4EdGyXzsipxsCNsCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAlBtx8Lh3PL1PBoiki5VkPUqfNlYNE6C+3faPzjEKu0D8+g\\/y1AbFp7442J3QqX0yfS\\/qG3BIc2dU8ICDhmstn7d2yr+FDFF4raQ8OfMocQy66Rf6wgAQy0YETWF+gBx8bKhd3D+V12paZg8ocDE7+V0UOCmxRMSz8hRvycCYGlf5pD2v2DIfPatNgwyASZK+qu+w++OrilC3wXKG2XD8AWaoTWMWz1ycov6pSnRGEr0DNxF4DBWrJWe\\/b+HH1K1hiKG0lnD520Ldoy3VRF86uRBnAjKX0yy7LHZy1QaB6M5DHtzOQFg7GldjhuZVFA01smyadepiOI0jc6jTwghT2Q==\"],\"n\":\"wLuf3lrRin9qcTbJrdWFSMnwqGgLyYCJuUYlgw-wHZB8sokShnZ5IIP8bCTG58RvxQ9q5AMWiAyyFRnDBnTyTQ5fLCHdr3E73Mj4ILPbdM2-54AJDNZu3BavHqVTmWM46EF235z8JFdeAbaQf6GGzwxpXkqA3qI9_QeKUfdA_anAs1Uuu6mb_Sv0LC4Rz_BYtuLWcuejfrq-f_6N2y7FKtaev9LxIJjf4voLNl-FYzMXVKuyIKf6_oyKsDBwbYhyQ2iYaIv5fs-M5s5IhYNVrsb3866HgRpk3TD_NS8xJnyZeROj9CTjyRCXOb8qhCkRyhr0OeDgR0bJfOyKnGwI2w\"}");
+		
+		JSONObject jsonObject = rsaKey.toJSONObject();
+		JSONArray x5cArray = (JSONArray) jsonObject.get("x5c");
+		assertEquals(rsaKey.getX509CertChain().get(0).toString(), x5cArray.get(0));
+		assertEquals(1, x5cArray.size());
+		
+		// Fails with java.text.ParseException: Unexpected type of JSON object member with key "x5c"
+		RSAKey secondPassKey = RSAKey.parse(rsaKey.toJSONObject());
+		
+		assertEquals(secondPassKey, rsaKey);
 	}
 }

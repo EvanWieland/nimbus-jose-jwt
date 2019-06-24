@@ -988,3 +988,7 @@ version 7.3 (2019-06-16)
       is determined by the JWT issuer (iss) claim. Adds an appropriate getter
       and setter for the JWTClaimsSetAwareJWSKeySelector to the
       JWTProcessorConfiguration interface (breaking change).
+
+version 7.3.1 (2019-06-24)
+    * Fixes `RSAKey.parse(rsaKey.toJSONObject())` with present "x5c" parameter
+      (iss #314).

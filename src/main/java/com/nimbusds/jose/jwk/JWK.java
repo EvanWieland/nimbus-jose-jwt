@@ -30,6 +30,7 @@ import java.security.spec.ECParameterSpec;
 import java.text.ParseException;
 import java.util.*;
 
+import net.minidev.json.JSONArray;
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONObject;
 
@@ -492,7 +493,11 @@ public abstract class JWK implements JSONAware, Serializable {
 		}
 
 		if (x5c != null) {
-			o.put("x5c", x5c);
+			JSONArray stringValues = new JSONArray();
+			for (Base64 base64: x5c) {
+				stringValues.add(base64.toString());
+			}
+			o.put("x5c", stringValues);
 		}
 
 		return o;
