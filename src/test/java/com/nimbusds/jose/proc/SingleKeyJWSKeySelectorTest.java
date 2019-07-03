@@ -24,12 +24,7 @@ public class SingleKeyJWSKeySelectorTest extends TestCase {
 
 	public void testThatSelectJWSKeysVerifiesAlgorithmInHeader() {
 		JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.EdDSA);
-		try {
-			this.keySelector.selectJWSKeys(jwsHeader, null);
-			fail("Expected IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// pass
-		}
+		assertTrue("Expected empty list", this.keySelector.selectJWSKeys(jwsHeader, null).isEmpty());
 	}
 
 	public void testThatConstructorDoesNotAllowNullAlgorithm() {

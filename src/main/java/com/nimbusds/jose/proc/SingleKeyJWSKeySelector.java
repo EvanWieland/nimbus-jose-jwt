@@ -1,45 +1,55 @@
 package com.nimbusds.jose.proc;
 
+
 import java.security.Key;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 
+
 /**
  * A {@link JWSKeySelector} that always returns the same {@link Key}.
+ *
+ * @author Josh Cummings
  */
 public class SingleKeyJWSKeySelector<C extends SecurityContext> implements JWSKeySelector<C> {
-	private final List<Key> keySet;
-	private final JWSAlgorithm expectedJwsAlgorithm;
+	
+	
+	private final List<Key> singletonKeyList;
+	
+	private final JWSAlgorithm expectedJWSAlg;
+	
 
 	/**
-	 * Creates a new single-key jws key selector
+	 * Creates a new single-key JWS key selector.
 	 *
-	 * @param expectedJwsAlgorithm The expected JWS algorithm for the objects to be
-	 *                             verified. Must not be {@code null}.
-	 * @param key                  The key to always return
+	 * @param expectedJWSAlg The expected JWS algorithm for the JWS
+	 *                       objects to be verified. Must not be
+	 *                       {@code null}.
+	 * @param key            The key to always return. Must not be
+	 *                       {@code null}.
 	 */
-	public SingleKeyJWSKeySelector(JWSAlgorithm expectedJwsAlgorithm, Key key) {
-		if (expectedJwsAlgorithm == null) {
-			throw new IllegalArgumentException("expectedJwsAlgorithm cannot be null");
+	public SingleKeyJWSKeySelector(final JWSAlgorithm expectedJWSAlg, final Key key) {
+		if (expectedJWSAlg == null) {
+			throw new IllegalArgumentException("The expected JWS algorithm cannot be null");
 		}
 		if (key == null) {
-			throw new IllegalArgumentException("key cannot be null");
+			throw new IllegalArgumentException("The key cannot be null");
 		}
-		this.keySet = Arrays.asList(key);
-		this.expectedJwsAlgorithm = expectedJwsAlgorithm;
+		this.singletonKeyList = Collections.singletonList(key);
+		this.expectedJWSAlg = expectedJWSAlg;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	
 	@Override
-	public List<? extends Key> selectJWSKeys(JWSHeader header, C context) {
-		if (!this.expectedJwsAlgorithm.equals(header.getAlgorithm())) {
-			throw new IllegalArgumentException("Unsupported algorithm of " + header.getAlgorithm());
+	public List<? extends Key> selectJWSKeys(final JWSHeader header, final C context) {
+		
+		if (! this.expectedJWSAlg.equals(header.getAlgorithm())) {
+			return Collections.emptyList();
 		}
-		return this.keySet;
+		
+		return this.singletonKeyList;
 	}
 }

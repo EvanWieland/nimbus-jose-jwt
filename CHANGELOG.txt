@@ -992,3 +992,6 @@ version 7.3 (2019-06-16)
 version 7.3.1 (2019-06-24)
     * Fixes `RSAKey.parse(rsaKey.toJSONObject())` with present "x5c" parameter
       (iss #314).
+
+version 7.4 (2019-07-03)
+    * Adds SingleKeyJWSKeySelector that always returns the same key.
