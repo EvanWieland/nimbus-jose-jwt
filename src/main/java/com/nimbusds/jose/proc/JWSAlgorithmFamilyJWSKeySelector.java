@@ -17,9 +17,8 @@
 
 package com.nimbusds.jose.proc;
 
-import java.net.MalformedURLException;
+
 import java.net.URL;
-import java.rmi.Remote;
 import java.security.Key;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,30 +28,32 @@ import java.util.Map;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.KeySourceException;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKMatcher;
-import com.nimbusds.jose.jwk.JWKSelector;
-import com.nimbusds.jose.jwk.KeyType;
-import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.RemoteJWKSet;
 
 /**
- * A {@link JWSKeySelector} that expects an algorithm from a specified algorithm family.
+ * A {@link JWSKeySelector} that expects an algorithm from a specified
+ * algorithm family.
  *
  * @author Josh Cummings
  * @since 2019-07-12
  */
 public class JWSAlgorithmFamilyJWSKeySelector<C extends SecurityContext> extends AbstractJWKSelectorWithSource<C> implements JWSKeySelector<C> {
+	
+	
 	private final Map<JWSAlgorithm, JWSKeySelector<C>> selectors = new HashMap<>();
 
+	
 	/**
-	 * Creates a {@link JWSKeySelector} that matches any algorithm from the given {@link JWSAlgorithm.Family}
+	 * Creates a {@link JWSKeySelector} that matches any algorithm from the
+	 * given {@link JWSAlgorithm.Family}.
 	 *
-	 * @param jwsAlgFamily The {@link JWSAlgorithm.Family} to use
-	 * @param jwkSource The {@link JWKSource} from which to draw the set of {@link JWK}s
+	 * @param jwsAlgFamily The {@link JWSAlgorithm.Family} to use.
+	 * @param jwkSource    The {@link JWKSource} from which to draw the set
+	 *                     of {@link JWK}s.
 	 */
-	public JWSAlgorithmFamilyJWSKeySelector(JWSAlgorithm.Family jwsAlgFamily, JWKSource<C> jwkSource) {
+	public JWSAlgorithmFamilyJWSKeySelector(final JWSAlgorithm.Family jwsAlgFamily, final JWKSource<C> jwkSource) {
 		super(jwkSource);
 		if (jwsAlgFamily == null) {
 			throw new IllegalArgumentException("JWS algorithm family must not be null");
@@ -62,11 +63,11 @@ public class JWSAlgorithmFamilyJWSKeySelector<C extends SecurityContext> extends
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	
 	@Override
-	public List<? extends Key> selectJWSKeys(JWSHeader header, C context) throws KeySourceException {
+	public List<? extends Key> selectJWSKeys(final JWSHeader header, final C context)
+		throws KeySourceException {
+		
 		JWSKeySelector<C> selector = this.selectors.get(header.getAlgorithm());
 		if (selector == null) {
 			return Collections.emptyList();
@@ -74,37 +75,47 @@ public class JWSAlgorithmFamilyJWSKeySelector<C extends SecurityContext> extends
 		return selector.selectJWSKeys(header, context);
 	}
 
+	
 	/**
-	 * Queries the given JWK Set {@link URL} for keys, creating a {@link JWSAlgorithmFamilyJWSKeySelector}
-	 * based on the RSA or EC key type, whichever comes back first.
+	 * Queries the given JWK Set {@link URL} for keys, creating a
+	 * {@link JWSAlgorithmFamilyJWSKeySelector} based on the RSA or EC key
+	 * type, whichever comes back first.
 	 *
-	 * @param jwkSetURL The JWK Set {@link URL} to query
-	 * @param <C> The {@link SecurityContext}
-	 * @return An instance of {@link JWSAlgorithmFamilyJWSKeySelector}
-	 * @throws KeySourceException if the JWKs cannot be retrieved or no RSA or EC public JWKs are found
+	 * @param jwkSetURL The JWK Set {@link URL} to query.
+	 * @param <C>       The {@link SecurityContext}
+	 *
+	 * @return An instance of {@link JWSAlgorithmFamilyJWSKeySelector}.
+	 *
+	 * @throws KeySourceException if the JWKs cannot be retrieved or no RSA
+	 *                            or EC public JWKs are found.
 	 */
-	public static <C extends SecurityContext> JWSAlgorithmFamilyJWSKeySelector<C> fromJWKSetURL(URL jwkSetURL)
-			throws KeySourceException {
+	public static <C extends SecurityContext> JWSAlgorithmFamilyJWSKeySelector<C> fromJWKSetURL(final URL jwkSetURL)
+		throws KeySourceException {
 
 		JWKSource<C> jwkSource = new RemoteJWKSet<>(jwkSetURL);
 		return fromJWKSource(jwkSource);
 	}
+	
 
 	/**
-	 * Queries the given {@link JWKSource} for keys, creating a {@link JWSAlgorithmFamilyJWSKeySelector}
-	 * based on the RSA or EC key type, whichever comes back first.
+	 * Queries the given {@link JWKSource} for keys, creating a
+	 * {@link JWSAlgorithmFamilyJWSKeySelector} based on the RSA or EC key
+	 * type, whichever comes back first.
 	 *
-	 * @param jwkSource The {@link JWKSource}
-	 * @param <C> The {@link SecurityContext}
-	 * @return An instance of {@link JWSAlgorithmFamilyJWSKeySelector}
-	 * @throws MalformedURLException if the JWK Set Uri is malformed
-	 * @throws KeySourceException if the JWKs cannot be retrieved or no RSA or EC public JWKs are found
+	 * @param jwkSource The {@link JWKSource}.
+	 * @param <C>       The {@link SecurityContext}.
+	 *
+	 * @return An instance of {@link JWSAlgorithmFamilyJWSKeySelector}.
+	 *
+	 * @throws KeySourceException If the JWKs cannot be retrieved or no
+	 *                            RSA or EC public JWKs are found.
 	 */
-	public static <C extends SecurityContext> JWSAlgorithmFamilyJWSKeySelector<C> fromJWKSource(JWKSource<C> jwkSource)
-			throws KeySourceException {
+	public static <C extends SecurityContext> JWSAlgorithmFamilyJWSKeySelector<C> fromJWKSource(final JWKSource<C> jwkSource)
+		throws KeySourceException {
+		
 		JWKMatcher jwkMatcher = new JWKMatcher.Builder()
 				.publicOnly(true)
-				.keyUse(KeyUse.SIGNATURE)
+				.keyUses(KeyUse.SIGNATURE, null) // use=sig is optional
 				.keyTypes(KeyType.RSA, KeyType.EC)
 				.build();
 		List<? extends JWK> jwks = jwkSource.get(new JWKSelector(jwkMatcher), null);

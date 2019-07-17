@@ -63,8 +63,26 @@ public class JWSAlgorithmFamilyJWSKeySelectorTest extends TestCase {
 		JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.ES256);
 		assertTrue(selector.selectJWSKeys(jwsHeader, null).isEmpty());
 
-		jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("one").build();
-		assertEquals(1, selector.selectJWSKeys(jwsHeader, null).size());
+		for (JWSAlgorithm alg: JWSAlgorithm.Family.RSA) {
+			jwsHeader = new JWSHeader.Builder(alg).keyID("one").build();
+			assertEquals(1, selector.selectJWSKeys(jwsHeader, null).size());
+		}
+	}
+
+	@Test
+	public void testForRSAFamily_matchKeysWithUndefinedUse() throws Exception {
+		RSAKey one = new RSAKeyGenerator(2048)
+				.keyID("one").generate();
+		JWKSet jwks = new JWKSet(one);
+		JWSAlgorithmFamilyJWSKeySelector<SecurityContext> selector =
+				new JWSAlgorithmFamilyJWSKeySelector<>(JWSAlgorithm.Family.RSA, new ImmutableJWKSet<>(jwks));
+		JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.ES256);
+		assertTrue(selector.selectJWSKeys(jwsHeader, null).isEmpty());
+
+		for (JWSAlgorithm alg: JWSAlgorithm.Family.RSA) {
+			jwsHeader = new JWSHeader.Builder(alg).keyID("one").build();
+			assertEquals(1, selector.selectJWSKeys(jwsHeader, null).size());
+		}
 	}
 
 	@Test
@@ -77,8 +95,10 @@ public class JWSAlgorithmFamilyJWSKeySelectorTest extends TestCase {
 		JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.RS256);
 		assertTrue(selector.selectJWSKeys(jwsHeader, null).isEmpty());
 
-		jwsHeader = new JWSHeader.Builder(JWSAlgorithm.ES256).keyID("one").build();
-		assertEquals(1, selector.selectJWSKeys(jwsHeader, null).size());
+		for (JWSAlgorithm alg: JWSAlgorithm.Family.EC) {
+			jwsHeader = new JWSHeader.Builder(alg).keyID("one").build();
+			assertEquals(1, selector.selectJWSKeys(jwsHeader, null).size());
+		}
 	}
 
 	@Test
@@ -133,6 +153,24 @@ public class JWSAlgorithmFamilyJWSKeySelectorTest extends TestCase {
 				.keyID("one").keyUse(KeyUse.SIGNATURE).generate().toPublicJWK();
 		RSAKey two = new RSAKeyGenerator(2048)
 				.keyID("two").keyUse(KeyUse.SIGNATURE).generate().toPublicJWK();
+		JWKSet jwks = new JWKSet(Arrays.asList(one, (JWK) two));
+		JWSAlgorithmFamilyJWSKeySelector<SecurityContext> selector =
+				JWSAlgorithmFamilyJWSKeySelector.fromJWKSource(new ImmutableJWKSet<>(jwks));
+
+		JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("two").build();
+		assertTrue(selector.selectJWSKeys(jwsHeader, null).isEmpty());
+
+		jwsHeader = new JWSHeader.Builder(JWSAlgorithm.ES256).keyID("one").build();
+		assertEquals(1, selector.selectJWSKeys(jwsHeader, null).size());
+		assertEquals(one.toECPublicKey(), selector.selectJWSKeys(jwsHeader, null).get(0));
+	}
+
+	@Test
+	public void testFromJWKSource_matchKeysWithUndefinedUse() throws Exception {
+		ECKey one = new ECKeyGenerator(Curve.P_521)
+				.keyID("one").generate().toPublicJWK();
+		RSAKey two = new RSAKeyGenerator(2048)
+				.keyID("two").generate().toPublicJWK();
 		JWKSet jwks = new JWKSet(Arrays.asList(one, (JWK) two));
 		JWSAlgorithmFamilyJWSKeySelector<SecurityContext> selector =
 				JWSAlgorithmFamilyJWSKeySelector.fromJWKSource(new ImmutableJWKSet<>(jwks));

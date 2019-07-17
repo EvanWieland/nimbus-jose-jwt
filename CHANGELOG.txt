@@ -995,3 +995,7 @@ version 7.3.1 (2019-06-24)
 
 version 7.4 (2019-07-03)
     * Adds SingleKeyJWSKeySelector that always returns the same key.
+
+version 7.5 (2019-07-17)
+    * Adds JWSAlgorithmFamilyJWSKeySelector that expects an algorithm from a
+      specified algorithm family.
