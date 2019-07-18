@@ -22,6 +22,7 @@ import java.net.URL;
 import java.security.*;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.KeySpec;
+import java.text.ParseException;
 import java.util.*;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -1302,5 +1303,21 @@ public class DefaultJWTProcessorTest extends TestCase {
 		JWTClaimsSet outputClaimsSet = jwtProcessor.process((EncryptedJWT) jwt, null);
 		
 		assertEquals("alice", outputClaimsSet.getSubject());
+	}
+	
+	
+	// https://bitbucket.org/connect2id/nimbus-jose-jwt/issues/319/restore-defaultjwtprocessorprocess
+	public void testPlainOverrideThrowsJOSEException() {
+		
+		new DefaultJWTProcessor() {
+			@Override
+			public JWTClaimsSet process(PlainJWT plainJWT, SecurityContext context) throws BadJOSEException, JOSEException {
+				try {
+					return plainJWT.getJWTClaimsSet();
+				} catch (ParseException e) {
+					throw new BadJOSEException(e.getMessage());
+				}
+			}
+		};
 	}
 }

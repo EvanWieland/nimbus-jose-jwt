@@ -80,7 +80,7 @@ import com.nimbusds.jwt.*;
  * {@link com.nimbusds.jose.proc.DefaultJOSEProcessor} class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2019-06-16
+ * @version 2019-07-18
  */
 public class DefaultJWTProcessor<C extends SecurityContext>
 	implements ConfigurableJWTProcessor<C> {
@@ -323,7 +323,7 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 
 	@Override
 	public JWTClaimsSet process(final PlainJWT plainJWT, final C context)
-		throws BadJOSEException {
+		throws BadJOSEException, JOSEException {
 
 		throw PLAIN_JWT_REJECTED_EXCEPTION;
 	}
