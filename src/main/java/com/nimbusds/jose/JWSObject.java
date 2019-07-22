@@ -117,8 +117,11 @@ public class JWSObject extends JOSEObject {
 
 		setPayload(payload);
 
-		signingInputString = composeSigningInput(header.toBase64URL(), payload.toBase64URL());
-
+		if (header.getCustomParam("b64")  == null || (Boolean) header.getCustomParam("b64")) {
+			signingInputString = composeSigningInput(header.toBase64URL(), payload.toBase64URL());
+		} else {
+			signingInputString = header.toBase64URL().toString() + '.' + payload.toString();
+		}
 		signature = null;
 
 		state = State.UNSIGNED;
@@ -328,15 +331,15 @@ public class JWSObject extends JOSEObject {
 
 
 	/**
-	 * Checks the signature of this JWS object with the specified verifier. 
+	 * Checks the signature of this JWS object with the specified verifier.
 	 * The JWS object must be in a {@link State#SIGNED signed} state.
 	 *
 	 * @param verifier The JWS verifier. Must not be {@code null}.
 	 *
-	 * @return {@code true} if the signature was successfully verified, 
+	 * @return {@code true} if the signature was successfully verified,
 	 *         else {@code false}.
 	 *
-	 * @throws IllegalStateException If the JWS object is not in a 
+	 * @throws IllegalStateException If the JWS object is not in a
 	 *                               {@link State#SIGNED signed} or
 	 *                               {@link State#VERIFIED verified state}.
 	 * @throws JOSEException         If the JWS object couldn't be
@@ -390,12 +393,29 @@ public class JWSObject extends JOSEObject {
 	 */
 	@Override
 	public String serialize() {
+		return serialize(false);
+	}
 
+
+	/**
+	 * Serialises this JOSE object to its compact format consisting of
+	 * Base64URL-encoded parts delimited by period ('.') characters.
+	 * @param detachedPayload Specify if the payload should be detached or not
+
+	 * @return The serialised JOSE object.
+	 *
+	 * @throws IllegalStateException If the JOSE object is not in a state
+	 *                               that permits serialisation.
+	 */
+	public String serialize(Boolean detachedPayload) {
 		ensureSignedOrVerifiedState();
+
+		if (detachedPayload) {
+			return header.toBase64URL().toString() + '.' + '.' + signature.toString();
+		}
 
 		return signingInputString + '.' + signature.toString();
 	}
-
 
 	/**
 	 * Parses a JWS object from the specified string in compact format. The
