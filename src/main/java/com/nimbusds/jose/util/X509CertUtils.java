@@ -28,7 +28,7 @@ import java.security.cert.*;
  *  X.509 certificate utilities.
  *
  *  @author Vladimir Dzhuvinov
- *  @version 2018-06-07
+ *  @version 2018-07-24
  */
 public class X509CertUtils {
 
@@ -51,24 +51,41 @@ public class X509CertUtils {
 	 * @param derEncodedCert The DER-encoded X.509 certificate, as a byte
 	 *                       array. May be {@code null}.
 	 *
-	 * @return The X.509 certificate, {@code null} if parsing failed.
+	 * @return The X.509 certificate, {@code null} if not specified or
+	 *         parsing failed.
 	 */
 	public static X509Certificate parse(final byte[] derEncodedCert) {
+
+		try {
+			return parseWithException(derEncodedCert);
+		} catch (CertificateException e) {
+			return null;
+		}
+	}
+
+
+	/**
+	 * Parses a DER-encoded X.509 certificate with exception handling.
+	 *
+	 * @param derEncodedCert The DER-encoded X.509 certificate, as a byte
+	 *                       array. Empty or {@code null} if not specified.
+	 *
+	 * @return The X.509 certificate, {@code null} if not specified.
+	 *
+	 * @throws CertificateException If parsing failed.
+	 */
+	public static X509Certificate parseWithException(final byte[] derEncodedCert)
+		throws CertificateException {
 
 		if (derEncodedCert == null || derEncodedCert.length == 0) {
 			return null;
 		}
 
-		final Certificate cert;
-		try {
-			CertificateFactory cf = CertificateFactory.getInstance("X.509");
-			cert = cf.generateCertificate(new ByteArrayInputStream(derEncodedCert));
-		} catch (CertificateException e) {
-			return null;
-		}
+		CertificateFactory cf = CertificateFactory.getInstance("X.509");
+		final Certificate cert = cf.generateCertificate(new ByteArrayInputStream(derEncodedCert));
 
 		if (! (cert instanceof X509Certificate)) {
-			return null;
+			throw new CertificateException("Not a X.509 certificate: " + cert.getType());
 		}
 
 		return (X509Certificate)cert;
@@ -79,7 +96,8 @@ public class X509CertUtils {
 	 * Parses a PEM-encoded X.509 certificate.
 	 *
 	 * @param pemEncodedCert The PEM-encoded X.509 certificate, as a
-	 *                       string. May be {@code null}.
+	 *                       string. Empty or {@code null} if not
+	 *                       specified.
 	 *
 	 * @return The X.509 certificate, {@code null} if parsing failed.
 	 */
@@ -108,6 +126,44 @@ public class X509CertUtils {
 		buf = buf.replaceAll("\\s", "");
 
 		return parse(new Base64(buf).decode());
+	}
+
+
+	/**
+	 * Parses a PEM-encoded X.509 certificate with exception handling.
+	 *
+	 * @param pemEncodedCert The PEM-encoded X.509 certificate, as a
+	 *                       string. Empty or {@code null} if not
+	 *                       specified.
+	 *
+	 * @return The X.509 certificate, {@code null} if parsing failed.
+	 */
+	public static X509Certificate parseWithException(final String pemEncodedCert)
+		throws CertificateException {
+
+		if (pemEncodedCert == null || pemEncodedCert.isEmpty()) {
+			return null;
+		}
+
+		final int markerStart = pemEncodedCert.indexOf(PEM_BEGIN_MARKER);
+
+		if (markerStart < 0) {
+			throw new CertificateException("PEM begin marker not found");
+		}
+
+		String buf = pemEncodedCert.substring(markerStart + PEM_BEGIN_MARKER.length());
+
+		final int markerEnd = buf.indexOf(PEM_END_MARKER);
+
+		if (markerEnd < 0) {
+			throw new CertificateException("PEM end marker not found");
+		}
+
+		buf = buf.substring(0, markerEnd);
+
+		buf = buf.replaceAll("\\s", "");
+
+		return parseWithException(new Base64(buf).decode());
 	}
 	
 	

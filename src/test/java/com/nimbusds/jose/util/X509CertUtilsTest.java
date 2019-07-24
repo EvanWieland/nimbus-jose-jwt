@@ -21,6 +21,7 @@ package com.nimbusds.jose.util;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -102,8 +103,7 @@ public class X509CertUtilsTest extends TestCase {
 		"-----END CERTIFICATE-----\n";
 
 
-	public void testParsePEM()
-		throws Exception {
+	public void testParsePEM() {
 
 		X509Certificate cert = X509CertUtils.parse(PEM_CERT);
 
@@ -112,8 +112,52 @@ public class X509CertUtilsTest extends TestCase {
 		assertTrue(cert.getPublicKey() instanceof RSAPublicKey);
 	}
 
-	public void testParsePEM_withWhitespace()
+
+	public void testParsePEMWithException()
 		throws Exception {
+
+		X509Certificate cert = X509CertUtils.parseWithException(PEM_CERT);
+
+		assertEquals("X.509", cert.getType());
+		assertEquals("CN=connect2id.com,OU=Domain Control Validated", cert.getSubjectX500Principal().getName());
+		assertTrue(cert.getPublicKey() instanceof RSAPublicKey);
+	}
+
+
+	public void testParsePEMWithException_noBeginMarker() {
+
+		try {
+			X509CertUtils.parseWithException(PEM_CERT.replace("-----BEGIN CERTIFICATE-----", ""));
+			fail();
+		} catch (CertificateException e) {
+			assertEquals("PEM begin marker not found", e.getMessage());
+		}
+	}
+
+
+	public void testParsePEMWithException_noEndMarker() {
+
+		try {
+			X509CertUtils.parseWithException(PEM_CERT.replace("-----END CERTIFICATE-----", ""));
+			fail();
+		} catch (CertificateException e) {
+			assertEquals("PEM end marker not found", e.getMessage());
+		}
+	}
+
+
+	public void testParsePEMWithException_corruptedContent() {
+
+		try {
+			X509CertUtils.parseWithException("-----BEGIN CERTIFICATE-----MIIFKjCCBBKgAwIBAgIIM1RIMykkp1AwDQYJKoZIhvcNAQELBQAwgbQxCzAJBgNV-----END CERTIFICATE-----");
+			fail();
+		} catch (CertificateException e) {
+			assertEquals("Could not parse certificate: java.io.IOException: Incomplete BER/DER data", e.getMessage());
+		}
+	}
+
+	
+	public void testParsePEM_withWhitespace() {
 
 		X509Certificate cert = X509CertUtils.parse(PEM_CERT_WITH_WHITESPACE);
 

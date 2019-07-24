@@ -1003,3 +1003,6 @@ version 7.5 (2019-07-17)
 version 7.5.1 (2019-07-18)
     * Restores DefaultJWTProcessor.process(PlainJWT, C) throws JOSEException
       (iss #319).
+
+version 7.6 (2019-07-24)
+    * Adds new static X509CertUtils.parseWithException methods.
