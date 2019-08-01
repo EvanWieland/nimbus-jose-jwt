@@ -29,7 +29,7 @@ import net.jcip.annotations.ThreadSafe;
  * JSON Web Signature (JWS) secured object. This class is thread-safe.
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-07-26
+ * @version 2019-08-01
  */
 @ThreadSafe
 public class JWSObject extends JOSEObject {
@@ -398,16 +398,22 @@ public class JWSObject extends JOSEObject {
 
 
 	/**
-	 * Serialises this JOSE object to its compact format consisting of
-	 * Base64URL-encoded parts delimited by period ('.') characters.
-	 * @param detachedPayload Specify if the payload should be detached or not
-
+	 * Serialises this JWS object to its compact format consisting of
+	 * Base64URL-encoded parts delimited by period ('.') characters. It
+	 * must be in a {@link State#SIGNED signed} or
+	 * {@link State#VERIFIED verified} state.
+	 *
+	 * @param detachedPayload {@code true} to return a serialised object
+	 *                        with a detached payload compliant with RFC
+	 *                        7797, {@code false} for regular JWS
+	 *                        serialisation.
+	 *
 	 * @return The serialised JOSE object.
 	 *
 	 * @throws IllegalStateException If the JOSE object is not in a state
 	 *                               that permits serialisation.
 	 */
-	public String serialize(Boolean detachedPayload) {
+	public String serialize(final boolean detachedPayload) {
 		ensureSignedOrVerifiedState();
 
 		if (detachedPayload) {
