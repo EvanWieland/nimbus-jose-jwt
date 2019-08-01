@@ -1006,3 +1006,9 @@ version 7.5.1 (2019-07-18)
 
 version 7.6 (2019-07-24)
     * Adds new static X509CertUtils.parseWithException methods.
+
+version 7.7 (2019-08-01)
+    * Updates JWSObject to be able to handle detached payloads ("JSON Web
+      Signature (JWS) Unencoded Payload Option", RFC 7797) and adds a new
+      JWSObject.serialize(boolean) method to serialise them.
+    * New MACVerifier(OctetSequenceKey, Set<String>) constructor.
