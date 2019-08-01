@@ -19,11 +19,16 @@ package com.nimbusds.jose;
 
 
 import java.text.ParseException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import junit.framework.TestCase;
 
 
@@ -90,5 +95,41 @@ public class UnencodedJWSPayloadTest extends TestCase {
 		Base64URL signature = signer.sign(header, signingInput);
 		Base64URL expectedSignature = new Base64URL("A5dxf2s96_n5FLueVuW1Z_vh161FwXZC4YLPff6dmDY");
 		assertEquals(expectedSignature, signature);
+
+		JWSVerifier verifier = new MACVerifier(JWK, new HashSet<>(Collections.singletonList("b64")));
+		assertTrue(verifier.verify(header, signingInput, signature));
+	}
+
+	public void testNonBase64EncodedClaimsSet()
+			throws Exception {
+		//Given
+
+		//Create JWT
+
+		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.HS256)
+				.customParam("b64", false)
+				.build();
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+				.claim("foo", "bar")
+				.build();
+
+		//When sign JWT
+		SignedJWT signedJWT = new SignedJWT(header, claimsSet);
+		JWSSigner signer = new MACSigner(JWK);
+		signedJWT.sign(signer);
+		String serializedJWT = signedJWT.serialize(true);
+		signedJWT = SignedJWT.parse(serializedJWT);
+
+		//Then
+		assertFalse((Boolean) header.getCustomParam("b64"));
+
+		JWSVerifier verifier = new MACVerifier(JWK, new HashSet<>(Collections.singletonList("b64")));
+		byte[] payloadBytes = claimsSet.toString().getBytes("UTF-8");
+		byte[] headerBytes = (header.toBase64URL().toString() + '.').getBytes("UTF-8");
+		byte[] signingInput = new byte[headerBytes.length + payloadBytes.length];
+		System.arraycopy(headerBytes, 0, signingInput, 0, headerBytes.length);
+		System.arraycopy(payloadBytes, 0, signingInput, headerBytes.length, payloadBytes.length);
+
+		assertTrue(verifier.verify(header, signingInput, signedJWT.getSignature()));
 	}
 }
