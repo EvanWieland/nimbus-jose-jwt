@@ -19,6 +19,8 @@ package com.nimbusds.jose.util;
 
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +48,7 @@ public class DefaultResourceRetrieverTest {
 		assertEquals(0, resourceRetriever.getReadTimeout());
 		assertEquals(0, resourceRetriever.getSizeLimit());
 		assertTrue(resourceRetriever.disconnectsAfterUse());
+		assertNull(resourceRetriever.getProxy());
 	}
 
 
@@ -68,6 +71,9 @@ public class DefaultResourceRetrieverTest {
 		
 		resourceRetriever.setDisconnectsAfterUse(false);
 		assertFalse(resourceRetriever.disconnectsAfterUse());
+
+		resourceRetriever.setProxy(Proxy.NO_PROXY);
+		assertEquals(Proxy.NO_PROXY, resourceRetriever.getProxy());
 	}
 
 
@@ -235,7 +241,7 @@ public class DefaultResourceRetrieverTest {
 
 
 	@Test
-	public void testRetrieve2xx()
+	public void testRetrieve2xxWithProxy()
 		throws Exception {
 
 		JSONObject jsonObject = new JSONObject();
@@ -248,6 +254,30 @@ public class DefaultResourceRetrieverTest {
 			.withStatus(201)
 			.withHeader("Content-Type", "application/json")
 			.withBody(jsonObject.toJSONString());
+
+		DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever();
+		resourceRetriever.setProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("localhost", port())));
+		Resource resource = resourceRetriever.retrieveResource(new URL("http://localhost:" + port() + "/c2id/jwks.json"));
+		assertEquals("application/json", resource.getContentType());
+		jsonObject = JSONObjectUtils.parse(resource.getContent());
+		assertEquals("B", jsonObject.get("A"));
+	}
+
+
+	@Test
+	public void testRetrieve2xx()
+			throws Exception {
+
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("A", "B");
+
+		onRequest()
+				.havingMethodEqualTo("GET")
+				.havingPathEqualTo("/c2id/jwks.json")
+				.respond()
+				.withStatus(201)
+				.withHeader("Content-Type", "application/json")
+				.withBody(jsonObject.toJSONString());
 
 		RestrictedResourceRetriever resourceRetriever = new DefaultResourceRetriever();
 		Resource resource = resourceRetriever.retrieveResource(new URL("http://localhost:" + port() + "/c2id/jwks.json"));
@@ -269,6 +299,26 @@ public class DefaultResourceRetrieverTest {
 
 		try {
 			resourceRetriever.retrieveResource(new URL("http://localhost:" + port + "/c2id/jwks.json"));
+			fail();
+		} catch (IOException e) {
+			assertTrue(e.getMessage().startsWith("Connection refused"));
+		}
+	}
+
+
+	@Test
+	public void testConnectTimeoutWithProxy()
+			throws Exception {
+
+		ServerSocket serverSocket = new ServerSocket(0);
+		int proxyPort = serverSocket.getLocalPort();
+		serverSocket.close();
+
+		DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(50, 0);
+		resourceRetriever.setProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("localhost", proxyPort)));
+
+		try {
+			resourceRetriever.retrieveResource(new URL("http://localhost:" + port() + "/c2id/jwks.json"));
 			fail();
 		} catch (IOException e) {
 			assertTrue(e.getMessage().startsWith("Connection refused"));
