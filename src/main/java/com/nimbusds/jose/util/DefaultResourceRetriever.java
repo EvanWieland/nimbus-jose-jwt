@@ -29,12 +29,13 @@ import net.jcip.annotations.ThreadSafe;
 
 
 /**
- * The default retriever of resources specified by URL. Provides setting of
- * HTTP connect and read timeouts as well as a size limit of the retrieved
- * entity. Caching header directives are not honoured.
+ * The default retriever of resources specified by URL. Provides setting of a
+ * HTTP proxy, HTTP connect and read timeouts as well as a size limit of the
+ * retrieved entity. Caching header directives are not honoured.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-01-04
+ * @author Artun Subasi
+ * @version 2019-08-23
  */
 @ThreadSafe
 public class DefaultResourceRetriever extends AbstractRestrictedResourceRetriever implements RestrictedResourceRetriever {
@@ -46,8 +47,10 @@ public class DefaultResourceRetriever extends AbstractRestrictedResourceRetrieve
 	 */
 	private boolean disconnectAfterUse;
 
+	
 	/**
-	 * The proxy to use when opening the HttpURLConnection. Can be {@code null}.
+	 * The proxy to use when opening the HttpURLConnection. Can be
+	 * {@code null}.
 	 */
 	private Proxy proxy;
 	
@@ -156,21 +159,33 @@ public class DefaultResourceRetriever extends AbstractRestrictedResourceRetrieve
 	}
 
 	/**
-	 * Returns the proxy to use when opening the HttpURLConnection to retrieve the resource.
+	 * Returns the HTTP proxy to use when opening the HttpURLConnection to
+	 * retrieve the resource. Note that the JVM may have a system wide
+	 * proxy configured via the {@code https.proxyHost} Java system
+	 * property.
+	 *
 	 * @return The proxy to use or {@code null} if no proxy should be used.
 	 */
 	public Proxy getProxy() {
+		
 		return proxy;
 	}
 
 	/**
-	 * Sets the proxy to use when opening the HttpURLConnection to retrieve the resource.
-	 * Can be set to {@code null} if no proxy should be used.
+	 * Sets the HTTP proxy to use when opening the HttpURLConnection to
+	 * retrieve the resource. Note that the JVM may have a system wide
+	 * proxy configured via the {@code https.proxyHost} Java system
+	 * property.
+	 *
+	 * @param proxy The proxy to use or {@code null} if no proxy should be
+	 *              used.
 	 */
-	public void setProxy(Proxy proxy) {
+	public void setProxy(final Proxy proxy) {
+		
 		this.proxy = proxy;
 	}
 
+	
 	@Override
 	public Resource retrieveResource(final URL url)
 		throws IOException {
@@ -208,14 +223,18 @@ public class DefaultResourceRetriever extends AbstractRestrictedResourceRetrieve
 	}
 
 	/**
-	 * Opens a connection the specified HTTP(S) URL. Uses the configured {@link Proxy} if available.
+	 * Opens a connection the specified HTTP(S) URL. Uses the configured
+	 * {@link Proxy} if available.
 	 *
 	 * @param url The URL of the resource. Its scheme must be HTTP or
 	 *            HTTPS. Must not be {@code null}.
+	 *
 	 * @return The opened HTTP(S) connection
-	 * @throws IOException	If the HTTP(S) connection to the specified URL failed.
+	 *
+	 * @throws IOException If the HTTP(S) connection to the specified URL
+	 *                     failed.
 	 */
-	protected HttpURLConnection openConnection(URL url) throws IOException {
+	protected HttpURLConnection openConnection(final URL url) throws IOException {
 		if (proxy != null) {
 			return (HttpURLConnection)url.openConnection(proxy);
 		} else {
@@ -223,8 +242,12 @@ public class DefaultResourceRetriever extends AbstractRestrictedResourceRetrieve
 		}
 	}
 
-	private InputStream getInputStream(HttpURLConnection con, int sizeLimit) throws IOException {
+	
+	private InputStream getInputStream(final HttpURLConnection con, final int sizeLimit)
+		throws IOException {
+		
 		InputStream inputStream = con.getInputStream();
+		
 		return sizeLimit > 0 ? new BoundedInputStream(inputStream, getSizeLimit()) : inputStream;
 	}
 }

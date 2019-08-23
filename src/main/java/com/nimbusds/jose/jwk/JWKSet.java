@@ -70,7 +70,7 @@ import net.minidev.json.JSONObject;
  *
  * @author Vladimir Dzhuvinov
  * @author Vedran Pavic
- * @version 2018-04-26
+ * @version 2019-08-23
  */
 @Immutable
 public class JWKSet {
@@ -433,9 +433,9 @@ public class JWKSet {
 	 *                       no (infinite) timeout.
 	 * @param sizeLimit      The read size limit, in bytes. If zero no
 	 *                       limit.
-	 * @param proxy			 The optional proxy to use when opening the connection
-	 *                       to retrieve the resource. If {@code null},
-	 *                       no proxy is used.
+	 * @param proxy	         The optional proxy to use when opening the
+	 *                       connection to retrieve the resource. If
+	 *                       {@code null}, no proxy is used.
 	 *
 	 * @return The JWK set.
 	 *
@@ -444,10 +444,10 @@ public class JWKSet {
 	 *                        JSON Web Key (JWK) set.
 	 */
 	public static JWKSet load(final URL url,
-							  final int connectTimeout,
-							  final int readTimeout,
-							  final int sizeLimit,
-							  final Proxy proxy)
+				  final int connectTimeout,
+				  final int readTimeout,
+				  final int sizeLimit,
+				  final Proxy proxy)
 			throws IOException, ParseException {
 
 		DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(

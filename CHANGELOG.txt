@@ -1012,3 +1012,6 @@ version 7.7 (2019-08-01)
       Signature (JWS) Unencoded Payload Option", RFC 7797) and adds a new
       JWSObject.serialize(boolean) method to serialise them.
     * New MACVerifier(OctetSequenceKey, Set<String>) constructor.
+
+version 7.8 (2019-08-23)
+    * Adds HTTP proxy support to JWKSet and DefaultResourceRetriever.
