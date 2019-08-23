@@ -21,6 +21,7 @@ package com.nimbusds.jose.jwk;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.KeyStore;
@@ -418,10 +419,42 @@ public class JWKSet {
 				  final int sizeLimit)
 		throws IOException, ParseException {
 
-		RestrictedResourceRetriever resourceRetriever = new DefaultResourceRetriever(
-			connectTimeout,
-			readTimeout,
-			sizeLimit);
+		return load(url, connectTimeout, readTimeout, sizeLimit, null);
+	}
+
+
+	/**
+	 * Loads a JSON Web Key (JWK) set from the specified URL.
+	 *
+	 * @param url            The JWK set URL. Must not be {@code null}.
+	 * @param connectTimeout The URL connection timeout, in milliseconds.
+	 *                       If zero no (infinite) timeout.
+	 * @param readTimeout    The URL read timeout, in milliseconds. If zero
+	 *                       no (infinite) timeout.
+	 * @param sizeLimit      The read size limit, in bytes. If zero no
+	 *                       limit.
+	 * @param proxy			 The optional proxy to use when opening the connection
+	 *                       to retrieve the resource. If {@code null},
+	 *                       no proxy is used.
+	 *
+	 * @return The JWK set.
+	 *
+	 * @throws IOException    If the file couldn't be read.
+	 * @throws ParseException If the file couldn't be parsed to a valid
+	 *                        JSON Web Key (JWK) set.
+	 */
+	public static JWKSet load(final URL url,
+							  final int connectTimeout,
+							  final int readTimeout,
+							  final int sizeLimit,
+							  final Proxy proxy)
+			throws IOException, ParseException {
+
+		DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(
+				connectTimeout,
+				readTimeout,
+				sizeLimit);
+		resourceRetriever.setProxy(proxy);
 		Resource resource = resourceRetriever.retrieveResource(url);
 		return parse(resource.getContent());
 	}

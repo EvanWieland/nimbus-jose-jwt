@@ -21,8 +21,9 @@ package com.nimbusds.jose.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -44,6 +45,11 @@ public class DefaultResourceRetriever extends AbstractRestrictedResourceRetrieve
 	 * HttpURLConnection is called after a successful or failed retrieval.
 	 */
 	private boolean disconnectAfterUse;
+
+	/**
+	 * The proxy to use when opening the HttpURLConnection. Can be {@code null}.
+	 */
+	private Proxy proxy;
 	
 	
 	/**
@@ -149,6 +155,21 @@ public class DefaultResourceRetriever extends AbstractRestrictedResourceRetrieve
 		this.disconnectAfterUse = disconnectAfterUse;
 	}
 
+	/**
+	 * Returns the proxy to use when opening the HttpURLConnection to retrieve the resource.
+	 * @return The proxy to use or {@code null} if no proxy should be used.
+	 */
+	public Proxy getProxy() {
+		return proxy;
+	}
+
+	/**
+	 * Sets the proxy to use when opening the HttpURLConnection to retrieve the resource.
+	 * Can be set to {@code null} if no proxy should be used.
+	 */
+	public void setProxy(Proxy proxy) {
+		this.proxy = proxy;
+	}
 
 	@Override
 	public Resource retrieveResource(final URL url)
@@ -156,23 +177,14 @@ public class DefaultResourceRetriever extends AbstractRestrictedResourceRetrieve
 		
 		HttpURLConnection con = null;
 		try {
-			con = (HttpURLConnection)url.openConnection();
+			con = openConnection(url);
 			
 			con.setConnectTimeout(getConnectTimeout());
 			con.setReadTimeout(getReadTimeout());
 			
 			final String content;
-			
-			InputStream inputStream = con.getInputStream();
-			try {
-				if (getSizeLimit() > 0) {
-					inputStream = new BoundedInputStream(inputStream, getSizeLimit());
-				}
-				
-				content = IOUtils.readInputStreamToString(inputStream, Charset.forName("UTF-8"));
-				
-			} finally {
-				inputStream.close();
+			try (InputStream inputStream = getInputStream(con, getSizeLimit())) {
+				content = IOUtils.readInputStreamToString(inputStream, StandardCharsets.UTF_8);
 			}
 	
 			// Check HTTP code + message
@@ -193,5 +205,26 @@ public class DefaultResourceRetriever extends AbstractRestrictedResourceRetrieve
 				con.disconnect();
 			}
 		}
+	}
+
+	/**
+	 * Opens a connection the specified HTTP(S) URL. Uses the configured {@link Proxy} if available.
+	 *
+	 * @param url The URL of the resource. Its scheme must be HTTP or
+	 *            HTTPS. Must not be {@code null}.
+	 * @return The opened HTTP(S) connection
+	 * @throws IOException	If the HTTP(S) connection to the specified URL failed.
+	 */
+	protected HttpURLConnection openConnection(URL url) throws IOException {
+		if (proxy != null) {
+			return (HttpURLConnection)url.openConnection(proxy);
+		} else {
+			return (HttpURLConnection)url.openConnection();
+		}
+	}
+
+	private InputStream getInputStream(HttpURLConnection con, int sizeLimit) throws IOException {
+		InputStream inputStream = con.getInputStream();
+		return sizeLimit > 0 ? new BoundedInputStream(inputStream, getSizeLimit()) : inputStream;
 	}
 }
