@@ -21,6 +21,7 @@ package com.nimbusds.jose.jwk;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -70,10 +71,13 @@ import net.minidev.json.JSONObject;
  *
  * @author Vladimir Dzhuvinov
  * @author Vedran Pavic
- * @version 2019-08-23
+ * @version 2019-10-03
  */
 @Immutable
-public class JWKSet {
+public class JWKSet implements Serializable {
+	
+	
+	private static final long serialVersionUID = 1L;
 
 
 	/**

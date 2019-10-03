@@ -18,6 +18,7 @@
 package com.nimbusds.jose.jwk;
 
 
+import java.io.Serializable;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.Objects;
@@ -35,9 +36,12 @@ import java.util.Objects;
  * </ul>
  *
  * @author Vladimir Dzhuvinov
- * @version 2019-02-06
+ * @version 2019-10-03
  */
-public final class KeyUse {
+public final class KeyUse implements Serializable {
+	
+	
+	private static final long serialVersionUID = 1L;
 
 
 	/**
