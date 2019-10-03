@@ -34,7 +34,7 @@ import com.nimbusds.jose.jwk.Curve;
  *
  * @author Vladimir Dzhuvinov
  * @author Aleksei Doroganov
- * @version 2018-03-28
+ * @version 2019-10-03
  */
 public class ECDSA {
 
@@ -282,7 +282,7 @@ public class ECDSA {
 
 		int offset;
 
-		final byte derSignature[];
+		final byte[] derSignature;
 
 		if (len < 128) {
 			derSignature = new byte[2 + 2 + j + 2 + l];
