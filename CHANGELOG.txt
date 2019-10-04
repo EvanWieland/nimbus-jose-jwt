@@ -1019,3 +1019,5 @@ version 7.8 (2019-08-23)
 version 7.9 (2019-10-04)
     * Makes JWKSet and KeyUse serializable (iss #330).
     * Fixes NPE when parsing JOSE header with missing or null "alg" (iss #332).
+    * Fixes IllegalArgumentException when parsing JOSE header with "typ" null
+      (iss #333).

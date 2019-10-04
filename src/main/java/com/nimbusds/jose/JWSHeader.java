@@ -64,7 +64,7 @@ import net.minidev.json.JSONObject;
  * </pre>
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-04-09
+ * @version 2019-10-04
  */
 @Immutable
 public final class JWSHeader extends CommonSEHeader {
@@ -638,11 +638,14 @@ public final class JWSHeader extends CommonSEHeader {
 
 		// Parse optional + custom parameters
 		for (final String name: jsonObject.keySet()) {
-
+			
 			if("alg".equals(name)) {
 				// skip
 			} else if("typ".equals(name)) {
-				header = header.type(new JOSEObjectType(JSONObjectUtils.getString(jsonObject, name)));
+				String typValue = JSONObjectUtils.getString(jsonObject, name);
+				if (typValue != null) {
+					header = header.type(new JOSEObjectType(typValue));
+				}
 			} else if("cty".equals(name)) {
 				header = header.contentType(JSONObjectUtils.getString(jsonObject, name));
 			} else if("crit".equals(name)) {

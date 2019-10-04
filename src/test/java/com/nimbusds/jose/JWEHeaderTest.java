@@ -19,9 +19,11 @@ package com.nimbusds.jose;
 
 
 import java.net.URI;
+import java.text.ParseException;
 import java.util.*;
 
 import junit.framework.TestCase;
+import net.minidev.json.JSONObject;
 
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -34,7 +36,7 @@ import com.nimbusds.jose.util.Base64URL;
  * Tests JWE header parsing and serialisation.
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-01-10
+ * @version 2019-10-04
  */
 public class JWEHeaderTest extends TestCase {
 
@@ -392,5 +394,20 @@ public class JWEHeaderTest extends TestCase {
 		assertEquals("1", (String)h.getCustomParam("x"));
 		assertEquals("2", (String)h.getCustomParam("y"));
 		assertEquals(2, h.getCustomParams().size());
+	}
+	
+	
+	// iss #333
+	public void testParseHeaderWithNullTyp()
+		throws ParseException {
+		
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("alg", JWEAlgorithm.DIR.getName());
+		jsonObject.put("enc", EncryptionMethod.A128GCM.getName());
+		jsonObject.put("typ", null);
+		assertEquals(3, jsonObject.size());
+		
+		Header header = JWEHeader.parse(jsonObject.toJSONString());
+		assertNull(header.getType());
 	}
 }

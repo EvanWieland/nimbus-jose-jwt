@@ -18,12 +18,14 @@
 package com.nimbusds.jose;
 
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import junit.framework.TestCase;
+import net.minidev.json.JSONObject;
 
 import com.nimbusds.jose.util.Base64URL;
 
@@ -32,7 +34,7 @@ import com.nimbusds.jose.util.Base64URL;
  * Tests plain header parsing and serialisation.
  *
  * @author Vladimir Dzhuvinov
- * @version 2014-07-10
+ * @version 2019-10-04
  */
 public class PlainHeaderTest extends TestCase {
 
@@ -188,6 +190,20 @@ public class PlainHeaderTest extends TestCase {
 		assertEquals("1", (String)h.getCustomParam("x"));
 		assertEquals("2", (String)h.getCustomParam("y"));
 		assertEquals(2, h.getCustomParams().size());
+	}
+	
+	
+	// iss #333
+	public void testParseHeaderWithNullTyp()
+		throws ParseException {
+		
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("alg", Algorithm.NONE.getName());
+		jsonObject.put("typ", null);
+		assertEquals(2, jsonObject.size());
+		
+		Header header = PlainHeader.parse(jsonObject.toJSONString());
+		assertNull(header.getType());
 	}
 }
 

@@ -75,7 +75,7 @@ import com.nimbusds.jose.util.X509CertChainUtils;
  * </pre>
  *
  * @author Vladimir Dzhuvinov
- * @version 2017-04-09
+ * @version 2019-10-04
  */
 @Immutable
 public final class JWEHeader extends CommonSEHeader {
@@ -1190,7 +1190,10 @@ public final class JWEHeader extends CommonSEHeader {
 			} else if("enc".equals(name)) {
 				// skip
 			} else if("typ".equals(name)) {
-				header = header.type(new JOSEObjectType(JSONObjectUtils.getString(jsonObject, name)));
+				String typValue = JSONObjectUtils.getString(jsonObject, name);
+				if (typValue != null) {
+					header = header.type(new JOSEObjectType(typValue));
+				}
 			} else if("cty".equals(name)) {
 				header = header.contentType(JSONObjectUtils.getString(jsonObject, name));
 			} else if("crit".equals(name)) {

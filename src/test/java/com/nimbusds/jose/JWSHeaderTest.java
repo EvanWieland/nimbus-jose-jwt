@@ -36,7 +36,7 @@ import net.minidev.json.JSONObject;
  * Tests JWS header parsing and serialisation.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-11-06
+ * @version 2019-10-04
  */
 public class JWSHeaderTest extends TestCase {
 
@@ -463,6 +463,19 @@ public class JWSHeaderTest extends TestCase {
 		assertEquals(JOSEObjectType.JWT, jwsHeader.getType());
 		assertNull(jwsHeader.getContentType());
 		assertEquals(2, jwsHeader.toJSONObject().size());
+	}
+	
+	// iss #333
+	public void testParseHeaderWithNullTyp()
+		throws ParseException {
+		
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("alg", "HS256");
+		jsonObject.put("typ", null);
+		assertEquals(2, jsonObject.size());
+		
+		Header header = JWSHeader.parse(jsonObject.toJSONString());
+		assertNull(header.getType());
 	}
 }
 

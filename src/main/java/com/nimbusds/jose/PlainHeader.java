@@ -58,7 +58,7 @@ import com.nimbusds.jose.util.JSONObjectUtils;
  * </pre>
  *
  * @author Vladimir Dzhuvinov
- * @version 2014-08-20
+ * @version 2019-10-04
  */
 @Immutable
 public final class PlainHeader extends Header {
@@ -400,13 +400,14 @@ public final class PlainHeader extends Header {
 
 		// Parse optional + custom parameters
 		for(final String name: jsonObject.keySet()) {
-
-
 			
 			if("alg".equals(name)) {
 				// skip
 			} else if("typ".equals(name)) {
-				header = header.type(new JOSEObjectType(JSONObjectUtils.getString(jsonObject, name)));
+				String typValue = JSONObjectUtils.getString(jsonObject, name);
+				if (typValue != null) {
+					header = header.type(new JOSEObjectType(typValue));
+				}
 			} else if("cty".equals(name)) {
 				header = header.contentType(JSONObjectUtils.getString(jsonObject, name));
 			} else if("crit".equals(name)) {
