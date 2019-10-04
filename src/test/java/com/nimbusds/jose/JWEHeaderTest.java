@@ -410,4 +410,19 @@ public class JWEHeaderTest extends TestCase {
 		Header header = JWEHeader.parse(jsonObject.toJSONString());
 		assertNull(header.getType());
 	}
+	
+	
+	// iss #334
+	public void testParseHeaderWithNullCrit()
+		throws ParseException {
+		
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("alg", JWEAlgorithm.DIR.getName());
+		jsonObject.put("enc", EncryptionMethod.A128GCM.getName());
+		jsonObject.put("crit", null);
+		assertEquals(3, jsonObject.size());
+		
+		Header header = JWEHeader.parse(jsonObject.toJSONString());
+		assertNull(header.getCriticalParams());
+	}
 }

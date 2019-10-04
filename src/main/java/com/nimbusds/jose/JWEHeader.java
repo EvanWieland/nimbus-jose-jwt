@@ -1197,7 +1197,10 @@ public final class JWEHeader extends CommonSEHeader {
 			} else if("cty".equals(name)) {
 				header = header.contentType(JSONObjectUtils.getString(jsonObject, name));
 			} else if("crit".equals(name)) {
-				header = header.criticalParams(new HashSet<>(JSONObjectUtils.getStringList(jsonObject, name)));
+				List<String> critValues = JSONObjectUtils.getStringList(jsonObject, name);
+				if (critValues != null) {
+					header = header.criticalParams(new HashSet<>(critValues));
+				}
 			} else if("jku".equals(name)) {
 				header = header.jwkURL(JSONObjectUtils.getURI(jsonObject, name));
 			} else if("jwk".equals(name)) {

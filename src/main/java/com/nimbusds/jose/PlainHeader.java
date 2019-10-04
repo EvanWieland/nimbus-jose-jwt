@@ -19,11 +19,7 @@ package com.nimbusds.jose;
 
 
 import java.text.ParseException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import net.jcip.annotations.Immutable;
 
@@ -411,7 +407,10 @@ public final class PlainHeader extends Header {
 			} else if("cty".equals(name)) {
 				header = header.contentType(JSONObjectUtils.getString(jsonObject, name));
 			} else if("crit".equals(name)) {
-				header = header.criticalParams(new HashSet<>(JSONObjectUtils.getStringList(jsonObject, name)));
+				List<String> critValues = JSONObjectUtils.getStringList(jsonObject, name);
+				if (critValues != null) {
+					header = header.criticalParams(new HashSet<>(critValues));
+				}
 			} else {
 				header = header.customParam(name, jsonObject.get(name));
 			}

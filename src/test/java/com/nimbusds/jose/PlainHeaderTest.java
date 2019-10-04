@@ -205,5 +205,19 @@ public class PlainHeaderTest extends TestCase {
 		Header header = PlainHeader.parse(jsonObject.toJSONString());
 		assertNull(header.getType());
 	}
+	
+	
+	// iss #334
+	public void testParseHeaderWithNullCrit()
+		throws ParseException {
+		
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("alg", Algorithm.NONE.getName());
+		jsonObject.put("crit", null);
+		assertEquals(2, jsonObject.size());
+		
+		Header header = PlainHeader.parse(jsonObject.toJSONString());
+		assertNull(header.getCriticalParams());
+	}
 }
 

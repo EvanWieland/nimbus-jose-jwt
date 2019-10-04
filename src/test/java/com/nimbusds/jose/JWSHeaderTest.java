@@ -477,5 +477,18 @@ public class JWSHeaderTest extends TestCase {
 		Header header = JWSHeader.parse(jsonObject.toJSONString());
 		assertNull(header.getType());
 	}
+	
+	// iss #334
+	public void testParseHeaderWithNullCrit()
+		throws ParseException {
+		
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("alg", "HS256");
+		jsonObject.put("crit", null);
+		assertEquals(2, jsonObject.size());
+		
+		Header header = JWSHeader.parse(jsonObject.toJSONString());
+		assertNull(header.getCriticalParams());
+	}
 }
 
