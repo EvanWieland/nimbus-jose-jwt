@@ -36,7 +36,7 @@ import com.nimbusds.jose.util.JSONObjectUtils;
  * parameters}; these will be serialised and parsed along the registered ones.
  *
  * @author Vladimir Dzhuvinov
- * @version 2014-08-21
+ * @version 2019-10-04
  */
 public abstract class Header implements Serializable {
 
@@ -348,18 +348,22 @@ public abstract class Header implements Serializable {
 	 * @param json The JSON object to parse. Must not be {@code null}.
 	 *
 	 * @return The algorithm, an instance of {@link Algorithm#NONE},
-	 *         {@link JWSAlgorithm} or {@link JWEAlgorithm}.
+	 *         {@link JWSAlgorithm} or {@link JWEAlgorithm}. {@code null}
+	 *         if not found.
 	 *
 	 * @throws ParseException If the {@code alg} parameter couldn't be 
 	 *                        parsed.
 	 */
 	public static Algorithm parseAlgorithm(final JSONObject json)
-			throws ParseException {
+		throws ParseException {
 
 		String algName = JSONObjectUtils.getString(json, "alg");
+		
+		if (algName == null) {
+			throw new ParseException("Missing \"alg\" in header JSON object", 0);
+		}
 
 		// Infer algorithm type
-
 		if (algName.equals(Algorithm.NONE.getName())) {
 			// Plain
 			return Algorithm.NONE;

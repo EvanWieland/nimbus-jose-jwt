@@ -1016,5 +1016,6 @@ version 7.7 (2019-08-01)
 version 7.8 (2019-08-23)
     * Adds HTTP proxy support to JWKSet and DefaultResourceRetriever.
 
-version 7.9 (2019-10-03)
+version 7.9 (2019-10-04)
     * Makes JWKSet and KeyUse serializable (iss #330).
+    * Fixes NPE when parsing JOSE header with missing or null "alg" (iss #332).

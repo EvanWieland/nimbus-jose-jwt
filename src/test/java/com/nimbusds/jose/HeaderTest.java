@@ -18,15 +18,19 @@
 package com.nimbusds.jose;
 
 
-import com.nimbusds.jose.util.Base64URL;
+import java.text.ParseException;
+
 import junit.framework.TestCase;
+import net.minidev.json.JSONObject;
+
+import com.nimbusds.jose.util.Base64URL;
 
 
 /**
  * Tests the base JOSE header class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2013-08-20
+ * @version 2019-10-04
  */
 public class HeaderTest extends TestCase {
 
@@ -73,5 +77,27 @@ public class HeaderTest extends TestCase {
 
 		JWEHeader jweHeader = (JWEHeader)header;
 		assertEquals(EncryptionMethod.A128CBC_HS256, jweHeader.getEncryptionMethod());
+	}
+	
+	
+	public void testParseAlgorithm_nullAlg() {
+		
+		try {
+			Header.parseAlgorithm(new JSONObject());
+			fail();
+		} catch (ParseException e) {
+			assertEquals("Missing \"alg\" in header JSON object", e.getMessage());
+		}
+	}
+	
+	
+	public void testParseHeader_nullAlg() {
+		
+		try {
+			Header.parse(new JSONObject());
+			fail();
+		} catch (ParseException e) {
+			assertEquals("Missing \"alg\" in header JSON object", e.getMessage());
+		}
 	}
 }
