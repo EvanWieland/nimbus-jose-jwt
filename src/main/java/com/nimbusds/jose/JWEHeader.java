@@ -1211,9 +1211,9 @@ public final class JWEHeader extends CommonSEHeader {
 			} else if("x5u".equals(name)) {
 				header = header.x509CertURL(JSONObjectUtils.getURI(jsonObject, name));
 			} else if("x5t".equals(name)) {
-				header = header.x509CertThumbprint(new Base64URL(JSONObjectUtils.getString(jsonObject, name)));
+				header = header.x509CertThumbprint(Base64URL.from(JSONObjectUtils.getString(jsonObject, name)));
 			} else if("x5t#S256".equals(name)) {
-				header = header.x509CertSHA256Thumbprint(new Base64URL(JSONObjectUtils.getString(jsonObject, name)));
+				header = header.x509CertSHA256Thumbprint(Base64URL.from(JSONObjectUtils.getString(jsonObject, name)));
 			} else if("x5c".equals(name)) {
 				header = header.x509CertChain(X509CertChainUtils.toBase64List(JSONObjectUtils.getJSONArray(jsonObject, name)));
 			} else if("kid".equals(name)) {
@@ -1223,17 +1223,17 @@ public final class JWEHeader extends CommonSEHeader {
 			} else if("zip".equals(name)) {
 				header = header.compressionAlgorithm(new CompressionAlgorithm(JSONObjectUtils.getString(jsonObject, name)));
 			} else if("apu".equals(name)) {
-				header = header.agreementPartyUInfo(new Base64URL(JSONObjectUtils.getString(jsonObject, name)));
+				header = header.agreementPartyUInfo(Base64URL.from(JSONObjectUtils.getString(jsonObject, name)));
 			} else if("apv".equals(name)) {
-				header = header.agreementPartyVInfo(new Base64URL(JSONObjectUtils.getString(jsonObject, name)));
+				header = header.agreementPartyVInfo(Base64URL.from(JSONObjectUtils.getString(jsonObject, name)));
 			} else if("p2s".equals(name)) {
-				header = header.pbes2Salt(new Base64URL(JSONObjectUtils.getString(jsonObject, name)));
+				header = header.pbes2Salt(Base64URL.from(JSONObjectUtils.getString(jsonObject, name)));
 			} else if("p2c".equals(name)) {
 				header = header.pbes2Count(JSONObjectUtils.getInt(jsonObject, name));
 			} else if("iv".equals(name)) {
-				header = header.iv(new Base64URL(JSONObjectUtils.getString(jsonObject, name)));
+				header = header.iv(Base64URL.from(JSONObjectUtils.getString(jsonObject, name)));
 			} else if("tag".equals(name)) {
-				header = header.authTag(new Base64URL(JSONObjectUtils.getString(jsonObject, name)));
+				header = header.authTag(Base64URL.from(JSONObjectUtils.getString(jsonObject, name)));
 			} else {
 				header = header.customParam(name, jsonObject.get(name));
 			}

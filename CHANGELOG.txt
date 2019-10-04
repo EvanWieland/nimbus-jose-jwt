@@ -1025,3 +1025,6 @@ version 7.9 (2019-10-04)
       (iss #333).
     * Fixes NPE when parsing JOSE header with null "crit" (iss #334).
     * Fixes NPE when parsing JOSE header with null "jwk" (iss #335).
+    * Fixes NPE when parsing JOSE header with null BASE64 or BASE65URL encoded
+      parameters (iss #336).
+

@@ -663,9 +663,9 @@ public final class JWSHeader extends CommonSEHeader {
 			} else if("x5u".equals(name)) {
 				header = header.x509CertURL(JSONObjectUtils.getURI(jsonObject, name));
 			} else if("x5t".equals(name)) {
-				header = header.x509CertThumbprint(new Base64URL(JSONObjectUtils.getString(jsonObject, name)));
+				header = header.x509CertThumbprint(Base64URL.from(JSONObjectUtils.getString(jsonObject, name)));
 			} else if("x5t#S256".equals(name)) {
-				header = header.x509CertSHA256Thumbprint(new Base64URL(JSONObjectUtils.getString(jsonObject, name)));
+				header = header.x509CertSHA256Thumbprint(Base64URL.from(JSONObjectUtils.getString(jsonObject, name)));
 			} else if("x5c".equals(name)) {
 				header = header.x509CertChain(X509CertChainUtils.toBase64List(JSONObjectUtils.getJSONArray(jsonObject, name)));
 			} else if("kid".equals(name)) {
