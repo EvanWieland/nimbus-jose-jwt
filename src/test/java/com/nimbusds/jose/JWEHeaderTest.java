@@ -439,4 +439,18 @@ public class JWEHeaderTest extends TestCase {
 		JWEHeader header = JWEHeader.parse(jsonObject.toJSONString());
 		assertNull(header.getJWK());
 	}
+	
+	
+	public void testParseHeaderWithNullZIP()
+		throws ParseException {
+		
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("alg", JWEAlgorithm.DIR.getName());
+		jsonObject.put("enc", EncryptionMethod.A128GCM.getName());
+		jsonObject.put("zip", null);
+		assertEquals(3, jsonObject.size());
+		
+		JWEHeader header = JWEHeader.parse(jsonObject.toJSONString());
+		assertNull(header.getCompressionAlgorithm());
+	}
 }

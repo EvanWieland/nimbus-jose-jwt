@@ -1221,7 +1221,10 @@ public final class JWEHeader extends CommonSEHeader {
 			} else if("epk".equals(name)) {
 				header = header.ephemeralPublicKey(JWK.parse(JSONObjectUtils.getJSONObject(jsonObject, name)));
 			} else if("zip".equals(name)) {
-				header = header.compressionAlgorithm(new CompressionAlgorithm(JSONObjectUtils.getString(jsonObject, name)));
+				String zipValue = JSONObjectUtils.getString(jsonObject, name);
+				if (zipValue != null) {
+					header = header.compressionAlgorithm(new CompressionAlgorithm(zipValue));
+				}
 			} else if("apu".equals(name)) {
 				header = header.agreementPartyUInfo(Base64URL.from(JSONObjectUtils.getString(jsonObject, name)));
 			} else if("apv".equals(name)) {
