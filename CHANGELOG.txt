@@ -1022,3 +1022,4 @@ version 7.9 (2019-10-04)
     * Fixes IllegalArgumentException when parsing JOSE header with null "typ"
       (iss #333).
     * Fixes NPE when parsing JOSE header with null "crit" (iss #334).
+    * Fixes NPE when parsing JOSE header with null "jwk" (iss #335).
