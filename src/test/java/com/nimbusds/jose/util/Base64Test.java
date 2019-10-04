@@ -28,7 +28,7 @@ import junit.framework.TestCase;
  * Tests the Base64URL class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2014-07-13
+ * @version 2019-10-04
  */
 public class Base64Test extends TestCase {
 
@@ -54,6 +54,22 @@ public class Base64Test extends TestCase {
 		BigInteger bigInt = new BigInteger("12345678901234567890");
 		Base64 b64 = Base64.encode(bigInt);
 		assertEquals(bigInt, b64.decodeToBigInteger());
+	}
+	
+	
+	public void testFrom() {
+		
+		Base64 b64 = Base64.encode("foobar");
+		assertEquals("Zm9vYmFy", b64.toString());
+		
+		Base64 base64From = Base64.from(b64.toString());
+		assertEquals(b64, base64From);
+	}
+	
+	
+	public void testFromNull() {
+		
+		assertNull(Base64.from(null));
 	}
 }
 

@@ -30,6 +30,7 @@ import net.minidev.json.JSONValue;
  * Base64-encoded object.
  *
  * @author Vladimir Dzhuvinov
+ * @version 2019-10-04
  */
 @Immutable
 public class Base64 implements JSONAware, Serializable {
@@ -149,6 +150,25 @@ public class Base64 implements JSONAware, Serializable {
 		return object != null && 
 		       object instanceof Base64 && 
 		       this.toString().equals(object.toString());
+	}
+	
+	
+	/**
+	 * Creates a new Base64-encoded object from the specified string.
+	 *
+	 * @param base64 The Base64-encoded object value, {@code null} if not
+	 *               specified. The value is not validated for having
+	 *               characters from the Base64 alphabet.
+	 *
+	 * @return The Base64-encoded object, {@code null} if not specified.
+	 */
+	public static Base64 from(final String base64) {
+		
+		if (base64 == null) {
+			return null;
+		}
+		
+		return new Base64(base64);
 	}
 
 

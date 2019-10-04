@@ -33,7 +33,7 @@ import net.jcip.annotations.Immutable;
  * </ul>
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-01-04
+ * @version 2019-10-04
  */
 @Immutable
 public class Base64URL extends Base64 {
@@ -66,6 +66,25 @@ public class Base64URL extends Base64 {
 		return object != null && 
 		       object instanceof Base64URL && 
 		       this.toString().equals(object.toString());
+	}
+	
+	
+	/**
+	 * Creates a new Base64URL-encoded object from the specified string.
+	 *
+	 * @param base64URL The Base64URL-encoded object value, {@code null} if
+	 *                  not specified. The value is not validated for
+	 *                  having characters from the Base64URL alphabet.
+	 *
+	 * @return The Base64URL-encoded object, {@code null} if not specified.
+	 */
+	public static Base64URL from(final String base64URL) {
+		
+		if (base64URL == null) {
+			return null;
+		}
+		
+		return new Base64URL(base64URL);
 	}
 
 

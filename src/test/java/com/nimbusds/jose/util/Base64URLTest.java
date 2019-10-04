@@ -88,5 +88,20 @@ public class Base64URLTest extends TestCase {
 
 		assertEquals(BIGINT, b64url.decodeToBigInteger());
 	}
+	
+	
+	public void testFrom() {
+		
+		Base64URL base64URL = Base64URL.encode("foobar");
+		
+		Base64URL base64From = Base64URL.from(base64URL.toString());
+		assertEquals(base64URL, base64From);
+	}
+	
+	
+	public void testFromNull() {
+		
+		assertNull(Base64URL.from(null));
+	}
 }
 
