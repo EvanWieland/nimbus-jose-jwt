@@ -40,9 +40,6 @@ version 6.0 (2018-07-24)
       is used to decode the encrypted key portion in a JWE object (iss #270).
 
 version 7.9 (2019-10-05)
-    * Adds new static null-safe Base64.from(String) and Base64URL.from(String)
-      methods.
-    * Makes JWKSet and KeyUse serializable (iss #330).
     * Fixes NPE when parsing JOSE header with missing or null "alg" (iss #332).
     * Fixes IllegalArgumentException when parsing JOSE header with null "typ"
       (iss #333).
