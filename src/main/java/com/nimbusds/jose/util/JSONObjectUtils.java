@@ -73,6 +73,8 @@ public class JSONObjectUtils {
 		} catch (net.minidev.json.parser.ParseException e) {
 
 			throw new ParseException("Invalid JSON: " + e.getMessage(), 0);
+		} catch (Exception e) {
+			throw new ParseException("Unexpected exception: " + e.getMessage(), 0);
 		}
 
 		if (o instanceof JSONObject) {

@@ -1029,4 +1029,6 @@ version 7.9 (2019-10-04)
       parameters (iss #336).
     * Fixes IllegalArgumentException when parsing JWE header with null "zip"
       (iss #337).
+    * Catch unexpected exceptions in JSONObjectUtils.parse and rethrow as
+      ParseException.
 

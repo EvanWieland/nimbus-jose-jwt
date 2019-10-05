@@ -31,7 +31,7 @@ import org.junit.Assert;
  * Tests the JSON object utilities.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-11-06
+ * @version 2019-10-05
  */
 public class JSONObjectUtilsTest extends TestCase {
 
