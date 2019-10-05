@@ -1017,9 +1017,6 @@ version 7.8 (2019-08-23)
     * Adds HTTP proxy support to JWKSet and DefaultResourceRetriever.
 
 version 7.9 (2019-10-05)
-    * Adds new static null-safe Base64.from(String) and Base64URL.from(String)
-      methods.
-    * Makes JWKSet and KeyUse serializable (iss #330).
     * Fixes NPE when parsing JOSE header with missing or null "alg" (iss #332).
     * Fixes IllegalArgumentException when parsing JOSE header with null "typ"
       (iss #333).
