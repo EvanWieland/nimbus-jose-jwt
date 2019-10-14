@@ -41,13 +41,16 @@ version 6.0 (2018-07-24)
 
 version 7.9 (2019-10-05)
     * Fixes NPE when parsing JOSE header with missing or null "alg" (iss #332).
+      Allocated CVE-2019-17195.
     * Fixes IllegalArgumentException when parsing JOSE header with null "typ"
-      (iss #333).
-    * Fixes NPE when parsing JOSE header with null "crit" (iss #334).
-    * Fixes NPE when parsing JOSE header with null "jwk" (iss #335).
+      (iss #333). Allocated CVE-2019-17195.
+    * Fixes NPE when parsing JOSE header with null "crit" (iss #334). Allocated
+      CVE-2019-17195.
+    * Fixes NPE when parsing JOSE header with null "jwk" (iss #335). Allocated
+      CVE-2019-17195.
     * Fixes NPE when parsing JOSE header with null BASE64 or BASE65URL encoded
-      parameters (iss #336).
+      parameters (iss #336). Allocated CVE-2019-17195.
     * Fixes IllegalArgumentException when parsing JWE header with null "zip"
-      (iss #337).
+      (iss #337). Allocated CVE-2019-17195.
     * Catch unexpected exceptions in JSONObjectUtils.parse and rethrow as
-      ParseException.
+      ParseException. Allocated CVE-2019-17195.
