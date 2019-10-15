@@ -51,12 +51,19 @@ import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
  *     {@link SecurityContext context}.</li>
  * </ol>
  *
- * <p>An optional context parameter is available to facilitate passing of
- * additional data between the caller and the underlying selector of key
- * candidates (in both directions).
+ * <p>An optional {@link SecurityContext context} parameter is available to
+ * facilitate passing of additional data between the caller and the underlying
+ * selector of key candidates (in both directions).
  *
  * <p>See sections 6 of RFC 7515 (JWS) and RFC 7516 (JWE) for guidelines on key
  * selection.
+ *
+ * <p>This processor is configured with a standard header "typ" (type)
+ * parameter {@link DefaultJOSEObjectTypeVerifier#JOSE verifier} which expects
+ * the JWS, JWE and plain (unsecured) objects to have the type header omitted
+ * or set to {@link JOSEObjectType#JOSE JOSE}. To accept other "typ" values
+ * pass an appropriately configured JWS and / or JWE
+ * {@link DefaultJOSEObjectTypeVerifier type verifier}.
  *
  * <p>This processor comes with the default {@link DefaultJWSVerifierFactory
  * JWS verifier factory} and the default {@link DefaultJWEDecrypterFactory
@@ -65,14 +72,13 @@ import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
  *
  * <p>Note that for security reasons this processor is hardwired to reject
  * unsecured (plain) JOSE objects. Override the {@link #process(PlainObject,
- * SecurityContext)} method if you need to handle unsecured JOSE objects as
- * well.
+ * SecurityContext)} method if you need to handle unsecured JOSE objects.
  *
  * <p>To process JSON Web Tokens (JWTs) use the
  * {@link com.nimbusds.jwt.proc.DefaultJWTProcessor} class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2019-06-16
+ * @version 2019-10-15
  */
 @ThreadSafe
 public class DefaultJOSEProcessor<C extends SecurityContext> implements ConfigurableJOSEProcessor<C>{
@@ -99,7 +105,19 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 	private static final BadJOSEException NO_MATCHING_DECRYPTERS_EXCEPTION =
 		new BadJOSEException("JWE object rejected: No matching decrypter(s) found");
 	
-
+	
+	/**
+	 * The JWS type verifier.
+	 */
+	private JOSEObjectTypeVerifier<C> jwsTypeVerifier = DefaultJOSEObjectTypeVerifier.JOSE;
+	
+	
+	/**
+	 * The JWE type verifier.
+	 */
+	private JOSEObjectTypeVerifier<C> jweTypeVerifier = DefaultJOSEObjectTypeVerifier.JOSE;
+	
+	
 	/**
 	 * The JWS key selector.
 	 */
@@ -123,7 +141,21 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 	 */
 	private JWEDecrypterFactory jweDecrypterFactory = new DefaultJWEDecrypterFactory();
 	
-
+	
+	@Override
+	public JOSEObjectTypeVerifier<C> getJWSTypeVerifier() {
+		
+		return jwsTypeVerifier;
+	}
+	
+	
+	@Override
+	public void setJWSTypeVerifier(final JOSEObjectTypeVerifier<C> jwsTypeVerifier) {
+	
+		this.jwsTypeVerifier = jwsTypeVerifier;
+	}
+	
+	
 	@Override
 	public JWSKeySelector<C> getJWSKeySelector() {
 
@@ -136,8 +168,22 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 
 		this.jwsKeySelector = jwsKeySelector;
 	}
-
-
+	
+	
+	@Override
+	public JOSEObjectTypeVerifier<C> getJWETypeVerifier() {
+		
+		return jweTypeVerifier;
+	}
+	
+	
+	@Override
+	public void setJWETypeVerifier(final JOSEObjectTypeVerifier<C> jweTypeVerifier) {
+	
+		this.jweTypeVerifier = jweTypeVerifier;
+	}
+	
+	
 	@Override
 	public JWEKeySelector<C> getJWEKeySelector() {
 
@@ -212,6 +258,12 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 	@Override
 	public Payload process(final PlainObject plainObject, C context)
 		throws BadJOSEException {
+		
+		// JWS type verifier applies to unsecured JOSE as well
+		if (jwsTypeVerifier == null) {
+			throw new BadJOSEException("Unsecured (plain) JOSE object rejected: No JWS header \"typ\" (type) verifier is configured");
+		}
+		jwsTypeVerifier.verify(plainObject.getHeader().getType(), context);
 
 		throw PLAIN_JOSE_REJECTED_EXCEPTION;
 	}
@@ -220,6 +272,12 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 	@Override
 	public Payload process(final JWSObject jwsObject, C context)
 		throws BadJOSEException, JOSEException {
+		
+		if (jwsTypeVerifier == null) {
+			throw new BadJOSEException("JWS object rejected: No JWS header \"typ\" (type) verifier is configured");
+		}
+		
+		jwsTypeVerifier.verify(jwsObject.getHeader().getType(), context);
 
 		if (getJWSKeySelector() == null) {
 			// JWS key selector may have been deliberately omitted
@@ -265,6 +323,12 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 	@Override
 	public Payload process(final JWEObject jweObject, C context)
 		throws BadJOSEException, JOSEException {
+		
+		if (jweTypeVerifier == null) {
+			throw new BadJOSEException("JWE object rejected: No JWE header \"typ\" (type) verifier is configured");
+		}
+		
+		jweTypeVerifier.verify(jweObject.getHeader().getType(), context);
 
 		if (getJWEKeySelector() == null) {
 			// JWE key selector may have been deliberately omitted

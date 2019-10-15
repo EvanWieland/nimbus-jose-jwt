@@ -29,7 +29,7 @@ import com.nimbusds.jose.util.Base64URL;
  * Tests JOSE object methods.
  *
  * @author Vladimir Dzhuvinov
- * @version 2014-02-04
+ * @version 2019-10-14
  */
 public class JOSEObjectTest extends TestCase {
 	
@@ -176,5 +176,21 @@ public class JOSEObjectTest extends TestCase {
 
 		assertEquals("application/jose; charset=UTF-8", JOSEObject.MIME_TYPE_COMPACT);
 		assertEquals("application/jose+json; charset=UTF-8", JOSEObject.MIME_TYPE_JS);
+	}
+	
+	
+	public void testEquality_case() {
+		
+		assertTrue(new JOSEObjectType("at+jwt").equals(new JOSEObjectType("at+jwt")));
+		assertTrue(new JOSEObjectType("at+jwt").equals(new JOSEObjectType("AT+JWT")));
+		assertTrue(new JOSEObjectType("AT+JWT").equals(new JOSEObjectType("AT+JWT")));
+	}
+	
+	
+	public void testHashCode_case() {
+		
+		assertEquals(new JOSEObjectType("at+jwt").hashCode(), new JOSEObjectType("at+jwt").hashCode());
+		assertEquals(new JOSEObjectType("at+jwt").hashCode(), new JOSEObjectType("AT+JWT").hashCode());
+		assertEquals(new JOSEObjectType("AT+JWT").hashCode(), new JOSEObjectType("AT+JWT").hashCode());
 	}
 }

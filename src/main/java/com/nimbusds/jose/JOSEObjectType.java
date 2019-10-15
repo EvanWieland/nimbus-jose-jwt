@@ -42,7 +42,7 @@ import net.minidev.json.JSONObject;
  * <p>Additional types can be defined using the constructor.
  *
  * @author Vladimir Dzhuvinov
- * @version 2014-02-15
+ * @version 2019-10-14
  */
 @Immutable
 public final class JOSEObjectType implements JSONAware, Serializable {
@@ -109,7 +109,7 @@ public final class JOSEObjectType implements JSONAware, Serializable {
 	@Override
 	public int hashCode() {
 
-		return type.hashCode();
+		return type.toLowerCase().hashCode();
 	}
 
 
@@ -124,9 +124,8 @@ public final class JOSEObjectType implements JSONAware, Serializable {
 	@Override
 	public boolean equals(final Object object) {
 
-		return object != null && 
-				object instanceof JOSEObjectType && 
-				this.toString().equals(object.toString());
+		return object instanceof JOSEObjectType &&
+			this.type.toLowerCase().equals(((JOSEObjectType) object).type.toLowerCase());
 	}
 
 

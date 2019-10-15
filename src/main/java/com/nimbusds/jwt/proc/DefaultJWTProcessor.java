@@ -53,12 +53,19 @@ import com.nimbusds.jwt.*;
  *     {@link SecurityContext context}.</li>
  * </ol>
  *
- * <p>An optional context parameter is available to facilitate passing of
- * additional data between the caller and the underlying selector of key
- * candidates (in both directions).
+ * <p>An optional {@link SecurityContext context} parameter is available to
+ * facilitate passing of additional data between the caller and the underlying
+ * selector of key candidates (in both directions).
  *
  * <p>See sections 6 of RFC 7515 (JWS) and RFC 7516 (JWE) for guidelines on key
  * selection.
+ *
+ * <p>This processor is configured with a standard header "typ" (type)
+ * parameter {@link DefaultJOSEObjectTypeVerifier#JWT verifier} which expects
+ * the signed, encrypted and plain (unsecured) JWTs to have the type header
+ * omitted or set to {@link JOSEObjectType#JWT JWT}. To accept other "typ"
+ * values pass an appropriately configured JWS and / or JWE
+ * {@link DefaultJOSEObjectTypeVerifier type verifier}.
  *
  * <p>This processor comes with the default {@link DefaultJWSVerifierFactory
  * JWS verifier factory} and the default {@link DefaultJWEDecrypterFactory
@@ -67,7 +74,7 @@ import com.nimbusds.jwt.*;
  *
  * <p>Note that for security reasons this processor is hardwired to reject
  * unsecured (plain) JWTs. Override the {@link #process(PlainJWT, SecurityContext)}
- * if you need to handle plain JWTs as well.
+ * if you need to handle plain JWTs.
  *
  * <p>A {@link DefaultJWTClaimsVerifier default JWT claims verifier} is
  * provided, to perform a minimal check of the claims after a successful JWS
@@ -80,7 +87,7 @@ import com.nimbusds.jwt.*;
  * {@link com.nimbusds.jose.proc.DefaultJOSEProcessor} class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2019-07-18
+ * @version 2019-10-15
  */
 public class DefaultJWTProcessor<C extends SecurityContext>
 	implements ConfigurableJWTProcessor<C> {
@@ -108,6 +115,19 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 		new BadJOSEException("JWS object rejected: No matching verifier(s) found");
 	private static final BadJOSEException NO_MATCHING_DECRYPTERS_EXCEPTION =
 		new BadJOSEException("Encrypted JWT rejected: No matching decrypter(s) found");
+	
+	
+	/**
+	 * The JWS type verifier.
+	 */
+	private JOSEObjectTypeVerifier<C> jwsTypeVerifier = new DefaultJOSEObjectTypeVerifier<>(JOSEObjectType.JWT, null);
+	
+	
+	/**
+	 * The JWE type verifier.
+	 */
+	private JOSEObjectTypeVerifier<C> jweTypeVerifier = new DefaultJOSEObjectTypeVerifier<>(JOSEObjectType.JWT, null);
+	
 
 	/**
 	 * The JWS key selector.
@@ -150,8 +170,22 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 	 * The deprecated claims verifier.
 	 */
 	private JWTClaimsVerifier deprecatedClaimsVerifier = null;
-
-
+	
+	
+	@Override
+	public JOSEObjectTypeVerifier<C> getJWSTypeVerifier() {
+		
+		return jwsTypeVerifier;
+	}
+	
+	
+	@Override
+	public void setJWSTypeVerifier(final JOSEObjectTypeVerifier<C> jwsTypeVerifier) {
+	
+		this.jwsTypeVerifier = jwsTypeVerifier;
+	}
+	
+	
 	@Override
 	public JWSKeySelector<C> getJWSKeySelector() {
 
@@ -177,6 +211,20 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 	public void setJWTClaimsSetAwareJWSKeySelector(final JWTClaimsSetAwareJWSKeySelector<C> jwsKeySelector) {
 	
 		this.claimsSetAwareJWSKeySelector = jwsKeySelector;
+	}
+	
+	
+	@Override
+	public JOSEObjectTypeVerifier<C> getJWETypeVerifier() {
+		
+		return jweTypeVerifier;
+	}
+	
+	
+	@Override
+	public void setJWETypeVerifier(final JOSEObjectTypeVerifier<C> jweTypeVerifier) {
+		
+		this.jweTypeVerifier = jweTypeVerifier;
 	}
 	
 	
@@ -324,7 +372,13 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 	@Override
 	public JWTClaimsSet process(final PlainJWT plainJWT, final C context)
 		throws BadJOSEException, JOSEException {
-
+		
+		// JWS type verifier applies to unsecured JOSE as well
+		if (jwsTypeVerifier == null) {
+			throw new BadJOSEException("JWS object rejected: No JWS header \"typ\" (type) verifier found");
+		}
+		jwsTypeVerifier.verify(plainJWT.getHeader().getType(), context);
+		
 		throw PLAIN_JWT_REJECTED_EXCEPTION;
 	}
 
@@ -332,6 +386,12 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 	@Override
 	public JWTClaimsSet process(final SignedJWT signedJWT, final C context)
 		throws BadJOSEException, JOSEException {
+		
+		if (jwsTypeVerifier == null) {
+			throw new BadJOSEException("Signed JWT rejected: No JWS header \"typ\" (type) verifier found");
+		}
+		
+		jwsTypeVerifier.verify(signedJWT.getHeader().getType(), context);
 
 		if (getJWSKeySelector() == null && getJWTClaimsSetAwareJWSKeySelector() == null) {
 			// JWS key selector may have been deliberately omitted
@@ -379,6 +439,12 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 	@Override
 	public JWTClaimsSet process(final EncryptedJWT encryptedJWT, final C context)
 		throws BadJOSEException, JOSEException {
+		
+		if (jweTypeVerifier == null) {
+			throw new BadJOSEException("Encrypted JWT rejected: No JWE header \"typ\" (type) verifier found");
+		}
+		
+		jweTypeVerifier.verify(encryptedJWT.getHeader().getType(), context);
 
 		if (getJWEKeySelector() == null) {
 			// JWE key selector may have been deliberately omitted

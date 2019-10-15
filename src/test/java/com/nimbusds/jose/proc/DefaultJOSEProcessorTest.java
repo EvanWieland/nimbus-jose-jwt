@@ -35,26 +35,30 @@ import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.DirectEncrypter;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
+import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.gen.OctetSequenceKeyGenerator;
 import com.nimbusds.jose.util.Base64URL;
 
 
 /**
  * Tests the default JOSE processor.
  *
- * @version 2017-04-08
+ * @version 2019-10-15
  */
 public class DefaultJOSEProcessorTest extends TestCase {
 
 
-	public void testConstructor()
-		throws Exception {
+	public void testConstructor() {
 
 		ConfigurableJOSEProcessor processor = new DefaultJOSEProcessor();
 
 		assertNull(processor.getJWSKeySelector());
 		assertNull(processor.getJWEKeySelector());
 
+		assertNotNull(processor.getJWSTypeVerifier());
+		assertNotNull(processor.getJWETypeVerifier());
+		
 		assertNotNull(processor.getJWSVerifierFactory());
 		assertNotNull(processor.getJWEDecrypterFactory());
 	}
@@ -64,6 +68,32 @@ public class DefaultJOSEProcessorTest extends TestCase {
 		throws Exception {
 
 		JWSObject jwsObject = new JWSObject(new JWSHeader(JWSAlgorithm.HS256), new Payload("Hello world!"));
+
+		byte[] keyBytes = new byte[32];
+		new SecureRandom().nextBytes(keyBytes);
+
+		final SecretKey key = new SecretKeySpec(keyBytes, "HMAC");
+
+		jwsObject.sign(new MACSigner(key));
+
+		ConfigurableJOSEProcessor<SimpleSecurityContext> processor = new DefaultJOSEProcessor<>();
+
+		processor.setJWSKeySelector(new JWSKeySelector<SimpleSecurityContext>() {
+			@Override
+			public List<? extends Key> selectJWSKeys(JWSHeader header, SimpleSecurityContext context) {
+				return Collections.singletonList(key);
+			}
+		});
+
+		assertEquals("Hello world!", processor.process(jwsObject, null).toString());
+		assertEquals("Hello world!", processor.process(jwsObject.serialize(), null).toString());
+	}
+
+
+	public void testProcessJWS_withTypeJOSE()
+		throws Exception {
+
+		JWSObject jwsObject = new JWSObject(new JWSHeader.Builder(JWSAlgorithm.HS256).type(JOSEObjectType.JOSE).build(), new Payload("Hello world!"));
 
 		byte[] keyBytes = new byte[32];
 		new SecureRandom().nextBytes(keyBytes);
@@ -149,6 +179,39 @@ public class DefaultJOSEProcessorTest extends TestCase {
 		throws Exception {
 
 		JWEObject jweObject = new JWEObject(new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), new Payload("Hello world!"));
+
+		byte[] keyBytes = new byte[16];
+		new SecureRandom().nextBytes(keyBytes);
+
+		final SecretKey key = new SecretKeySpec(keyBytes, "AES");
+
+		DirectEncrypter encrypter = new DirectEncrypter(key);
+		encrypter.getJCAContext().setContentEncryptionProvider(BouncyCastleProviderSingleton.getInstance());
+
+		jweObject.encrypt(encrypter);
+
+		ConfigurableJOSEProcessor<SimpleSecurityContext> processor = new DefaultJOSEProcessor<>();
+
+		Security.addProvider(BouncyCastleProviderSingleton.getInstance());
+
+		processor.setJWEKeySelector(new JWEKeySelector<SimpleSecurityContext>() {
+			@Override
+			public List<? extends Key> selectJWEKeys(JWEHeader header, SimpleSecurityContext context) {
+				return Collections.singletonList(key);
+			}
+		});
+
+		assertEquals("Hello world!", processor.process(jweObject, null).toString());
+		assertEquals("Hello world!", processor.process(jweObject.serialize(), null).toString());
+
+		Security.removeProvider(BouncyCastleProviderSingleton.getInstance().getName());
+	}
+
+
+	public void testProcessJWE_withTypeJOSE()
+		throws Exception {
+
+		JWEObject jweObject = new JWEObject(new JWEHeader.Builder(JWEAlgorithm.DIR, EncryptionMethod.A128GCM).type(JOSEObjectType.JOSE).build(), new Payload("Hello world!"));
 
 		byte[] keyBytes = new byte[16];
 		new SecureRandom().nextBytes(keyBytes);
@@ -406,6 +469,25 @@ public class DefaultJOSEProcessorTest extends TestCase {
 			assertEquals("Unsecured (plain) JOSE objects are rejected, extend class to handle", e.getMessage());
 		}
 	}
+
+
+	public void testRejectPlain_rejectJOSEType()
+		throws Exception {
+
+		PlainObject plainObject = new PlainObject(new PlainHeader.Builder().type(new JOSEObjectType("at+jwt")).build(), new Payload("Hello world1"));
+
+		try {
+			new DefaultJOSEProcessor<SimpleSecurityContext>().process(plainObject, null);
+		} catch (BadJOSEException e) {
+			assertEquals("JOSE header \"typ\" (type) \"at+jwt\" not allowed", e.getMessage());
+		}
+
+		try {
+			new DefaultJOSEProcessor<SimpleSecurityContext>().process(plainObject.serialize(), null);
+		} catch (BadJOSEException e) {
+			assertEquals("JOSE header \"typ\" (type) \"at+jwt\" not allowed", e.getMessage());
+		}
+	}
 	
 	
 	public void testNoJWSKeyCandidates()
@@ -420,6 +502,7 @@ public class DefaultJOSEProcessorTest extends TestCase {
 			"dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 
 		ConfigurableJOSEProcessor<SimpleSecurityContext> processor = new DefaultJOSEProcessor<>();
+		processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<SimpleSecurityContext>(JOSEObjectType.JWT, null));
 
 		processor.setJWSKeySelector(new JWSKeySelector<SimpleSecurityContext>() {
 			@Override
@@ -489,6 +572,7 @@ public class DefaultJOSEProcessorTest extends TestCase {
 			"dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 
 		ConfigurableJOSEProcessor<SimpleSecurityContext> processor = new DefaultJOSEProcessor<>();
+		processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<SimpleSecurityContext>(JOSEObjectType.JWT, null));
 
 		processor.setJWSKeySelector(new JWSKeySelector<SimpleSecurityContext>() {
 			@Override
@@ -520,6 +604,7 @@ public class DefaultJOSEProcessorTest extends TestCase {
 			"dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 
 		ConfigurableJOSEProcessor processor = new DefaultJOSEProcessor();
+		processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<SimpleSecurityContext>(JOSEObjectType.JWT, null));
 
 		try {
 			processor.process(jws, null);
@@ -541,6 +626,7 @@ public class DefaultJOSEProcessorTest extends TestCase {
 			"dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 
 		ConfigurableJOSEProcessor<SimpleSecurityContext> processor = new DefaultJOSEProcessor<>();
+		processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<SimpleSecurityContext>(JOSEObjectType.JWT, null));
 
 		processor.setJWSKeySelector(new JWSKeySelector<SimpleSecurityContext>() {
 			@Override
@@ -679,6 +765,126 @@ public class DefaultJOSEProcessorTest extends TestCase {
 			fail();
 		} catch (JOSEException e) {
 			assertEquals("No JWE decrypter is configured", e.getMessage());
+		}
+	}
+	
+	
+	public void testNoJWSTypeVerifier() throws JOSEException {
+		
+		OctetSequenceKey jwk = new OctetSequenceKeyGenerator(256).generate();
+		
+		JWSObject jwsObject = new JWSObject(new JWSHeader(JWSAlgorithm.HS256), new Payload("Hello, world!"));
+		jwsObject.sign(new MACSigner(jwk));
+		
+		DefaultJOSEProcessor processor = new DefaultJOSEProcessor();
+		processor.setJWSTypeVerifier(null);
+		processor.setJWSKeySelector(new SingleKeyJWSKeySelector(JWSAlgorithm.HS256, jwk.toSecretKey()));
+		
+		try {
+			processor.process(jwsObject, null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("JWS object rejected: No JWS header \"typ\" (type) verifier is configured", e.getMessage());
+		}
+	}
+	
+	
+	public void testNoJWETypeVerifier() throws JOSEException {
+		
+		final OctetSequenceKey jwk = new OctetSequenceKeyGenerator(256).generate();
+		
+		JWEObject jweObject = new JWEObject(new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A256GCM), new Payload("Hello, world!"));
+		jweObject.encrypt(new DirectEncrypter(jwk));
+		
+		DefaultJOSEProcessor processor = new DefaultJOSEProcessor();
+		processor.setJWETypeVerifier(null);
+		processor.setJWEKeySelector(new JWEKeySelector() {
+			@Override
+			public List<? extends Key> selectJWEKeys(JWEHeader header, SecurityContext context) {
+				return Collections.singletonList(jwk.toSecretKey());
+			}
+		});
+		
+		try {
+			processor.process(jweObject, null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("JWE object rejected: No JWE header \"typ\" (type) verifier is configured", e.getMessage());
+		}
+	}
+	
+	
+	public void testCustomJWSTypeVerifier() throws JOSEException, BadJOSEException {
+		
+		OctetSequenceKey jwk = new OctetSequenceKeyGenerator(256).generate();
+		
+		DefaultJOSEProcessor processor = new DefaultJOSEProcessor();
+		processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier(new JOSEObjectType("msg")));
+		processor.setJWSKeySelector(new SingleKeyJWSKeySelector(JWSAlgorithm.HS256, jwk.toSecretKey()));
+		
+		// pass
+		JWSObject jwsObject = new JWSObject(new JWSHeader.Builder(JWSAlgorithm.HS256).type(new JOSEObjectType("msg")).build(), new Payload("Hello, world!"));
+		jwsObject.sign(new MACSigner(jwk));
+		processor.process(jwsObject, null);
+		
+		// missing
+		jwsObject = new JWSObject(new JWSHeader.Builder(JWSAlgorithm.HS256).build(), new Payload("Hello, world!"));
+		jwsObject.sign(new MACSigner(jwk));
+		try {
+			processor.process(jwsObject, null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("Required JOSE header \"typ\" (type) parameter is missing", e.getMessage());
+		}
+		
+		// doesn't match
+		jwsObject = new JWSObject(new JWSHeader.Builder(JWSAlgorithm.HS256).type(new JOSEObjectType("at+jose")).build(), new Payload("Hello, world!"));
+		jwsObject.sign(new MACSigner(jwk));
+		try {
+			processor.process(jwsObject, null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("JOSE header \"typ\" (type) \"at+jose\" not allowed", e.getMessage());
+		}
+	}
+	
+	
+	public void testCustomJWETypeVerifier() throws JOSEException, BadJOSEException {
+		
+		final OctetSequenceKey jwk = new OctetSequenceKeyGenerator(256).generate();
+		
+		DefaultJOSEProcessor processor = new DefaultJOSEProcessor();
+		processor.setJWETypeVerifier(new DefaultJOSEObjectTypeVerifier(new JOSEObjectType("msg")));
+		processor.setJWEKeySelector(new JWEKeySelector() {
+			@Override
+			public List<? extends Key> selectJWEKeys(JWEHeader header, SecurityContext context) {
+				return Collections.singletonList(jwk.toSecretKey());
+			}
+		});
+		
+		// pass
+		JWEObject jweObject = new JWEObject(new JWEHeader.Builder(JWEAlgorithm.DIR, EncryptionMethod.A256GCM).type(new JOSEObjectType("msg")).build(), new Payload("Hello, world!"));
+		jweObject.encrypt(new DirectEncrypter(jwk));
+		processor.process(jweObject, null);
+		
+		// missing
+		jweObject = new JWEObject(new JWEHeader.Builder(JWEAlgorithm.DIR, EncryptionMethod.A256GCM).build(), new Payload("Hello, world!"));
+		jweObject.encrypt(new DirectEncrypter(jwk));
+		try {
+			processor.process(jweObject, null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("Required JOSE header \"typ\" (type) parameter is missing", e.getMessage());
+		}
+		
+		// doesn't match
+		jweObject = new JWEObject(new JWEHeader.Builder(JWEAlgorithm.DIR, EncryptionMethod.A256GCM).type(new JOSEObjectType("at+jose")).build(), new Payload("Hello, world!"));
+		jweObject.encrypt(new DirectEncrypter(jwk));
+		try {
+			processor.process(jweObject, null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("JOSE header \"typ\" (type) \"at+jose\" not allowed", e.getMessage());
 		}
 	}
 }

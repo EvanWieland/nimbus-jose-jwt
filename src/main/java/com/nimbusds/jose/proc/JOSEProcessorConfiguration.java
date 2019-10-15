@@ -43,9 +43,32 @@ package com.nimbusds.jose.proc;
  * </ul>
  *
  * @author Vladimir Dzhuvinov
- * @version 2015-08-22
+ * @version 2019-10-14
  */
 public interface JOSEProcessorConfiguration <C extends SecurityContext> {
+	
+	
+	/**
+	 * Gets the JWS header "typ" (type) parameter verifier. This verifier
+	 * is also applied to plain (unsecured) JOSE objects.
+	 *
+	 * @return The JWS type verifier, {@code null} if not specified.
+	 *
+	 * @since 8.0
+	 */
+	JOSEObjectTypeVerifier<C> getJWSTypeVerifier();
+	
+	
+	/**
+	 * Sets the JWS header "typ" (type) parameter verifier. This verifier
+	 * is also applied to plain (unsecured) JOSE objects.
+	 *
+	 * @param jwsTypeVerifier The JWS type verifier, {@code null} if not
+	 *                        specified.
+	 *
+	 * @since 8.0
+	 */
+	void setJWSTypeVerifier(final JOSEObjectTypeVerifier<C> jwsTypeVerifier);
 
 	
 	/**
@@ -63,6 +86,27 @@ public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 	 *                       specified.
 	 */
 	void setJWSKeySelector(final JWSKeySelector<C> jwsKeySelector);
+	
+	
+	/**
+	 * Gets the JWE header "typ" (type) parameter verifier.
+	 *
+	 * @return The JWE verifier, {@code null} if not specified.
+	 *
+	 * @since 8.0
+	 */
+	JOSEObjectTypeVerifier<C> getJWETypeVerifier();
+	
+	
+	/**
+	 * Sets the JWE header "typ" (type) parameter verifier.
+	 *
+	 * @param jweTypeVerifier The JWE type verifier, {@code null} if not
+	 *                        specified.
+	 *
+	 * @since 8.0
+	 */
+	void setJWETypeVerifier(final JOSEObjectTypeVerifier<C> jweTypeVerifier);
 
 
 	/**
