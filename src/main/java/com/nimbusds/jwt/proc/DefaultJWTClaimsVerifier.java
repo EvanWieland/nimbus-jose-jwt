@@ -19,11 +19,13 @@ package com.nimbusds.jwt.proc;
 
 
 import java.util.Date;
+import java.util.List;
+
+import net.jcip.annotations.ThreadSafe;
 
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.util.DateUtils;
-import net.jcip.annotations.ThreadSafe;
 
 
 /**
@@ -57,6 +59,36 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 	 * The maximum acceptable clock skew, in seconds.
 	 */
 	private int maxClockSkew = DEFAULT_MAX_CLOCK_SKEW_SECONDS;
+	
+	
+	/**
+	 * The issued-at time claim requirement.
+	 */
+	private boolean iatRequired = false;
+	
+	
+	/**
+	 * The expiration time claim requirement.
+	 */
+	private boolean expRequired = false;
+	
+	
+	/**
+	 * The not-before time claim requirement.
+	 */
+	private boolean nbfRequired = false;
+	
+	
+	/**
+	 * The accepted issuer, {@code null} if not specified.
+	 */
+	private String acceptedIssuer;
+	
+	
+	/**
+	 * The accepted audience, {@code null} if not specified.
+	 */
+	private String acceptedAudience;
 
 
 	@Override
@@ -69,8 +101,134 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 	public void setMaxClockSkew(int maxClockSkewSeconds) {
 		maxClockSkew = maxClockSkewSeconds;
 	}
-
-
+	
+	
+	/**
+	 * Gets the issued-at time ("iat") requirement.
+	 *
+	 * @return {@code true} if the issued-at time claim is required,
+	 *         {@code false} if not.
+	 *
+	 * @since 8.1
+	 */
+	public boolean requiresIssuedAtTime() {
+		return iatRequired;
+	}
+	
+	
+	/**
+	 * Sets the issued-at time ("iat") requirement.
+	 *
+	 * @param iatRequired {@code true} if the issued-at time claim is
+	 *                    required, {@code false} if not.
+	 *
+	 * @since 8.1
+	 */
+	public void requiresIssuedAtTime(final boolean iatRequired) {
+		this.iatRequired = iatRequired;
+	}
+	
+	
+	/**
+	 * Gets the expiration time ("exp") requirement.
+	 *
+	 * @return {@code true} if the expiration time claim is required,
+	 *         {@code false} if not.
+	 *
+	 * @since 8.1
+	 */
+	public boolean requiresExpirationTime() {
+		return expRequired;
+	}
+	
+	
+	/**
+	 * Sets the expiration time ("exp") requirement.
+	 *
+	 * @param expRequired {@code true} if the expiration time claim is
+	 *                    required, {@code false} if not.
+	 *
+	 * @since 8.1
+	 */
+	public void requiresExpirationTime(final boolean expRequired) {
+		this.expRequired = expRequired;
+	}
+	
+	
+	/**
+	 * Gets the not-before time ("nbf") requirement.
+	 *
+	 * @return {@code true} if the not-before time claim is required,
+	 *         {@code false} if not.
+	 *
+	 * @since 8.1
+	 */
+	public boolean requiresNotBeforeTime() {
+		return nbfRequired;
+	}
+	
+	
+	/**
+	 * Sets the not-before time ("nbf") requirement.
+	 *
+	 * @param nbfRequired {@code true} if the not-before time claim is
+	 *                    required, {@code false} if not.
+	 *
+	 * @since 8.1
+	 */
+	public void requiresNotBeforeTime(final boolean nbfRequired) {
+		this.nbfRequired = nbfRequired;
+	}
+	
+	
+	/**
+	 * Gets the accepted issuer ("iss").
+	 *
+	 * @return The accepted issuer, {@code null} if not specified.
+	 *
+	 * @since 8.1
+	 */
+	public String getAcceptedIssuer() {
+		return acceptedIssuer;
+	}
+	
+	
+	/**
+	 * Sets the accepted issuer ("iss").
+	 *
+	 * @param iss The accepted issuer, {@code null} if not specified.
+	 *
+	 * @since 8.1
+	 */
+	public void setAcceptedIssuer(final String iss) {
+		acceptedIssuer = iss;
+	}
+	
+	
+	/**
+	 * Gets the accepted audience ("aud").
+	 *
+	 * @return The accepted audience, {@code null} if not specified.
+	 *
+	 * @since 8.1
+	 */
+	public String getAcceptedAudience() {
+		return acceptedAudience;
+	}
+	
+	
+	/**
+	 * Sets the accepted audience ("aud").
+	 *
+	 * @param aud The accepted audience, {@code null} if not specified.
+	 *
+	 * @since 8.1
+	 */
+	public void setAcceptedAudience(final String aud) {
+		acceptedAudience = aud;
+	}
+	
+	
 	@Override
 	public void verify(final JWTClaimsSet claimsSet)
 		throws BadJWTException {
@@ -83,9 +241,17 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 	public void verify(final JWTClaimsSet claimsSet, final C context)
 		throws BadJWTException {
 		
+		if (iatRequired && claimsSet.getIssueTime() == null) {
+			throw new BadJWTException("JWT issued-at time missing");
+		}
+		
 		final Date now = new Date();
 		
 		final Date exp = claimsSet.getExpirationTime();
+		
+		if (expRequired && exp == null) {
+			throw new BadJWTException("JWT expiration time missing");
+		}
 		
 		if (exp != null) {
 			
@@ -96,10 +262,34 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 		
 		final Date nbf = claimsSet.getNotBeforeTime();
 		
+		if (nbfRequired && nbf == null) {
+			throw new BadJWTException("JWT not-before time missing");
+		}
+		
 		if (nbf != null) {
 			
 			if (! DateUtils.isBefore(nbf, now, maxClockSkew)) {
 				throw new BadJWTException("JWT before use time");
+			}
+		}
+		
+		if (acceptedIssuer != null) {
+			String iss = claimsSet.getIssuer();
+			if (iss == null) {
+				throw new BadJWTException("JWT issuer missing");
+			}
+			if (! acceptedIssuer.equals(iss)) {
+				throw new BadJWTException("JWT issuer not accepted: " + iss);
+			}
+		}
+		
+		if (acceptedAudience != null) {
+			List<String> audList = claimsSet.getAudience();
+			if (audList == null || audList.isEmpty()) {
+				throw new BadJWTException("JWT audience missing");
+			}
+			if (! audList.contains(acceptedAudience)) {
+				throw new BadJWTException("JWT audience not accepted: " + audList);
 			}
 		}
 	}

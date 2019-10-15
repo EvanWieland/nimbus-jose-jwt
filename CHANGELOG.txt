@@ -1049,3 +1049,7 @@ version 8.0 (2019-10-15)
       (iss #229).
     * JWK.parseFromPEMEncodedObjects should throw a JOSEException on a missing
       PEM-encoded public key required to construct the JWK (iss #331).
+
+version 8.1 (2019-10-15)
+    * Extends DefaultJWTClaimsVerifier with configurable checks for "iat",
+      "exp", "nbf", "iss" and "aud".
