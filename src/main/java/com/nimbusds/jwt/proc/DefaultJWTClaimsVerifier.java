@@ -41,7 +41,7 @@ import net.jcip.annotations.ThreadSafe;
  * <p>This class may be extended to perform additional checks.
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-07-25
+ * @version 2019-10-15
  */
 @ThreadSafe
 public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWTClaimsSetVerifier<C>, JWTClaimsVerifier, ClockSkewAware {
@@ -51,21 +51,6 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 	 * The default maximum acceptable clock skew, in seconds (60).
 	 */
 	public static final int DEFAULT_MAX_CLOCK_SKEW_SECONDS = 60;
-
-
-	// Cache exceptions
-
-
-	/**
-	 * Expired JWT.
-	 */
-	private static final BadJWTException EXPIRED_JWT_EXCEPTION = new BadJWTException("Expired JWT");
-
-
-	/**
-	 * JWT before use time.
-	 */
-	private static final BadJWTException JWT_BEFORE_USE_EXCEPTION = new BadJWTException("JWT before use time");
 
 
 	/**
@@ -105,7 +90,7 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 		if (exp != null) {
 			
 			if (! DateUtils.isAfter(exp, now, maxClockSkew)) {
-				throw EXPIRED_JWT_EXCEPTION;
+				throw new BadJWTException("Expired JWT");
 			}
 		}
 		
@@ -114,7 +99,7 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 		if (nbf != null) {
 			
 			if (! DateUtils.isBefore(nbf, now, maxClockSkew)) {
-				throw JWT_BEFORE_USE_EXCEPTION;
+				throw new BadJWTException("JWT before use time");
 			}
 		}
 	}
