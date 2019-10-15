@@ -88,33 +88,8 @@ import com.nimbusds.jwt.*;
  * @author Vladimir Dzhuvinov
  * @version 2019-10-15
  */
-public class DefaultJWTProcessor<C extends SecurityContext>
-	implements ConfigurableJWTProcessor<C> {
+public class DefaultJWTProcessor<C extends SecurityContext> implements ConfigurableJWTProcessor<C> {
 
-	// Cache exceptions
-	private static final BadJOSEException PLAIN_JWT_REJECTED_EXCEPTION =
-		new BadJOSEException("Unsecured (plain) JWTs are rejected, extend class to handle");
-	private static final BadJOSEException NO_JWS_KEY_SELECTOR_EXCEPTION =
-		new BadJOSEException("Signed JWT rejected: No JWS key selector is configured");
-	private static final BadJOSEException NO_JWE_KEY_SELECTOR_EXCEPTION =
-		new BadJOSEException("Encrypted JWT rejected: No JWE key selector is configured");
-	private static final JOSEException NO_JWS_VERIFIER_FACTORY_EXCEPTION =
-		new JOSEException("No JWS verifier is configured");
-	private static final JOSEException NO_JWE_DECRYPTER_FACTORY_EXCEPTION =
-		new JOSEException("No JWE decrypter is configured");
-	private static final BadJOSEException NO_JWS_KEY_CANDIDATES_EXCEPTION =
-		new BadJOSEException("Signed JWT rejected: Another algorithm expected, or no matching key(s) found");
-	private static final BadJOSEException NO_JWE_KEY_CANDIDATES_EXCEPTION =
-		new BadJOSEException("Encrypted JWT rejected: Another algorithm expected, or no matching key(s) found");
-	private static final BadJOSEException INVALID_SIGNATURE =
-		new BadJWSException("Signed JWT rejected: Invalid signature");
-	private static final BadJWTException INVALID_NESTED_JWT_EXCEPTION =
-		new BadJWTException("The payload is not a nested signed JWT");
-	private static final BadJOSEException NO_MATCHING_VERIFIERS_EXCEPTION =
-		new BadJOSEException("JWS object rejected: No matching verifier(s) found");
-	private static final BadJOSEException NO_MATCHING_DECRYPTERS_EXCEPTION =
-		new BadJOSEException("Encrypted JWT rejected: No matching decrypter(s) found");
-	
 	
 	/**
 	 * The JWS type verifier.
@@ -334,7 +309,7 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 		} else if (getJWSKeySelector() != null) {
 			return getJWSKeySelector().selectJWSKeys(header, context);
 		} else {
-			throw NO_JWS_KEY_SELECTOR_EXCEPTION;
+			throw new BadJOSEException("Signed JWT rejected: No JWS key selector is configured");
 		}
 	}
 
@@ -378,7 +353,7 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 		}
 		jwsTypeVerifier.verify(plainJWT.getHeader().getType(), context);
 		
-		throw PLAIN_JWT_REJECTED_EXCEPTION;
+		throw new BadJOSEException("Unsecured (plain) JWTs are rejected, extend class to handle");
 	}
 
 
@@ -394,11 +369,11 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 
 		if (getJWSKeySelector() == null && getJWTClaimsSetAwareJWSKeySelector() == null) {
 			// JWS key selector may have been deliberately omitted
-			throw NO_JWS_KEY_SELECTOR_EXCEPTION;
+			throw new BadJOSEException("Signed JWT rejected: No JWS key selector is configured");
 		}
 
 		if (getJWSVerifierFactory() == null) {
-			throw NO_JWS_VERIFIER_FACTORY_EXCEPTION;
+			throw new JOSEException("No JWS verifier is configured");
 		}
 		
 		JWTClaimsSet claimsSet = extractJWTClaimsSet(signedJWT);
@@ -406,7 +381,7 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 		List<? extends Key> keyCandidates = selectKeys(signedJWT.getHeader(), claimsSet, context);
 
 		if (keyCandidates == null || keyCandidates.isEmpty()) {
-			throw NO_JWS_KEY_CANDIDATES_EXCEPTION;
+			throw new BadJOSEException("Signed JWT rejected: Another algorithm expected, or no matching key(s) found");
 		}
 
 		ListIterator<? extends Key> it = keyCandidates.listIterator();
@@ -427,11 +402,11 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 
 			if (! it.hasNext()) {
 				// No more keys to try out
-				throw INVALID_SIGNATURE;
+				throw new BadJWSException("Signed JWT rejected: Invalid signature");
 			}
 		}
 
-		throw NO_MATCHING_VERIFIERS_EXCEPTION;
+		throw new BadJOSEException("JWS object rejected: No matching verifier(s) found");
 	}
 
 
@@ -447,17 +422,17 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 
 		if (getJWEKeySelector() == null) {
 			// JWE key selector may have been deliberately omitted
-			throw NO_JWE_KEY_SELECTOR_EXCEPTION;
+			throw new BadJOSEException("Encrypted JWT rejected: No JWE key selector is configured");
 		}
 
 		if (getJWEDecrypterFactory() == null) {
-			throw NO_JWE_DECRYPTER_FACTORY_EXCEPTION;
+			throw new JOSEException("No JWE decrypter is configured");
 		}
 
 		List<? extends Key> keyCandidates = getJWEKeySelector().selectJWEKeys(encryptedJWT.getHeader(), context);
 
 		if (keyCandidates == null || keyCandidates.isEmpty()) {
-			throw NO_JWE_KEY_CANDIDATES_EXCEPTION;
+			throw new BadJOSEException("Encrypted JWT rejected: Another algorithm expected, or no matching key(s) found");
 		}
 
 		ListIterator<? extends Key> it = keyCandidates.listIterator();
@@ -491,7 +466,7 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 
 				if (signedJWTPayload == null) {
 					// Cannot parse payload to signed JWT
-					throw INVALID_NESTED_JWT_EXCEPTION;
+					throw new BadJWTException("The payload is not a nested signed JWT");
 				}
 
 				return process(signedJWTPayload, context);
@@ -501,6 +476,6 @@ public class DefaultJWTProcessor<C extends SecurityContext>
 			return verifyClaims(claimsSet, context);
 		}
 
-		throw NO_MATCHING_DECRYPTERS_EXCEPTION;
+		throw new BadJOSEException("Encrypted JWT rejected: No matching decrypter(s) found");
 	}
 }

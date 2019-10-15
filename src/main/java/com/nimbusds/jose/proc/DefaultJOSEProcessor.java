@@ -83,29 +83,6 @@ import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
 @ThreadSafe
 public class DefaultJOSEProcessor<C extends SecurityContext> implements ConfigurableJOSEProcessor<C>{
 
-	// Cache exceptions
-	private static final BadJOSEException PLAIN_JOSE_REJECTED_EXCEPTION =
-		new BadJOSEException("Unsecured (plain) JOSE objects are rejected, extend class to handle");
-	private static final BadJOSEException NO_JWS_KEY_SELECTOR_EXCEPTION =
-		new BadJOSEException("JWS object rejected: No JWS key selector is configured");
-	private static final BadJOSEException NO_JWE_KEY_SELECTOR_EXCEPTION =
-		new BadJOSEException("JWE object rejected: No JWE key selector is configured");
-	private static final JOSEException NO_JWS_VERIFIER_FACTORY_EXCEPTION =
-		new JOSEException("No JWS verifier is configured");
-	private static final JOSEException NO_JWE_DECRYPTER_FACTORY_EXCEPTION =
-		new JOSEException("No JWE decrypter is configured");
-	private static final BadJOSEException NO_JWS_KEY_CANDIDATES_EXCEPTION =
-		new BadJOSEException("JWS object rejected: Another algorithm expected, or no matching key(s) found");
-	private static final BadJOSEException NO_JWE_KEY_CANDIDATES_EXCEPTION =
-		new BadJOSEException("JWE object rejected: Another algorithm expected, or no matching key(s) found");
-	private static final BadJOSEException INVALID_SIGNATURE =
-		new BadJWSException("JWS object rejected: Invalid signature");
-	private static final BadJOSEException NO_MATCHING_VERIFIERS_EXCEPTION =
-		new BadJOSEException("JWS object rejected: No matching verifier(s) found");
-	private static final BadJOSEException NO_MATCHING_DECRYPTERS_EXCEPTION =
-		new BadJOSEException("JWE object rejected: No matching decrypter(s) found");
-	
-	
 	/**
 	 * The JWS type verifier.
 	 */
@@ -265,7 +242,7 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 		}
 		jwsTypeVerifier.verify(plainObject.getHeader().getType(), context);
 
-		throw PLAIN_JOSE_REJECTED_EXCEPTION;
+		throw new BadJOSEException("Unsecured (plain) JOSE objects are rejected, extend class to handle");
 	}
 
 
@@ -281,17 +258,17 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 
 		if (getJWSKeySelector() == null) {
 			// JWS key selector may have been deliberately omitted
-			throw NO_JWS_KEY_SELECTOR_EXCEPTION;
+			throw new BadJOSEException("JWS object rejected: No JWS key selector is configured");
 		}
 
 		if (getJWSVerifierFactory() == null) {
-			throw NO_JWS_VERIFIER_FACTORY_EXCEPTION;
+			throw new JOSEException("No JWS verifier is configured");
 		}
 
 		List<? extends Key> keyCandidates = getJWSKeySelector().selectJWSKeys(jwsObject.getHeader(), context);
 
 		if (keyCandidates == null || keyCandidates.isEmpty()) {
-			throw NO_JWS_KEY_CANDIDATES_EXCEPTION;
+			throw new BadJOSEException("JWS object rejected: Another algorithm expected, or no matching key(s) found");
 		}
 
 		ListIterator<? extends Key> it = keyCandidates.listIterator();
@@ -312,11 +289,11 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 
 			if (! it.hasNext()) {
 				// No more keys to try out
-				throw INVALID_SIGNATURE;
+				throw new BadJWSException("JWS object rejected: Invalid signature");
 			}
 		}
 
-		throw NO_MATCHING_VERIFIERS_EXCEPTION;
+		throw new BadJOSEException("JWS object rejected: No matching verifier(s) found");
 	}
 
 
@@ -332,17 +309,17 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 
 		if (getJWEKeySelector() == null) {
 			// JWE key selector may have been deliberately omitted
-			throw NO_JWE_KEY_SELECTOR_EXCEPTION;
+			throw new BadJOSEException("JWE object rejected: No JWE key selector is configured");
 		}
 
 		if (getJWEDecrypterFactory() == null) {
-			throw NO_JWE_DECRYPTER_FACTORY_EXCEPTION;
+			throw new JOSEException("No JWE decrypter is configured");
 		}
 
 		List<? extends Key> keyCandidates = getJWEKeySelector().selectJWEKeys(jweObject.getHeader(), context);
 
 		if (keyCandidates == null || keyCandidates.isEmpty()) {
-			throw NO_JWE_KEY_CANDIDATES_EXCEPTION;
+			throw new BadJOSEException("JWE object rejected: Another algorithm expected, or no matching key(s) found");
 		}
 
 		ListIterator<? extends Key> it = keyCandidates.listIterator();
@@ -385,6 +362,6 @@ public class DefaultJOSEProcessor<C extends SecurityContext> implements Configur
 			return jweObject.getPayload();
 		}
 
-		throw NO_MATCHING_DECRYPTERS_EXCEPTION;
+		throw new BadJOSEException("JWE object rejected: No matching decrypter(s) found");
 	}
 }
