@@ -36,8 +36,8 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 		assertFalse(verifier.requiresIssuedAtTime());
 		assertFalse(verifier.requiresExpirationTime());
 		assertFalse(verifier.requiresNotBeforeTime());
-		assertNull(verifier.getAcceptedIssuer());
-		assertNull(verifier.getAcceptedAudience());
+		assertNull(verifier.getRequiredIssuer());
+		assertNull(verifier.getRequiredAudience());
 		assertEquals(60, verifier.getMaxClockSkew());
 	}
 
@@ -169,9 +169,9 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 		
 		String iss = "https://c2id.com";
 		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		assertNull(verifier.getAcceptedIssuer());
-		verifier.setAcceptedIssuer(iss);
-		assertEquals(iss, verifier.getAcceptedIssuer());
+		assertNull(verifier.getRequiredIssuer());
+		verifier.setRequiredIssuer(iss);
+		assertEquals(iss, verifier.getRequiredIssuer());
 	}
 	
 	
@@ -179,9 +179,9 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 		
 		String aud = "123";
 		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		assertNull(verifier.getAcceptedAudience());
-		verifier.setAcceptedAudience(aud);
-		assertEquals(aud, verifier.getAcceptedAudience());
+		assertNull(verifier.getRequiredAudience());
+		verifier.setRequiredAudience(aud);
+		assertEquals(aud, verifier.getRequiredAudience());
 	}
 	
 	
@@ -189,7 +189,7 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 		
 		String iss = "https://c2id.com";
 		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		verifier.setAcceptedIssuer(iss);
+		verifier.setRequiredIssuer(iss);
 		
 		try {
 			verifier.verify(new JWTClaimsSet.Builder().build(), null);
@@ -200,17 +200,17 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 	}
 	
 	
-	public void testIssuerNotAccepted() {
+	public void testIssuerRejected() {
 		
 		String iss = "https://c2id.com";
 		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		verifier.setAcceptedIssuer(iss);
+		verifier.setRequiredIssuer(iss);
 		
 		try {
 			verifier.verify(new JWTClaimsSet.Builder().issuer("https://example.com").build(), null);
 			fail();
 		} catch (BadJWTException e) {
-			assertEquals("JWT issuer not accepted: https://example.com", e.getMessage());
+			assertEquals("JWT issuer rejected: https://example.com", e.getMessage());
 		}
 	}
 	
@@ -219,7 +219,7 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 		
 		String aud = "123";
 		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		verifier.setAcceptedAudience(aud);
+		verifier.setRequiredAudience(aud);
 		
 		try {
 			verifier.verify(new JWTClaimsSet.Builder().build(), null);
@@ -230,32 +230,32 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 	}
 	
 	
-	public void testAudienceNotAccepted() {
+	public void testAudienceRejected() {
 		
 		String aud = "123";
 		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		verifier.setAcceptedAudience(aud);
+		verifier.setRequiredAudience(aud);
 		
 		try {
 			verifier.verify(new JWTClaimsSet.Builder().audience("456").build(), null);
 			fail();
 		} catch (BadJWTException e) {
-			assertEquals("JWT audience not accepted: [456]", e.getMessage());
+			assertEquals("JWT audience rejected: [456]", e.getMessage());
 		}
 	}
 	
 	
-	public void testAudienceNotAccepted_multi() {
+	public void testAudienceRejected_multi() {
 		
 		String aud = "123";
 		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		verifier.setAcceptedAudience(aud);
+		verifier.setRequiredAudience(aud);
 		
 		try {
 			verifier.verify(new JWTClaimsSet.Builder().audience(Arrays.asList("456", "789")).build(), null);
 			fail();
 		} catch (BadJWTException e) {
-			assertEquals("JWT audience not accepted: [456, 789]", e.getMessage());
+			assertEquals("JWT audience rejected: [456, 789]", e.getMessage());
 		}
 	}
 	

@@ -1053,3 +1053,6 @@ version 8.0 (2019-10-15)
 version 8.1 (2019-10-15)
     * Extends DefaultJWTClaimsVerifier with configurable checks for "iat",
       "exp", "nbf", "iss" and "aud".
+
+version 8.2 (2019-10-15)
+    * Improves naming of new DefaultJWTClaimsVerifier methods.

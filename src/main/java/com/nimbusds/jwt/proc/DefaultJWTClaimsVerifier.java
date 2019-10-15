@@ -80,15 +80,15 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 	
 	
 	/**
-	 * The accepted issuer, {@code null} if not specified.
+	 * The required issuer, {@code null} if not specified.
 	 */
-	private String acceptedIssuer;
+	private String requiredIssuer;
 	
 	
 	/**
-	 * The accepted audience, {@code null} if not specified.
+	 * The required audience, {@code null} if not specified.
 	 */
-	private String acceptedAudience;
+	private String requiredAudience;
 
 
 	@Override
@@ -182,50 +182,50 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 	
 	
 	/**
-	 * Gets the accepted issuer ("iss").
+	 * Gets the required issuer ("iss").
 	 *
-	 * @return The accepted issuer, {@code null} if not specified.
+	 * @return The required issuer, {@code null} if not specified.
 	 *
 	 * @since 8.1
 	 */
-	public String getAcceptedIssuer() {
-		return acceptedIssuer;
+	public String getRequiredIssuer() {
+		return requiredIssuer;
 	}
 	
 	
 	/**
-	 * Sets the accepted issuer ("iss").
+	 * Sets the required issuer ("iss").
 	 *
-	 * @param iss The accepted issuer, {@code null} if not specified.
+	 * @param iss The required issuer, {@code null} if not specified.
 	 *
 	 * @since 8.1
 	 */
-	public void setAcceptedIssuer(final String iss) {
-		acceptedIssuer = iss;
+	public void setRequiredIssuer(final String iss) {
+		requiredIssuer = iss;
 	}
 	
 	
 	/**
-	 * Gets the accepted audience ("aud").
+	 * Gets the required audience ("aud").
 	 *
-	 * @return The accepted audience, {@code null} if not specified.
+	 * @return The required audience, {@code null} if not specified.
 	 *
 	 * @since 8.1
 	 */
-	public String getAcceptedAudience() {
-		return acceptedAudience;
+	public String getRequiredAudience() {
+		return requiredAudience;
 	}
 	
 	
 	/**
-	 * Sets the accepted audience ("aud").
+	 * Sets the required audience ("aud").
 	 *
-	 * @param aud The accepted audience, {@code null} if not specified.
+	 * @param aud The required audience, {@code null} if not specified.
 	 *
 	 * @since 8.1
 	 */
-	public void setAcceptedAudience(final String aud) {
-		acceptedAudience = aud;
+	public void setRequiredAudience(final String aud) {
+		requiredAudience = aud;
 	}
 	
 	
@@ -273,23 +273,23 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 			}
 		}
 		
-		if (acceptedIssuer != null) {
+		if (requiredIssuer != null) {
 			String iss = claimsSet.getIssuer();
 			if (iss == null) {
 				throw new BadJWTException("JWT issuer missing");
 			}
-			if (! acceptedIssuer.equals(iss)) {
-				throw new BadJWTException("JWT issuer not accepted: " + iss);
+			if (! requiredIssuer.equals(iss)) {
+				throw new BadJWTException("JWT issuer rejected: " + iss);
 			}
 		}
 		
-		if (acceptedAudience != null) {
+		if (requiredAudience != null) {
 			List<String> audList = claimsSet.getAudience();
 			if (audList == null || audList.isEmpty()) {
 				throw new BadJWTException("JWT audience missing");
 			}
-			if (! audList.contains(acceptedAudience)) {
-				throw new BadJWTException("JWT audience not accepted: " + audList);
+			if (! audList.contains(requiredAudience)) {
+				throw new BadJWTException("JWT audience rejected: " + audList);
 			}
 		}
 	}

@@ -961,7 +961,7 @@ public class DefaultJWTProcessorTest extends TestCase {
 		DefaultJWTClaimsVerifier claimsVerifier = new DefaultJWTClaimsVerifier();
 		claimsVerifier.requiresIssuedAtTime(true);
 		claimsVerifier.requiresExpirationTime(true);
-		claimsVerifier.setAcceptedIssuer("https://demo.c2id.com/c2id");
+		claimsVerifier.setRequiredIssuer("https://demo.c2id.com/c2id");
 		jwtProcessor.setJWTClaimsSetVerifier(claimsVerifier);
 
 		// Process the token
