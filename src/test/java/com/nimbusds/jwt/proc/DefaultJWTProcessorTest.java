@@ -927,16 +927,21 @@ public class DefaultJWTProcessorTest extends TestCase {
 		// The access token to validate, typically submitted with a HTTP header like
 		// Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6InMxIn0.eyJzY3A...
 		String accessToken =
-			"eyJhbGciOiJSUzI1NiIsImtpZCI6InMxIn0.eyJzY3AiOlsib3BlbmlkIiwiZW1haWwiLCJwcm9maWxl" +
-			"Il0sImV4cCI6MTQ2MDM0NTczNiwic3ViIjoiYWxpY2UiLCJpc3MiOiJodHRwczpcL1wvZGVtby5jMmlk" +
-			"LmNvbVwvYzJpZCIsInVpcCI6eyJncm91cHMiOlsiYWRtaW4iLCJhdWRpdCJdfSwiY2xtIjpbIiE1djhI" +
-			"Il0sImNpZCI6IjAwMDEyMyJ9.Xeg3cMrePht8R0731mfndUDoX48NWhfCuEjcEERcZ3krfnOacNJzyJd" +
-			"7zOWdNrlvEpJMjmmgkbhZOMJlVMv4fQnGB2d3eevmtjuT7hMnJVQc_4h80ODHPMlW27T0Iukpe7Y-A-R" +
-			"rROP5yinry7BFBL2nVWrNtB9IS11H9C8X5fQ";
+			"eyJraWQiOiJDWHVwIiwidHlwIjoiYXQrand0IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJib2IiLCJzY" +
+			"3AiOlsib3BlbmlkIiwiZW1haWwiXSwiY2xtIjpbIiFCZyJdLCJpc3MiOiJodHRwczpcL1wvZGVtby5jM" +
+			"mlkLmNvbVwvYzJpZCIsImV4cCI6MTU3MTE3MTI2MiwiaWF0IjoxNTcxMTcwNjYyLCJ1aXAiOnsiZ3Jvd" +
+			"XBzIjpbImFkbWluIiwiYXVkaXQiXX0sImp0aSI6IllzcXZadE5fZFNRIiwiY2lkIjoiMDAwMTIzIn0.A" +
+			"99SrlpLmPxg_qttxsh2np_Czf9fJRIhMR90mwciPDsQLvswTTaLeK7jcAVXc_TYXaEuYOZQ1iXvxJMut" +
+			"pRZVUXvPjSQz1W4Ax-3w-zEZvgHRWtOQJgaj_XNGTkYV_2MeJDpW35eByAGPn8jDSRkapDVN-05rbuT5" +
+			"EZVmjpkJEsV1COqkgXx16J2OIswz13h2Pb9vyCwyspad6D6NW1z5ADjejqEb7Vf08XXAf4w_FbbekD76" +
+			"x6ToW-P-t6A17Mgy500C3Xq7ekZti8Tu1iz-KBVrH-R12rqPo3YGb98RraOUnYCg-2xDeriJsPmxkb6w" +
+			"omCTc141azPp6qIUiEfRw";
 
-		// Set up a JWT processor to parse the tokens and then check their signature
-		// and validity time window (bounded by the "iat", "nbf" and "exp" claims)
+		// Create a JWT processor for the access tokens
 		ConfigurableJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
+		
+		// Set the required "typ" header "at+jwt" for access tokens
+		jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(new JOSEObjectType("at+jwt")));
 
 		// The public RSA keys to validate the signatures will be sourced from the
 		// OAuth 2.0 server's JWK set, published at a well-known URL. The RemoteJWKSet
@@ -951,6 +956,13 @@ public class DefaultJWTProcessorTest extends TestCase {
 		// RSA keys sourced from the JWK set URL
 		JWSKeySelector<SecurityContext> keySelector = new JWSVerificationKeySelector<>(expectedJWSAlg, keySource);
 		jwtProcessor.setJWSKeySelector(keySelector);
+		
+		// Set the required JWT claims for access tokens
+		DefaultJWTClaimsVerifier claimsVerifier = new DefaultJWTClaimsVerifier();
+		claimsVerifier.requiresIssuedAtTime(true);
+		claimsVerifier.requiresExpirationTime(true);
+		claimsVerifier.setAcceptedIssuer("https://demo.c2id.com/c2id");
+		jwtProcessor.setJWTClaimsSetVerifier(claimsVerifier);
 
 		// Process the token
 		SecurityContext ctx = null; // optional context parameter, not required here
