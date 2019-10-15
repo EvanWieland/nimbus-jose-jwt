@@ -37,21 +37,20 @@ import com.nimbusds.jwt.*;
  *
  * <p>Must be configured with the following:
  *
- * <ol>
- *     <li>To process signed JWTs: A JWS key selector using the
- *     {@link JWSKeySelector header} or the
- *     {@link JWTClaimsSetAwareJWSKeySelector header and claims set} to
- *     determine the key candidate(s) for the signature verification. The key
- *     selection procedure is application-specific and may involve key ID
- *     lookup, a certificate check and / or some
+ * <ul>
+ *     <li>To process signed JWTs: A {@link #setJWSKeySelector JWS key
+ *     selector} using the header or the {@link JWTClaimsSetAwareJWSKeySelector
+ *     header and claims set} to suggest key candidate(s) for the signature
+ *     verification. The key selection procedure is application-specific and
+ *     may involve key ID lookup, a certificate check and / or some
  *     {@link SecurityContext context}.</li>
  *
- *     <li>To process encrypted JWTs: A JWE key selector using the
- *     {@link JWEKeySelector header} to determine the key candidate(s) for
- *     decryption. The key selection procedure is application-specific and may
- *     involve key ID lookup, a certificate check and / or some
- *     {@link SecurityContext context}.</li>
- * </ol>
+ *     <li>To process encrypted JWTs: A {@link #setJWEKeySelector JWE key
+ *     selector} using the header to suggest key candidate(s) for decryption.
+ *     The key selection procedure is application-specific and may involve key
+ *     ID lookup, a certificate check and / or some {@link SecurityContext
+ *     context}.</li>
+ * </ul>
  *
  * <p>An optional {@link SecurityContext context} parameter is available to
  * facilitate passing of additional data between the caller and the underlying

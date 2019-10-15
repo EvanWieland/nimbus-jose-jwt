@@ -26,31 +26,37 @@ package com.nimbusds.jose.proc;
  * <ul>
  *     <li>To verify JWS objects:
  *         <ul>
- *             <li>Key selector to determine key candidate(s) for JWS
- *                 verification based on the JWS header, payload and / or
- *                 application-specific context information.
- *             <li>Factory to construct a JWS verifier for a given key
- *                 candidate and JWS header information.
+ *             <li>{@link #setJWSTypeVerifier Verifier} for the acceptable JWS
+ *                 header "typ" (type) parameters.
+ *             <li>{@link #setJWSKeySelector Key selector} to determine key
+ *                 candidate(s) for JWS verification based on the JWS header,
+ *                 payload and / or application-specific context information.
+ *             <li>{@link #setJWSVerifierFactory Factory} to construct a JWS
+ *                 verifier for a given key candidate and JWS header information.
  *         </ul>
  *     <li>To decrypt JWE objects:
  *         <ul>
- *             <li>Key selector to determine key candidate(s) for JWE
- *                 decryption based on the JWE header and / or
- *                 application-specific context information.
- *             <li>Factory to construct a JWE decrypter for a given key
- *                 candidate and JWE header information.
+ *             <li>{@link #setJWETypeVerifier Verifier} for the acceptable JWE
+ *                 header "typ" (type) parameters.
+ *             <li>{@link #setJWEKeySelector Key selector} to determine key
+ *                 candidate(s) for JWE decryption based on the JWE header and
+ *                 / or application-specific context information.
+ *             <li>{@link #setJWEDecrypterFactory Factory} to construct a JWE
+ *                 decrypter for a given key candidate and JWE header
+ *                 information.
  *         </ul>
  * </ul>
  *
  * @author Vladimir Dzhuvinov
- * @version 2019-10-14
+ * @version 2019-10-15
  */
 public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 	
 	
 	/**
 	 * Gets the JWS header "typ" (type) parameter verifier. This verifier
-	 * is also applied to plain (unsecured) JOSE objects.
+	 * is also applied to plain (unsecured) JOSE objects. If none JWS
+	 * and plain objects will be rejected.
 	 *
 	 * @return The JWS type verifier, {@code null} if not specified.
 	 *
@@ -61,7 +67,8 @@ public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 	
 	/**
 	 * Sets the JWS header "typ" (type) parameter verifier. This verifier
-	 * is also applied to plain (unsecured) JOSE objects.
+	 * is also applied to plain (unsecured) JOSE objects. If none JWS and
+	 * plain objects will be rejected.
 	 *
 	 * @param jwsTypeVerifier The JWS type verifier, {@code null} if not
 	 *                        specified.
@@ -72,7 +79,7 @@ public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 
 	
 	/**
-	 * Gets the JWS key selector.
+	 * Gets the JWS key selector. If none JWS objects will be rejected.
 	 *
 	 * @return The JWS key selector, {@code null} if not specified.
 	 */
@@ -80,7 +87,7 @@ public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 
 
 	/**
-	 * Sets the JWS key selector.
+	 * Sets the JWS key selector. If none JWS objects will be rejected.
 	 *
 	 * @param jwsKeySelector The JWS key selector, {@code null} if not
 	 *                       specified.
@@ -89,7 +96,8 @@ public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 	
 	
 	/**
-	 * Gets the JWE header "typ" (type) parameter verifier.
+	 * Gets the JWE header "typ" (type) parameter verifier. If none JWE
+	 * objects will be rejected.
 	 *
 	 * @return The JWE verifier, {@code null} if not specified.
 	 *
@@ -99,7 +107,8 @@ public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 	
 	
 	/**
-	 * Sets the JWE header "typ" (type) parameter verifier.
+	 * Sets the JWE header "typ" (type) parameter verifier. If none JWE
+	 * objects will be rejected.
 	 *
 	 * @param jweTypeVerifier The JWE type verifier, {@code null} if not
 	 *                        specified.
@@ -110,7 +119,7 @@ public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 
 
 	/**
-	 * Gets the JWE key selector.
+	 * Gets the JWE key selector. If none JWE objects will be rejected.
 	 *
 	 * @return The JWE key selector, {@code null} if not specified.
 	 */
@@ -118,7 +127,7 @@ public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 
 
 	/**
-	 * Sets the JWE key selector.
+	 * Sets the JWE key selector. If none JWE objects will be rejected.
 	 *
 	 * @param jweKeySelector The JWE key selector, {@code null} if not
 	 *                       specified.
@@ -127,7 +136,8 @@ public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 
 
 	/**
-	 * Gets the factory for creating JWS verifier instances.
+	 * Gets the factory for creating JWS verifier instances. If none JWS
+	 * objects will be rejected.
 	 *
 	 * @return The JWS verifier factory, {@code null} if not specified.
 	 */
@@ -135,7 +145,8 @@ public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 
 
 	/**
-	 * Sets the factory for creating JWS verifier instances.
+	 * Sets the factory for creating JWS verifier instances. If none JWS
+	 * objects will be rejected.
 	 *
 	 * @param factory The JWS verifier factory, {@code null} if not
 	 *                specified.
@@ -144,7 +155,8 @@ public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 
 
 	/**
-	 * Gets the factory for creating JWE decrypter instances.
+	 * Gets the factory for creating JWE decrypter instances. If none JWE
+	 * objects will be rejected.
 	 *
 	 * @return The JWE decrypter factory, {@code null} if not specified.
 	 */
@@ -152,7 +164,8 @@ public interface JOSEProcessorConfiguration <C extends SecurityContext> {
 
 
 	/**
-	 * Sets the factory for creating JWE decrypter instances.
+	 * Sets the factory for creating JWE decrypter instances. If none JWE
+	 * objects will be rejected.
 	 *
 	 * @param factory The JWE decrypter factory, {@code null} if not
 	 *                specified.
