@@ -56,8 +56,8 @@ public class DefaultJOSEProcessorTest extends TestCase {
 		assertNull(processor.getJWSKeySelector());
 		assertNull(processor.getJWEKeySelector());
 
-		assertNotNull(processor.getJWSTypeVerifier());
-		assertNotNull(processor.getJWETypeVerifier());
+		assertEquals(DefaultJOSEObjectTypeVerifier.JOSE, processor.getJWSTypeVerifier());
+		assertEquals(DefaultJOSEObjectTypeVerifier.JOSE, processor.getJWETypeVerifier());
 		
 		assertNotNull(processor.getJWSVerifierFactory());
 		assertNotNull(processor.getJWEDecrypterFactory());

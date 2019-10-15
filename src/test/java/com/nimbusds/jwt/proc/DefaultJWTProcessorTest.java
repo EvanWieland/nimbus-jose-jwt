@@ -43,6 +43,7 @@ import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.gen.OctetSequenceKeyGenerator;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -55,16 +56,18 @@ import com.nimbusds.jwt.*;
 /**
  * Tests the default JWT processor.
  *
- * @version 2018-01-11
+ * @version 2019-10-15
  */
 public class DefaultJWTProcessorTest extends TestCase {
 
 
-	public void testConstructor()
-		throws Exception {
+	public void testConstructor() {
 
 		ConfigurableJWTProcessor<SecurityContext> processor = new DefaultJWTProcessor<>();
 
+		assertEquals(DefaultJOSEObjectTypeVerifier.JWT, processor.getJWSTypeVerifier());
+		assertEquals(DefaultJOSEObjectTypeVerifier.JWT, processor.getJWETypeVerifier());
+		
 		assertNull(processor.getJWSKeySelector());
 		assertNull(processor.getJWEKeySelector());
 
@@ -1319,5 +1322,138 @@ public class DefaultJWTProcessorTest extends TestCase {
 				}
 			}
 		};
+	}
+	
+	
+	public void testNoJWSTypeVerifier() throws JOSEException {
+		
+		OctetSequenceKey jwk = new OctetSequenceKeyGenerator(256).generate();
+		
+		SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), new JWTClaimsSet.Builder().build());
+		signedJWT.sign(new MACSigner(jwk));
+		
+		DefaultJWTProcessor processor = new DefaultJWTProcessor<>();
+		processor.setJWSTypeVerifier(null);
+		processor.setJWSKeySelector(new SingleKeyJWSKeySelector(JWSAlgorithm.HS256, jwk.toSecretKey()));
+		
+		try {
+			processor.process(signedJWT, null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("Signed JWT rejected: No JWS header \"typ\" (type) verifier is configured", e.getMessage());
+		}
+	}
+	
+	
+	public void testNoJWETypeVerifier() throws JOSEException {
+		
+		final OctetSequenceKey jwk = new OctetSequenceKeyGenerator(256).generate();
+		
+		EncryptedJWT encryptedJWT = new EncryptedJWT(new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A256GCM), new JWTClaimsSet.Builder().build());
+		encryptedJWT.encrypt(new DirectEncrypter(jwk));
+		
+		DefaultJWTProcessor processor = new DefaultJWTProcessor();
+		processor.setJWETypeVerifier(null);
+		processor.setJWEKeySelector(new JWEKeySelector() {
+			@Override
+			public List<? extends Key> selectJWEKeys(JWEHeader header, SecurityContext context) {
+				return Collections.singletonList(jwk.toSecretKey());
+			}
+		});
+		
+		try {
+			processor.process(encryptedJWT, null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("Encrypted JWT rejected: No JWE header \"typ\" (type) verifier is configured", e.getMessage());
+		}
+	}
+	
+	
+	public void testCustomJWSTypeVerifier() throws JOSEException, BadJOSEException {
+		
+		OctetSequenceKey jwk = new OctetSequenceKeyGenerator(256).generate();
+		
+		DefaultJWTProcessor processor = new DefaultJWTProcessor();
+		processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier(new JOSEObjectType("msg")));
+		processor.setJWSKeySelector(new SingleKeyJWSKeySelector(JWSAlgorithm.HS256, jwk.toSecretKey()));
+		
+		// pass
+		SignedJWT signedJWT = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.HS256).type(new JOSEObjectType("msg")).build(), new JWTClaimsSet.Builder().build());
+		signedJWT.sign(new MACSigner(jwk));
+		processor.process(signedJWT, null);
+		
+		// missing
+		signedJWT = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.HS256).build(), new JWTClaimsSet.Builder().build());
+		signedJWT.sign(new MACSigner(jwk));
+		try {
+			processor.process(signedJWT, null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("Required JOSE header \"typ\" (type) parameter is missing", e.getMessage());
+		}
+		
+		// doesn't match
+		signedJWT = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.HS256).type(new JOSEObjectType("at+jose")).build(), new JWTClaimsSet.Builder().build());
+		signedJWT.sign(new MACSigner(jwk));
+		try {
+			processor.process(signedJWT, null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("JOSE header \"typ\" (type) \"at+jose\" not allowed", e.getMessage());
+		}
+	}
+	
+	
+	public void testCustomJWETypeVerifier() throws JOSEException, BadJOSEException {
+		
+		final OctetSequenceKey jwk = new OctetSequenceKeyGenerator(256).generate();
+		
+		DefaultJWTProcessor processor = new DefaultJWTProcessor();
+		processor.setJWETypeVerifier(new DefaultJOSEObjectTypeVerifier(new JOSEObjectType("msg")));
+		processor.setJWEKeySelector(new JWEKeySelector() {
+			@Override
+			public List<? extends Key> selectJWEKeys(JWEHeader header, SecurityContext context) {
+				return Collections.singletonList(jwk.toSecretKey());
+			}
+		});
+		
+		// pass
+		EncryptedJWT jweObject = new EncryptedJWT(new JWEHeader.Builder(JWEAlgorithm.DIR, EncryptionMethod.A256GCM).type(new JOSEObjectType("msg")).build(), new JWTClaimsSet.Builder().build());
+		jweObject.encrypt(new DirectEncrypter(jwk));
+		processor.process(jweObject, null);
+		
+		// missing
+		jweObject = new EncryptedJWT(new JWEHeader.Builder(JWEAlgorithm.DIR, EncryptionMethod.A256GCM).build(), new JWTClaimsSet.Builder().build());
+		jweObject.encrypt(new DirectEncrypter(jwk));
+		try {
+			processor.process(jweObject, null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("Required JOSE header \"typ\" (type) parameter is missing", e.getMessage());
+		}
+		
+		// doesn't match
+		jweObject = new EncryptedJWT(new JWEHeader.Builder(JWEAlgorithm.DIR, EncryptionMethod.A256GCM).type(new JOSEObjectType("at+jose")).build(), new JWTClaimsSet.Builder().build());
+		jweObject.encrypt(new DirectEncrypter(jwk));
+		try {
+			processor.process(jweObject, null);
+			fail();
+		} catch (BadJOSEException e) {
+			assertEquals("JOSE header \"typ\" (type) \"at+jose\" not allowed", e.getMessage());
+		}
+	}
+	
+	
+	public void testPlainJWT_noJWSTypeVerifier() {
+		
+		DefaultJWTProcessor processor = new DefaultJWTProcessor();
+		processor.setJWSTypeVerifier(null); // none for plain and JWS
+		try {
+			processor.process(new PlainJWT(new JWTClaimsSet.Builder().build()), null);
+			fail();
+		} catch (BadJOSEException | JOSEException e) {
+			assertEquals("Plain JWT rejected: No JWS header \"typ\" (type) verifier is configured", e.getMessage());
+		}
 	}
 }
