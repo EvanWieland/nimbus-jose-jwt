@@ -54,7 +54,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
  * Tests the base JWK class.
  *
  * @author Vladimir Dzhuvinov
- * @version 2018-10-26
+ * @version 2019-10-15
  */
 public class JWKTest extends TestCase {
 	
@@ -414,5 +414,23 @@ public class JWKTest extends TestCase {
 
 		JWSVerifier verifier = new RSASSAVerifier(wrongValidationKey);
 		assertFalse(signedJWT.verify(verifier));
+	}
+	
+	
+	public void testParseFromSamplePEM_ecPrivateKeyOnly() throws JOSEException {
+		
+		String pem = "-----BEGIN PRIVATE KEY-----\r\n" +
+			"MIGEAgEAMBAGByqGSM49AgEGBSuBBAAKBG0wawIBAQQgggR65IgPRgD" +
+			"X5Nc52PRJVdXPiv1v8l6c77a8e6fYOk6hRANCAATEu19KZ8mYcyInK6" +
+			"k3yGC4bTbjw9/v/32vppEmvKWgZK/2KVOKS+e9IZVVn+bTvtYXLhWGO" +
+			"fgrRBuOvV9d0tJm\r\n" +
+			"-----END PRIVATE KEY-----";
+		
+		try {
+			JWK.parseFromPEMEncodedObjects(pem);
+			fail();
+		} catch (JOSEException e) {
+			assertEquals("Missing PEM-encoded public key to construct JWK", e.getMessage());
+		}
 	}
 }

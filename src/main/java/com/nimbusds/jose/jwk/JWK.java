@@ -733,6 +733,11 @@ public abstract class JWK implements JSONAware, Serializable {
 
 		final PublicKey publicKey = pair.getPublic();
 		final PrivateKey privateKey = pair.getPrivate();
+		
+		if (publicKey == null) {
+			// For EC keys, for RSA the public can be reconstructed
+			throw new JOSEException("Missing PEM-encoded public key to construct JWK");
+		}
 
 		if (publicKey instanceof ECPublicKey) {
 			final ECPublicKey ecPubKey = (ECPublicKey) publicKey;
