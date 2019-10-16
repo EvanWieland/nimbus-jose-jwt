@@ -32,7 +32,8 @@
 		<ol>
 			<li>HMAC integrity protection: HS256, HS384 and HS512</li>
 			<li>RSA signatures: RS256, RS384, RS512, PS256, PS384 and PS512.</li>
-			<li>EC signatures: ES256, ES256K, ES384, ES512 and EdDSA</li>
+			<li>EC signatures: ES256, ES256K, ES384 andES512</li>
+			<li>EdDSA signatures: EdDSA</li>
 		</ol>
 
         <p>JWE key management algorithms:</p>
@@ -64,13 +65,14 @@
 		<p>Implemented IETF standards:</p>
 		
 		<ol>
-			<li><a href="https://tools.ietf.org/html/rfc7515">RFC 7515 (JWS)</a></li>
-			<li><a href="https://tools.ietf.org/html/rfc7516">RFC 7516 (JWE)</a></li>
-			<li><a href="https://tools.ietf.org/html/rfc7517">RFC 7517 (JWK)</a></li>
-			<li><a href="https://tools.ietf.org/html/rfc7518">RFC 7518 (JWA)</a></li>
-			<li><a href="https://tools.ietf.org/html/rfc7519">RFC 7519 (JWT)</a></li>
-			<li><a href="https://tools.ietf.org/html/rfc7638">RFC 7638 (JWK Thumbprint)</a></li>
-			<li><a href="https://tools.ietf.org/html/rfc8037">RFC 8037 - CFRG Elliptic Curve Diffie-Hellman (ECDH) and Signatures in JSON Object Signing and Encryption (JOSE)</a></li>
+			<li><a href="https://tools.ietf.org/html/rfc7515">RFC 7515 - JWS</a></li>
+			<li><a href="https://tools.ietf.org/html/rfc7516">RFC 7516 - JWE</a></li>
+			<li><a href="https://tools.ietf.org/html/rfc7517">RFC 7517 - JWK</a></li>
+			<li><a href="https://tools.ietf.org/html/rfc7518">RFC 7518 - JWA</a></li>
+			<li><a href="https://tools.ietf.org/html/rfc7519">RFC 7519 - JWT</a></li>
+			<li><a href="https://tools.ietf.org/html/rfc7638">RFC 7638 - JWK Thumbprint</a></li>
+			<li><a href="https://tools.ietf.org/html/rfc7797">RFC 7797 - JWS Unencoded Payload Option</a></li>
+			<li><a href="https://tools.ietf.org/html/rfc8037">RFC 8037 - CFRG ECDH and Signatures in JOSE</a></li>
 		</ol>
 		
 		<p>Dependencies (see the Maven pom.xml for details):</p>
@@ -78,8 +80,8 @@
 		<ol>
 			<li>JSON Smart for highly efficient parsing and serialisation of JSON.</li>
 			<li>JCIP for concurrency annotations.</li>
-			<li>Apache Commons IO for reading local and remote JWK sets.</li>
-			<li>[optional] BouncyCastle as an alternative JCA provider</li>
+			<li>[optional] BouncyCastle as an alternative JCA provider and for selected key and certificate utilities</li>
+			<li>[optional] Google Tink for OKP key generation and EdDSA</li>
 		</ol>
 
 
