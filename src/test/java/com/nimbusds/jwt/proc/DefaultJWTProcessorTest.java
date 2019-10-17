@@ -958,10 +958,11 @@ public class DefaultJWTProcessorTest extends TestCase {
 		jwtProcessor.setJWSKeySelector(keySelector);
 		
 		// Set the required JWT claims for access tokens
-		DefaultJWTClaimsVerifier claimsVerifier = new DefaultJWTClaimsVerifier();
-		claimsVerifier.requiresIssuedAtTime(true);
-		claimsVerifier.requiresExpirationTime(true);
-		claimsVerifier.setRequiredIssuer("https://demo.c2id.com/c2id");
+		DefaultJWTClaimsVerifier claimsVerifier = new DefaultJWTClaimsVerifier(
+			null,
+			new JWTClaimsSet.Builder().issuer("https://demo.c2id.com/c2id").build(),
+			new HashSet<>(Arrays.asList("sub", "iat", "exp", "scp", "cid"))
+		);
 		jwtProcessor.setJWTClaimsSetVerifier(claimsVerifier);
 
 		// Process the token

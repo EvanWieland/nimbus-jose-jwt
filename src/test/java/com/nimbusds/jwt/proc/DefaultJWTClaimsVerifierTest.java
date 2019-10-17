@@ -19,7 +19,9 @@ package com.nimbusds.jwt.proc;
 
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 
 import junit.framework.TestCase;
 
@@ -33,11 +35,10 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 	public void testDefaultConstructor() {
 		
 		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		assertFalse(verifier.requiresIssuedAtTime());
-		assertFalse(verifier.requiresExpirationTime());
-		assertFalse(verifier.requiresNotBeforeTime());
-		assertNull(verifier.getRequiredIssuer());
-		assertNull(verifier.getRequiredAudience());
+		assertNull(verifier.getAcceptedAudienceValues());
+		assertTrue(verifier.getExactMatchClaims().getClaims().isEmpty());
+		assertTrue(verifier.getRequiredClaims().isEmpty());
+		assertTrue(verifier.getProhibitedClaims().isEmpty());
 		assertEquals(60, verifier.getMaxClockSkew());
 	}
 
@@ -165,37 +166,41 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 	}
 	
 	
-	public void testIssuer() {
+	public void testIssuer() throws BadJWTException {
 		
 		String iss = "https://c2id.com";
-		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		assertNull(verifier.getRequiredIssuer());
-		verifier.setRequiredIssuer(iss);
-		assertEquals(iss, verifier.getRequiredIssuer());
-	}
-	
-	
-	public void testAudience() {
+		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier(
+			null,
+			new JWTClaimsSet.Builder().issuer(iss).build(),
+			null);
 		
-		String aud = "123";
-		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		assertNull(verifier.getRequiredAudience());
-		verifier.setRequiredAudience(aud);
-		assertEquals(aud, verifier.getRequiredAudience());
+		assertNull(verifier.getAcceptedAudienceValues());
+		assertEquals(Collections.singleton("iss"), verifier.getRequiredClaims());
+		assertEquals(Collections.singleton("iss"), verifier.getExactMatchClaims().getClaims().keySet());
+		assertTrue(verifier.getProhibitedClaims().isEmpty());
+		
+		verifier.verify(new JWTClaimsSet.Builder().issuer(iss).build(), null);
 	}
 	
 	
 	public void testIssuerMissing() {
 		
 		String iss = "https://c2id.com";
-		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		verifier.setRequiredIssuer(iss);
+		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier(
+			null,
+			new JWTClaimsSet.Builder().issuer(iss).build(),
+			null);
+		
+		assertNull(verifier.getAcceptedAudienceValues());
+		assertEquals(Collections.singleton("iss"), verifier.getRequiredClaims());
+		assertEquals(Collections.singleton("iss"), verifier.getExactMatchClaims().getClaims().keySet());
+		assertTrue(verifier.getProhibitedClaims().isEmpty());
 		
 		try {
 			verifier.verify(new JWTClaimsSet.Builder().build(), null);
 			fail();
 		} catch (BadJWTException e) {
-			assertEquals("JWT issuer missing", e.getMessage());
+			assertEquals("JWT missing required claims: [iss]", e.getMessage());
 		}
 	}
 	
@@ -203,14 +208,66 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 	public void testIssuerRejected() {
 		
 		String iss = "https://c2id.com";
-		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		verifier.setRequiredIssuer(iss);
+		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier(
+			null,
+			new JWTClaimsSet.Builder().issuer(iss).build(),
+			null);
+		
+		assertNull(verifier.getAcceptedAudienceValues());
+		assertEquals(Collections.singleton("iss"), verifier.getRequiredClaims());
+		assertEquals(Collections.singleton("iss"), verifier.getExactMatchClaims().getClaims().keySet());
+		assertTrue(verifier.getProhibitedClaims().isEmpty());
 		
 		try {
 			verifier.verify(new JWTClaimsSet.Builder().issuer("https://example.com").build(), null);
 			fail();
 		} catch (BadJWTException e) {
-			assertEquals("JWT issuer rejected: https://example.com", e.getMessage());
+			assertEquals("JWT \"iss\" claim doesn't match expected value: https://example.com", e.getMessage());
+		}
+	}
+	
+	
+	public void testAudienceAcceptSetOrNull() throws BadJWTException {
+		
+		String aud = "123";
+		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier(new HashSet<>(Arrays.asList(aud, null)), null, null, null);
+		assertTrue(verifier.getAcceptedAudienceValues().contains(aud));
+		assertTrue(verifier.getAcceptedAudienceValues().contains(null));
+		assertEquals(2, verifier.getAcceptedAudienceValues().size());
+		
+		verifier.verify(new JWTClaimsSet.Builder().build(), null);
+		verifier.verify(new JWTClaimsSet.Builder().audience(aud).build(), null);
+		verifier.verify(new JWTClaimsSet.Builder().audience(Arrays.asList(aud, "456")).build(), null);
+		
+		try {
+			verifier.verify(new JWTClaimsSet.Builder().audience("456").build(), null);
+			fail();
+		} catch (BadJWTException e) {
+			assertEquals("JWT audience rejected: [456]", e.getMessage());
+		}
+	}
+	
+	
+	public void testAudienceViaExactMatch() throws BadJWTException {
+		
+		String aud = "123";
+		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier(null, new JWTClaimsSet.Builder().audience(aud).build(), null, null);
+		assertNull(verifier.getAcceptedAudienceValues());
+		
+		verifier.verify(new JWTClaimsSet.Builder().audience(aud).build(), null);
+		
+		try {
+			verifier.verify(new JWTClaimsSet.Builder().build(), null);
+			fail();
+		} catch (BadJWTException e) {
+			assertEquals("JWT missing required claims: [aud]", e.getMessage());
+		}
+		
+		try {
+			verifier.verify(new JWTClaimsSet.Builder().audience("456").build(), null);
+			fail();
+		} catch (BadJWTException e) {
+			assertEquals("JWT \"aud\" claim doesn't match expected value: [456]", e.getMessage());
 		}
 	}
 	
@@ -218,14 +275,14 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 	public void testAudienceMissing() {
 		
 		String aud = "123";
-		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		verifier.setRequiredAudience(aud);
+		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier(aud, null, null);
+		assertEquals(Collections.singleton(aud), verifier.getAcceptedAudienceValues());
 		
 		try {
 			verifier.verify(new JWTClaimsSet.Builder().build(), null);
 			fail();
 		} catch (BadJWTException e) {
-			assertEquals("JWT audience missing", e.getMessage());
+			assertEquals("JWT missing required audience", e.getMessage());
 		}
 	}
 	
@@ -233,8 +290,8 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 	public void testAudienceRejected() {
 		
 		String aud = "123";
-		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		verifier.setRequiredAudience(aud);
+		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier(aud, null, null);
+		assertEquals(Collections.singleton(aud), verifier.getAcceptedAudienceValues());
 		
 		try {
 			verifier.verify(new JWTClaimsSet.Builder().audience("456").build(), null);
@@ -248,8 +305,8 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 	public void testAudienceRejected_multi() {
 		
 		String aud = "123";
-		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		verifier.setRequiredAudience(aud);
+		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier(aud, null, null);
+		assertEquals(Collections.singleton(aud), verifier.getAcceptedAudienceValues());
 		
 		try {
 			verifier.verify(new JWTClaimsSet.Builder().audience(Arrays.asList("456", "789")).build(), null);
@@ -260,12 +317,25 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 	}
 	
 	
+	public void testProhibitedClaims() throws BadJWTException {
+		
+		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier(null, null, null, Collections.singleton("scope"));
+		
+		verifier.verify(new JWTClaimsSet.Builder().build(), null);
+		verifier.verify(new JWTClaimsSet.Builder().subject("alice").build(), null);
+		
+		try {
+			verifier.verify(new JWTClaimsSet.Builder().claim("scope", "openid").build(), null);
+			fail();
+		} catch (BadJWTException e) {
+			assertEquals("JWT has prohibited claims: [scope]", e.getMessage());
+		}
+	}
+	
+	
 	public void testRequiresIAT() throws BadJWTException {
 		
-		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		assertFalse(verifier.requiresIssuedAtTime());
-		verifier.requiresIssuedAtTime(true);
-		assertTrue(verifier.requiresIssuedAtTime());
+		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier(null, null, Collections.singleton("iat"));
 		
 		verifier.verify(new JWTClaimsSet.Builder().issueTime(new Date()).build(), null);
 		
@@ -273,17 +343,14 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 			verifier.verify(new JWTClaimsSet.Builder().build(), null);
 			fail();
 		} catch (BadJWTException e) {
-			assertEquals("JWT issued-at time missing", e.getMessage());
+			assertEquals("JWT missing required claims: [iat]", e.getMessage());
 		}
 	}
 	
 	
 	public void testRequiresEXP() throws BadJWTException {
 		
-		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		assertFalse(verifier.requiresExpirationTime());
-		verifier.requiresExpirationTime(true);
-		assertTrue(verifier.requiresExpirationTime());
+		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier(null, null, Collections.singleton("exp"));
 		
 		verifier.verify(new JWTClaimsSet.Builder().expirationTime(new Date()).build(), null);
 		
@@ -291,17 +358,14 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 			verifier.verify(new JWTClaimsSet.Builder().build(), null);
 			fail();
 		} catch (BadJWTException e) {
-			assertEquals("JWT expiration time missing", e.getMessage());
+			assertEquals("JWT missing required claims: [exp]", e.getMessage());
 		}
 	}
 	
 	
 	public void testRequiresNBF() throws BadJWTException {
 		
-		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier();
-		assertFalse(verifier.requiresNotBeforeTime());
-		verifier.requiresNotBeforeTime(true);
-		assertTrue(verifier.requiresNotBeforeTime());
+		DefaultJWTClaimsVerifier verifier = new DefaultJWTClaimsVerifier(null, null, Collections.singleton("nbf"));
 		
 		verifier.verify(new JWTClaimsSet.Builder().notBeforeTime(new Date()).build(), null);
 		
@@ -309,7 +373,7 @@ public class DefaultJWTClaimsVerifierTest extends TestCase {
 			verifier.verify(new JWTClaimsSet.Builder().build(), null);
 			fail();
 		} catch (BadJWTException e) {
-			assertEquals("JWT not-before time missing", e.getMessage());
+			assertEquals("JWT missing required claims: [nbf]", e.getMessage());
 		}
 	}
 }

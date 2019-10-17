@@ -18,8 +18,7 @@
 package com.nimbusds.jwt.proc;
 
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -29,13 +28,14 @@ import com.nimbusds.jwt.util.DateUtils;
 
 
 /**
- * Default JWT claims verifier. This class is thread-safe.
+ * {@link JWTClaimsSetVerifier JWT claims verifier} implementation. This class
+ * is thread-safe.
  *
  * <p>Performs the following checks:
  *
  * <ol>
- *     <li>If an expiration time (exp) claim is present, makes sure it is
- *         ahead of the current time, else the JWT claims set is rejected.
+ *     <li>If an expiration time (exp) claim is present, makes sure it is ahead
+ *         of the current time, else the JWT claims set is rejected.
  *     <li>If a not-before-time (nbf) claim is present, makes sure it is
  *         before the current time, else the JWT claims set is rejected.
  * </ol>
@@ -43,7 +43,7 @@ import com.nimbusds.jwt.util.DateUtils;
  * <p>This class may be extended to perform additional checks.
  *
  * @author Vladimir Dzhuvinov
- * @version 2019-10-15
+ * @version 2019-10-17
  */
 @ThreadSafe
 public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWTClaimsSetVerifier<C>, JWTClaimsVerifier, ClockSkewAware {
@@ -62,35 +62,161 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 	
 	
 	/**
-	 * The issued-at time claim requirement.
+	 * The accepted audience values, {@code null} if not specified. A
+	 * {@code null} value present in the set allows JWTs with no audience.
 	 */
-	private boolean iatRequired = false;
+	private final Set<String> acceptedAudienceValues;
 	
 	
 	/**
-	 * The expiration time claim requirement.
+	 * The JWT claims that must match exactly, empty set if none.
 	 */
-	private boolean expRequired = false;
+	private final JWTClaimsSet exactMatchClaims;
 	
 	
 	/**
-	 * The not-before time claim requirement.
+	 * The names of the JWT claims that must be present, empty set if none.
 	 */
-	private boolean nbfRequired = false;
+	private final Set<String> requiredClaims;
 	
 	
 	/**
-	 * The required issuer, {@code null} if not specified.
+	 * The names of the JWT claims that must not be present, empty set if
+	 * none.
 	 */
-	private String requiredIssuer;
+	private final Set<String> prohibitedClaims;
 	
 	
 	/**
-	 * The required audience, {@code null} if not specified.
+	 * Creates a new JWT claims verifier. No audience ("aud"), required and
+	 * prohibited claims are specified. Will check the expiration ("exp")
+	 * and not-before ("nbf") times if present.
 	 */
-	private String requiredAudience;
-
-
+	public DefaultJWTClaimsVerifier() {
+		this(null, null, null, null);
+	}
+	
+	
+	/**
+	 * Creates a new JWT claims verifier. Allows any audience ("aud")
+	 * unless an exact match is specified. Will check the expiration
+	 * ("exp") and not-before ("nbf") times if present.
+	 *
+	 * @param exactMatchClaims The JWT claims that must match exactly,
+	 *                         {@code null} if none.
+	 * @param requiredClaims   The names of the JWT claims that must be
+	 *                         present, empty set or {@code null} if none.
+	 */
+	public DefaultJWTClaimsVerifier(final JWTClaimsSet exactMatchClaims,
+					final Set<String> requiredClaims) {
+		
+		this(null, exactMatchClaims, requiredClaims, null);
+	}
+	
+	
+	/**
+	 * Creates new default JWT claims verifier.
+	 *
+	 * @param requiredAudience The required JWT audience, {@code null} if
+	 *                         not specified.
+	 * @param exactMatchClaims The JWT claims that must match exactly,
+	 *                         {@code null} if none.
+	 * @param requiredClaims   The names of the JWT claims that must be
+	 *                         present, empty set or {@code null} if none.
+	 */
+	public DefaultJWTClaimsVerifier(final String requiredAudience,
+					final JWTClaimsSet exactMatchClaims,
+					final Set<String> requiredClaims) {
+		
+		this(requiredAudience != null ? Collections.singleton(requiredAudience) : null,
+			exactMatchClaims,
+			requiredClaims,
+			null);
+	}
+	
+	
+	/**
+	 * Creates new default JWT claims verifier.
+	 *
+	 * @param acceptedAudience The accepted JWT audience values,
+	 *                         {@code null} if not specified. A
+	 *                         {@code null} value in the set allows JWTs
+	 *                         with no audience.
+	 * @param exactMatchClaims The JWT claims that must match exactly,
+	 *                         {@code null} if none.
+	 * @param requiredClaims   The names of the JWT claims that must be
+	 *                         present, empty set or {@code null} if none.
+	 * @param prohibitedClaims The names of the JWT claims that must not be
+	 *                         present, empty set or {@code null} if none.
+	 */
+	public DefaultJWTClaimsVerifier(final Set<String> acceptedAudience,
+					final JWTClaimsSet exactMatchClaims,
+					final Set<String> requiredClaims,
+					final Set<String> prohibitedClaims) {
+		
+		this.acceptedAudienceValues = acceptedAudience != null ? Collections.unmodifiableSet(acceptedAudience) : null;
+		
+		this.exactMatchClaims = exactMatchClaims != null ? exactMatchClaims : new JWTClaimsSet.Builder().build();
+		
+		Set<String> requiredClaimsCopy = new HashSet<>(this.exactMatchClaims.getClaims().keySet());
+		if (acceptedAudienceValues != null && ! acceptedAudienceValues.contains(null)) {
+			// check if an explicit aud is required
+			requiredClaimsCopy.add("aud");
+		}
+		if (requiredClaims != null) {
+			requiredClaimsCopy.addAll(requiredClaims);
+		}
+		this.requiredClaims = Collections.unmodifiableSet(requiredClaimsCopy);
+		
+		this.prohibitedClaims = prohibitedClaims != null ? Collections.unmodifiableSet(prohibitedClaims) : Collections.<String>emptySet();
+	}
+	
+	
+	/**
+	 * Returns the accepted audience values.
+	 *
+	 * @return The accepted JWT audience values, {@code null} if not
+	 *         specified. A {@code null} value in the set allows JWTs with
+	 *         no audience.
+	 */
+	public Set<String> getAcceptedAudienceValues() {
+		return acceptedAudienceValues;
+	}
+	
+	
+	/**
+	 * Returns the JWT claims that must match exactly.
+	 *
+	 * @return The JWT claims that must match exactly, empty set if none.
+	 */
+	public JWTClaimsSet getExactMatchClaims() {
+		return exactMatchClaims;
+	}
+	
+	
+	/**
+	 * Returns the names of the JWT claims that must be present, including
+	 * the name of those that must match exactly.
+	 *
+	 * @return The names of the JWT claims that must be present, empty set
+	 *         if none.
+	 */
+	public Set<String> getRequiredClaims() {
+		return requiredClaims;
+	}
+	
+	
+	/**
+	 * Returns the names of the JWT claims that must not be present.
+	 *
+	 * @return The names of the JWT claims that must not be present, empty
+	 *         set if none.
+	 */
+	public Set<String> getProhibitedClaims() {
+		return prohibitedClaims;
+	}
+	
+	
 	@Override
 	public int getMaxClockSkew() {
 		return maxClockSkew;
@@ -98,134 +224,8 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 
 
 	@Override
-	public void setMaxClockSkew(int maxClockSkewSeconds) {
+	public void setMaxClockSkew(final int maxClockSkewSeconds) {
 		maxClockSkew = maxClockSkewSeconds;
-	}
-	
-	
-	/**
-	 * Gets the issued-at time ("iat") requirement.
-	 *
-	 * @return {@code true} if the issued-at time claim is required,
-	 *         {@code false} if not.
-	 *
-	 * @since 8.1
-	 */
-	public boolean requiresIssuedAtTime() {
-		return iatRequired;
-	}
-	
-	
-	/**
-	 * Sets the issued-at time ("iat") requirement.
-	 *
-	 * @param iatRequired {@code true} if the issued-at time claim is
-	 *                    required, {@code false} if not.
-	 *
-	 * @since 8.1
-	 */
-	public void requiresIssuedAtTime(final boolean iatRequired) {
-		this.iatRequired = iatRequired;
-	}
-	
-	
-	/**
-	 * Gets the expiration time ("exp") requirement.
-	 *
-	 * @return {@code true} if the expiration time claim is required,
-	 *         {@code false} if not.
-	 *
-	 * @since 8.1
-	 */
-	public boolean requiresExpirationTime() {
-		return expRequired;
-	}
-	
-	
-	/**
-	 * Sets the expiration time ("exp") requirement.
-	 *
-	 * @param expRequired {@code true} if the expiration time claim is
-	 *                    required, {@code false} if not.
-	 *
-	 * @since 8.1
-	 */
-	public void requiresExpirationTime(final boolean expRequired) {
-		this.expRequired = expRequired;
-	}
-	
-	
-	/**
-	 * Gets the not-before time ("nbf") requirement.
-	 *
-	 * @return {@code true} if the not-before time claim is required,
-	 *         {@code false} if not.
-	 *
-	 * @since 8.1
-	 */
-	public boolean requiresNotBeforeTime() {
-		return nbfRequired;
-	}
-	
-	
-	/**
-	 * Sets the not-before time ("nbf") requirement.
-	 *
-	 * @param nbfRequired {@code true} if the not-before time claim is
-	 *                    required, {@code false} if not.
-	 *
-	 * @since 8.1
-	 */
-	public void requiresNotBeforeTime(final boolean nbfRequired) {
-		this.nbfRequired = nbfRequired;
-	}
-	
-	
-	/**
-	 * Gets the required issuer ("iss").
-	 *
-	 * @return The required issuer, {@code null} if not specified.
-	 *
-	 * @since 8.1
-	 */
-	public String getRequiredIssuer() {
-		return requiredIssuer;
-	}
-	
-	
-	/**
-	 * Sets the required issuer ("iss").
-	 *
-	 * @param iss The required issuer, {@code null} if not specified.
-	 *
-	 * @since 8.1
-	 */
-	public void setRequiredIssuer(final String iss) {
-		requiredIssuer = iss;
-	}
-	
-	
-	/**
-	 * Gets the required audience ("aud").
-	 *
-	 * @return The required audience, {@code null} if not specified.
-	 *
-	 * @since 8.1
-	 */
-	public String getRequiredAudience() {
-		return requiredAudience;
-	}
-	
-	
-	/**
-	 * Sets the required audience ("aud").
-	 *
-	 * @param aud The required audience, {@code null} if not specified.
-	 *
-	 * @since 8.1
-	 */
-	public void setRequiredAudience(final String aud) {
-		requiredAudience = aud;
 	}
 	
 	
@@ -241,18 +241,55 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 	public void verify(final JWTClaimsSet claimsSet, final C context)
 		throws BadJWTException {
 		
-		if (iatRequired && claimsSet.getIssueTime() == null) {
-			throw new BadJWTException("JWT issued-at time missing");
+		// Check audience
+		if (acceptedAudienceValues != null) {
+			List<String> audList = claimsSet.getAudience();
+			if (audList != null && ! audList.isEmpty()) {
+				boolean audMatch = false;
+				for (String aud : audList) {
+					if (acceptedAudienceValues.contains(aud)) {
+						audMatch = true;
+						break;
+					}
+				}
+				if (! audMatch) {
+					throw new BadJWTException("JWT audience rejected: " + audList);
+				}
+			} else if (! acceptedAudienceValues.contains(null)) {
+				throw new BadJWTException("JWT missing required audience");
+			}
 		}
 		
+		// Check if all required claims are present
+		if (! claimsSet.getClaims().keySet().containsAll(requiredClaims)) {
+			Set<String> missingClaims = new HashSet<>(requiredClaims);
+			missingClaims.removeAll(claimsSet.getClaims().keySet());
+			throw new BadJWTException("JWT missing required claims: " + missingClaims);
+		}
+		
+		// Check if prohibited claims are present
+		Set<String> presentProhibitedClaims = new HashSet<>();
+		for (String prohibited: prohibitedClaims) {
+			if (claimsSet.getClaims().containsKey(prohibited)) {
+				presentProhibitedClaims.add(prohibited);
+			}
+			if (! presentProhibitedClaims.isEmpty()) {
+				throw new BadJWTException("JWT has prohibited claims: " + presentProhibitedClaims);
+			}
+		}
+		
+		// Check exact matches
+		for (String exactMatch: exactMatchClaims.getClaims().keySet()) {
+			Object value = claimsSet.getClaim(exactMatch);
+			if (! value.equals(exactMatchClaims.getClaim(exactMatch))) {
+				throw new BadJWTException("JWT \"" + exactMatch + "\" claim doesn't match expected value: " + value);
+			}
+		}
+		
+		// Check time window
 		final Date now = new Date();
 		
 		final Date exp = claimsSet.getExpirationTime();
-		
-		if (expRequired && exp == null) {
-			throw new BadJWTException("JWT expiration time missing");
-		}
-		
 		if (exp != null) {
 			
 			if (! DateUtils.isAfter(exp, now, maxClockSkew)) {
@@ -261,35 +298,10 @@ public class DefaultJWTClaimsVerifier <C extends SecurityContext> implements JWT
 		}
 		
 		final Date nbf = claimsSet.getNotBeforeTime();
-		
-		if (nbfRequired && nbf == null) {
-			throw new BadJWTException("JWT not-before time missing");
-		}
-		
 		if (nbf != null) {
 			
 			if (! DateUtils.isBefore(nbf, now, maxClockSkew)) {
 				throw new BadJWTException("JWT before use time");
-			}
-		}
-		
-		if (requiredIssuer != null) {
-			String iss = claimsSet.getIssuer();
-			if (iss == null) {
-				throw new BadJWTException("JWT issuer missing");
-			}
-			if (! requiredIssuer.equals(iss)) {
-				throw new BadJWTException("JWT issuer rejected: " + iss);
-			}
-		}
-		
-		if (requiredAudience != null) {
-			List<String> audList = claimsSet.getAudience();
-			if (audList == null || audList.isEmpty()) {
-				throw new BadJWTException("JWT audience missing");
-			}
-			if (! audList.contains(requiredAudience)) {
-				throw new BadJWTException("JWT audience rejected: " + audList);
 			}
 		}
 	}
