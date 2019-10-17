@@ -928,14 +928,14 @@ public class DefaultJWTProcessorTest extends TestCase {
 		// Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6InMxIn0.eyJzY3A...
 		String accessToken =
 			"eyJraWQiOiJDWHVwIiwidHlwIjoiYXQrand0IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJib2IiLCJzY" +
-			"3AiOlsib3BlbmlkIiwiZW1haWwiXSwiY2xtIjpbIiFCZyJdLCJpc3MiOiJodHRwczpcL1wvZGVtby5jM" +
-			"mlkLmNvbVwvYzJpZCIsImV4cCI6MTU3MTE3MTI2MiwiaWF0IjoxNTcxMTcwNjYyLCJ1aXAiOnsiZ3Jvd" +
-			"XBzIjpbImFkbWluIiwiYXVkaXQiXX0sImp0aSI6IllzcXZadE5fZFNRIiwiY2lkIjoiMDAwMTIzIn0.A" +
-			"99SrlpLmPxg_qttxsh2np_Czf9fJRIhMR90mwciPDsQLvswTTaLeK7jcAVXc_TYXaEuYOZQ1iXvxJMut" +
-			"pRZVUXvPjSQz1W4Ax-3w-zEZvgHRWtOQJgaj_XNGTkYV_2MeJDpW35eByAGPn8jDSRkapDVN-05rbuT5" +
-			"EZVmjpkJEsV1COqkgXx16J2OIswz13h2Pb9vyCwyspad6D6NW1z5ADjejqEb7Vf08XXAf4w_FbbekD76" +
-			"x6ToW-P-t6A17Mgy500C3Xq7ekZti8Tu1iz-KBVrH-R12rqPo3YGb98RraOUnYCg-2xDeriJsPmxkb6w" +
-			"omCTc141azPp6qIUiEfRw";
+				"3AiOlsib3BlbmlkIiwiZW1haWwiXSwiY2xtIjpbIiFCZyJdLCJpc3MiOiJodHRwczpcL1wvZGVtby5jM" +
+				"mlkLmNvbVwvYzJpZCIsImV4cCI6MTU3MTMxMjAxOCwiaWF0IjoxNTcxMzExNDE4LCJ1aXAiOnsiZ3Jvd" +
+				"XBzIjpbImFkbWluIiwiYXVkaXQiXX0sImp0aSI6ImJBT1BiNWh5TW80IiwiY2lkIjoiMDAwMTIzIn0.Q" +
+				"hTAdJK8AbdJJhQarjOz_qvAINQeWJCIYSROVaeRpBfaOrTCUy5gWRf8xrpj1DMibdHwQGPdht3chlAC8" +
+				"LGbAorEu0tLLcOwKl4Ql-o30Tdd5QhjNb6PndOY89NbQ1O6cdOZhvV4XB-jUAXi3nDgCw3zvIn2348Va" +
+				"2fOAzxUvRs2OGsEDl5d9cmL3e68YqSh7ss12y9oBDyEyz8Py7dtXgt6Tg67n9WlEBG0r4KloGDBdbCCZ" +
+				"hlEyURkHaE-3nUcjwd-CEVeqWPO0bsLhwto-80j8BtsfD649GnvaMb9YdbdYhTTs-MkRUQpQIZT0s9oK" +
+				"uzKayvZhk0c_0FoSeW7rw";
 
 		// Create a JWT processor for the access tokens
 		ConfigurableJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
@@ -958,12 +958,9 @@ public class DefaultJWTProcessorTest extends TestCase {
 		jwtProcessor.setJWSKeySelector(keySelector);
 		
 		// Set the required JWT claims for access tokens
-		DefaultJWTClaimsVerifier claimsVerifier = new DefaultJWTClaimsVerifier(
-			null,
+		jwtProcessor.setJWTClaimsSetVerifier(new DefaultJWTClaimsVerifier(
 			new JWTClaimsSet.Builder().issuer("https://demo.c2id.com/c2id").build(),
-			new HashSet<>(Arrays.asList("sub", "iat", "exp", "scp", "cid"))
-		);
-		jwtProcessor.setJWTClaimsSetVerifier(claimsVerifier);
+			new HashSet<>(Arrays.asList("sub", "iat", "exp", "scp", "cid", "jti"))));
 
 		// Process the token
 		SecurityContext ctx = null; // optional context parameter, not required here
