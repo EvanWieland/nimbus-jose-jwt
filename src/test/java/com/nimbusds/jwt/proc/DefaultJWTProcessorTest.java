@@ -946,7 +946,7 @@ public class DefaultJWTProcessorTest extends TestCase {
 		// The public RSA keys to validate the signatures will be sourced from the
 		// OAuth 2.0 server's JWK set, published at a well-known URL. The RemoteJWKSet
 		// object caches the retrieved keys to speed up subsequent look-ups and can
-		// also gracefully handle key-rollover
+		// also handle key-rollover
 		JWKSource<SecurityContext> keySource = new RemoteJWKSet<>(new URL("https://demo.c2id.com/c2id/jwks.json"));
 
 		// The expected JWS algorithm of the access tokens (agreed out-of-band)
@@ -993,7 +993,7 @@ public class DefaultJWTProcessorTest extends TestCase {
 		ConfigurableJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
 		jwtProcessor.setJWEKeySelector(jweKeySelector);
 
-		jwtProcessor.setJWTClaimsVerifier(new DefaultJWTClaimsVerifier() {
+		jwtProcessor.setJWTClaimsSetVerifier(new DefaultJWTClaimsVerifier() {
 
 			@Override
 			public void verify(JWTClaimsSet claimsSet)
