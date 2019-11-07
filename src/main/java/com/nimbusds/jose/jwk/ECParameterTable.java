@@ -29,7 +29,7 @@ import java.security.spec.*;
  *
  * <ul>
  *     <li>{@link com.nimbusds.jose.jwk.Curve#P_256}
- *     <li>{@link com.nimbusds.jose.jwk.Curve#P_256K}
+ *     <li>{@link com.nimbusds.jose.jwk.Curve#SECP256K1}
  *     <li>{@link com.nimbusds.jose.jwk.Curve#P_384}
  *     <li>{@link com.nimbusds.jose.jwk.Curve#P_521}
  * </ul>
@@ -50,9 +50,9 @@ class ECParameterTable {
 
 	/**
 	 * The parameter spec for a
-	 * {@link com.nimbusds.jose.jwk.Curve#P_256K} curve.
+	 * {@link com.nimbusds.jose.jwk.Curve#SECP256K1} curve.
 	 */
-	private static final ECParameterSpec P_256K_SPEC;
+	private static final ECParameterSpec SECP256K1_SPEC;
 
 	
 	/**
@@ -113,7 +113,7 @@ class ECParameterTable {
 			new BigInteger("115792089210356248762697446949407573529996955224135760342422259061068512044369"),
 			1);
 
-		P_256K_SPEC = new ECParameterSpec(
+		SECP256K1_SPEC = new ECParameterSpec(
 			new EllipticCurve(
 				new ECFieldFp(new BigInteger("115792089237316195423570985008687907853269984665640564039457584007908834671663")),
 				new BigInteger("0"),
@@ -160,8 +160,8 @@ class ECParameterTable {
 
 		if (Curve.P_256.equals(curve)) {
 			return P_256_SPEC;
-		} else if (Curve.P_256K.equals(curve)) {
-			return P_256K_SPEC;
+		} else if (Curve.SECP256K1.equals(curve)) {
+			return SECP256K1_SPEC;
 		} else if (Curve.P_384.equals(curve)) {
 			return P_384_SPEC;
 		} else if (Curve.P_521.equals(curve)) {
@@ -197,15 +197,15 @@ class ECParameterTable {
 
 			return Curve.P_256;
 
-		} else if (spec.getCurve().getField().getFieldSize() == P_256K_SPEC.getCurve().getField().getFieldSize() &&
-			spec.getCurve().getA().equals(P_256K_SPEC.getCurve().getA()) &&
-			spec.getCurve().getB().equals(P_256K_SPEC.getCurve().getB()) &&
-			spec.getGenerator().getAffineX().equals(P_256K_SPEC.getGenerator().getAffineX()) &&
-			spec.getGenerator().getAffineY().equals(P_256K_SPEC.getGenerator().getAffineY()) &&
-			spec.getOrder().equals(P_256K_SPEC.getOrder()) &&
-			spec.getCofactor() == P_256K_SPEC.getCofactor()) {
+		} else if (spec.getCurve().getField().getFieldSize() == SECP256K1_SPEC.getCurve().getField().getFieldSize() &&
+			spec.getCurve().getA().equals(SECP256K1_SPEC.getCurve().getA()) &&
+			spec.getCurve().getB().equals(SECP256K1_SPEC.getCurve().getB()) &&
+			spec.getGenerator().getAffineX().equals(SECP256K1_SPEC.getGenerator().getAffineX()) &&
+			spec.getGenerator().getAffineY().equals(SECP256K1_SPEC.getGenerator().getAffineY()) &&
+			spec.getOrder().equals(SECP256K1_SPEC.getOrder()) &&
+			spec.getCofactor() == SECP256K1_SPEC.getCofactor()) {
 
-			return Curve.P_256K;
+			return Curve.SECP256K1;
 
 		} else if (spec.getCurve().getField().getFieldSize() == P_384_SPEC.getCurve().getField().getFieldSize() &&
 			spec.getCurve().getA().equals(P_384_SPEC.getCurve().getA()) &&

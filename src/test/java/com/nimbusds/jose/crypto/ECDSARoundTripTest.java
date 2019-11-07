@@ -381,7 +381,7 @@ public class ECDSARoundTripTest extends TestCase {
 		throws Exception {
 		
 		KeyPairGenerator gen = KeyPairGenerator.getInstance("EC");
-		gen.initialize(Curve.P_256K.toECParameterSpec());
+		gen.initialize(Curve.SECP256K1.toECParameterSpec());
 		KeyPair kp = gen.generateKeyPair();
 		
 		ECPublicKey publicKey = (ECPublicKey)kp.getPublic();

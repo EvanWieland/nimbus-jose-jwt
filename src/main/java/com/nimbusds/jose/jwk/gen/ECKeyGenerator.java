@@ -37,7 +37,7 @@ import com.nimbusds.jose.jwk.ECKey;
  *
  * <ul>
  *     <li>{@link Curve#P_256 P-256}
- *     <li>{@link Curve#P_256K P-256K}
+ *     <li>{@link Curve#SECP256K1 secp256k1}
  *     <li>{@link Curve#P_384 P-384}
  *     <li>{@link Curve#P_521 P-512}
  * </ul>

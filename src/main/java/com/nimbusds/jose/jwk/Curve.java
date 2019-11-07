@@ -36,7 +36,8 @@ import net.jcip.annotations.Immutable;
  *
  * <ul>
  *     <li>{@link #P_256}
- *     <li>{@link #P_256K}
+ *     <li>{@link #SECP256K1}
+ *     <li>{@link #P_256K} (Deprecated)
  *     <li>{@link #P_384}
  *     <li>{@link #P_521}
  *     <li>{@link #Ed25519}
@@ -70,14 +71,19 @@ public final class Curve implements Serializable {
 	 * 1.2.840.10045.3.1.7).
 	 */
 	public static final Curve P_256 = new Curve("P-256", "secp256r1", "1.2.840.10045.3.1.7");
-	
-	
+
+
 	/**
-	 * P-256K curve (secp256k1, OID = 1.3.132.0.10).
+	 * secp256k1 curve (secp256k1, OID = 1.3.132.0.10).
 	 */
-	public static final Curve P_256K = new Curve("P-256K", "secp256k1", "1.3.132.0.10");
-	
-	
+	public static final Curve SECP256K1 = new Curve("secp256k1", "secp256k1", "1.3.132.0.10");
+
+	/**
+	 * Deprecated alias for SECP256K1.
+	 */
+	@Deprecated
+	public static final Curve P_256K = SECP256K1;
+
 	/**
 	 * P-384 curve (secp384r1, OID = 1.3.132.0.34).
 	 */
@@ -250,8 +256,8 @@ public final class Curve implements Serializable {
 		
 		if (s.equals(P_256.getName())) {
 			return P_256;
-		} else if (s.equals(P_256K.getName())) {
-			return P_256K;
+		} else if (s.equals(SECP256K1.getName())) {
+			return SECP256K1;
 		} else if (s.equals(P_384.getName())) {
 			return P_384;
 		} else if (s.equals(P_521.getName())) {
@@ -282,7 +288,7 @@ public final class Curve implements Serializable {
 		if( "secp256r1".equals(stdName) || "prime256v1".equals(stdName)) {
 			return P_256;
 		} else if("secp256k1".equals(stdName)) {
-			return P_256K;
+			return SECP256K1;
 		} else if("secp384r1".equals(stdName)) {
 			return P_384;
 		} else if("secp521r1".equals(stdName)) {
@@ -313,8 +319,8 @@ public final class Curve implements Serializable {
 		
 		if (P_256.getOID().equals(oid)) {
 			return P_256;
-		} else if (P_256K.getOID().equals(oid)) {
-			return P_256K;
+		} else if (SECP256K1.getOID().equals(oid)) {
+			return SECP256K1;
 		} else if (P_384.getOID().equals(oid)) {
 			return P_384;
 		} else if (P_521.getOID().equals(oid)) {
@@ -338,7 +344,7 @@ public final class Curve implements Serializable {
 		if (JWSAlgorithm.ES256.equals(alg)) {
 			return Collections.singleton(P_256);
 		} else if (JWSAlgorithm.ES256K.equals(alg)) {
-            return Collections.singleton(P_256K);
+            return Collections.singleton(SECP256K1);
 		} else if (JWSAlgorithm.ES384.equals(alg)) {
 			return Collections.singleton(P_384);
 		} else if (JWSAlgorithm.ES512.equals(alg)) {

@@ -130,7 +130,7 @@ public class ECKeyTest extends TestCase {
 	public void testSupportedCurvesConstant() {
 		
 		assertTrue(ECKey.SUPPORTED_CURVES.contains(Curve.P_256));
-		assertTrue(ECKey.SUPPORTED_CURVES.contains(Curve.P_256K));
+		assertTrue(ECKey.SUPPORTED_CURVES.contains(Curve.SECP256K1));
 		assertTrue(ECKey.SUPPORTED_CURVES.contains(Curve.P_384));
 		assertTrue(ECKey.SUPPORTED_CURVES.contains(Curve.P_521));
 		assertEquals(4, ECKey.SUPPORTED_CURVES.size());

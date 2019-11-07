@@ -41,7 +41,7 @@ public class ECDSATest extends TestCase {
 		throws JOSEException {
 
 		assertEquals(JWSAlgorithm.ES256, ECDSA.resolveAlgorithm(Curve.P_256));
-		assertEquals(JWSAlgorithm.ES256K, ECDSA.resolveAlgorithm(Curve.P_256K));
+		assertEquals(JWSAlgorithm.ES256K, ECDSA.resolveAlgorithm(Curve.SECP256K1));
 		assertEquals(JWSAlgorithm.ES384, ECDSA.resolveAlgorithm(Curve.P_384));
 		assertEquals(JWSAlgorithm.ES512, ECDSA.resolveAlgorithm(Curve.P_521));
 

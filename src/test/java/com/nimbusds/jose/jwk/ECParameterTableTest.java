@@ -37,9 +37,9 @@ public class ECParameterTableTest extends TestCase {
 	
 	
 	public void testParametersAgainstBouncyCastle() {
-		
-		for (Curve crv: Arrays.asList(Curve.P_256, Curve.P_256K, Curve.P_384, Curve.P_521)) {
-			
+
+		for (Curve crv: Arrays.asList(Curve.P_256, Curve.SECP256K1, Curve.P_384, Curve.P_521)) {
+
 			ECNamedCurveParameterSpec curveParams = ECNamedCurveTable.getParameterSpec(crv.getStdName());
 			
 			ECParameterSpec expectedSpec = new ECNamedCurveSpec(curveParams.getName(),
