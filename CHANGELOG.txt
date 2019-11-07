@@ -1057,3 +1057,7 @@ version 8.1 (2019-10-15)
 version 8.2 (2019-10-17)
     * Redesigns DefaultJWTClaimsVerifier to support complex audience checks,
       arbitrary exact claim matching, presence and prohibited checks.
+
+version 8.2.1 (2019-11-07)
+    * IOUtils.readFileToString must close FileInputStream after usage to
+      release resources (iss #342).

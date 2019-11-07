@@ -26,7 +26,7 @@ import java.nio.charset.Charset;
  * Input / output utilities.
  *
  * @author Vladimir Dzhuvinov
- * @version 2016-11-28
+ * @version 2019-11-07
  */
 public class IOUtils {
 	
@@ -47,16 +47,19 @@ public class IOUtils {
 		final int bufferSize = 1024;
 		final char[] buffer = new char[bufferSize];
 		final StringBuilder out = new StringBuilder();
+		
 		Reader in = new InputStreamReader(stream, charset);
-		
-		while (true) {
-			int rsz = in.read(buffer, 0, buffer.length);
-			if (rsz < 0)
-				break;
-			out.append(buffer, 0, rsz);
+		try {
+			while (true) {
+				int rsz = in.read(buffer, 0, buffer.length);
+				if (rsz < 0)
+					break;
+				out.append(buffer, 0, rsz);
+			}
+			return out.toString();
+		} finally {
+			in.close();
 		}
-		
-		return out.toString();
 	}
 	
 	
