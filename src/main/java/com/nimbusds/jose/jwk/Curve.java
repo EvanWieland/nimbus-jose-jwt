@@ -79,10 +79,12 @@ public final class Curve implements Serializable {
 	public static final Curve SECP256K1 = new Curve("secp256k1", "secp256k1", "1.3.132.0.10");
 
 	/**
-	 * Deprecated alias for SECP256K1.
+	 * P-256K curve.
+	 *
+	 * @deprecated Use {@link #SECP256K1}.
 	 */
 	@Deprecated
-	public static final Curve P_256K = SECP256K1;
+	public static final Curve P_256K = new Curve("P-256K", "secp256k1", "1.3.132.0.10");
 
 	/**
 	 * P-384 curve (secp384r1, OID = 1.3.132.0.34).
@@ -256,6 +258,8 @@ public final class Curve implements Serializable {
 		
 		if (s.equals(P_256.getName())) {
 			return P_256;
+		} else if (s.equals(P_256K.getName())) {
+			return P_256K;
 		} else if (s.equals(SECP256K1.getName())) {
 			return SECP256K1;
 		} else if (s.equals(P_384.getName())) {
