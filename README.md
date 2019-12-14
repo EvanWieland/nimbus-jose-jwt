@@ -46,7 +46,7 @@ The library can handle all standard JOSE algorithms:
 * JWE Compression with DEFLATE.
 
 
-## Supported IETF standards
+## Supported IETF standards and drafts
 
 * RFC 7515 - JSON Web Signature (JWS)
 * RFC 7516 - JSON Web Encryption (JWE)
@@ -60,6 +60,8 @@ The library can handle all standard JOSE algorithms:
 * RFC 7638 JSON Web Key (JWK) Thumbprint
 * RFC 8037 - CFRG Elliptic Curve Diffie-Hellman (ECDH) and Signatures in JSON 
   Object Signing and Encryption (JOSE)
+* draft-ietf-cose-webauthn-algorithms-03 - COSE and JOSE Registrations for 
+  WebAuthn Algorithms
 
 
 ## System requirements and dependencies

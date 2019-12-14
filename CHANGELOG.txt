@@ -1061,3 +1061,10 @@ version 8.2 (2019-10-17)
 version 8.2.1 (2019-11-07)
     * IOUtils.readFileToString must close FileInputStream after usage to
       release resources (iss #342).
+
+version 8.3 (2019-12-14)
+    * The Curve.P_256K ("P-256K") is given a new name as Curve.SECP256K1
+      ("secp256k1") following a change in the underlying "COSE and JOSE
+      Registrations for WebAuthn Algorithms"
+      (draft-ietf-cose-webauthn-algorithms-03) specification. The old
+      Curve.P_256K is deprecated (iss #341).
