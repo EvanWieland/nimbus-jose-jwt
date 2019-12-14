@@ -51,7 +51,7 @@ import com.nimbusds.jose.util.JSONObjectUtils;
  *
  * <ul>
  *     <li>{@link Curve#P_256 P-256}
- *     <li>{@link Curve#P_256K P-256K}
+ *     <li>{@link Curve#SECP256K1 secp256k1}
  *     <li>{@link Curve#P_384 P-384}
  *     <li>{@link Curve#P_521 P-512}
  * </ul>
@@ -119,7 +119,7 @@ public final class ECKey extends JWK implements AsymmetricJWK, CurveBasedJWK {
 	 * Supported EC curves.
 	 */
 	public static final Set<Curve> SUPPORTED_CURVES = Collections.unmodifiableSet(
-		new HashSet<>(Arrays.asList(Curve.P_256, Curve.P_256K, Curve.P_384, Curve.P_521))
+		new HashSet<>(Arrays.asList(Curve.P_256, Curve.SECP256K1, Curve.P_384, Curve.P_521))
 	);
 
 

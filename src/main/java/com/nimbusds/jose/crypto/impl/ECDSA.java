@@ -74,7 +74,7 @@ public class ECDSA {
 			throw new JOSEException("The EC key curve is not supported, must be P-256, P-384 or P-521");
 		} else if (Curve.P_256.equals(curve)) {
 			return JWSAlgorithm.ES256;
-		} else if (Curve.P_256K.equals(curve)) {
+		} else if (Curve.SECP256K1.equals(curve)) {
 			return JWSAlgorithm.ES256K;
 		} else if (Curve.P_384.equals(curve)) {
 			return JWSAlgorithm.ES384;
