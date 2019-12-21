@@ -1068,3 +1068,6 @@ version 8.3 (2019-12-14)
       Registrations for WebAuthn Algorithms"
       (draft-ietf-cose-webauthn-algorithms-03) specification. The old
       Curve.P_256K is deprecated (iss #341).
+
+version 8.4 (2019-12-21)
+    * Adds new JWTClaimsSet.Builder.getClaims method.

@@ -33,7 +33,7 @@ import net.minidev.json.JSONObject;
  *
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
- * @version 2018-10-07
+ * @version 2019-12-21
  */
 public class JWTClaimsSetTest extends TestCase {
 
@@ -102,6 +102,19 @@ public class JWTClaimsSetTest extends TestCase {
 		// x-custom
 		builder.claim("x-custom", "abc");
 		assertEquals("abc", (String) builder.build().getClaim("x-custom"));
+		
+		// claims set so far
+		Map<String,Object> all = builder.getClaims();
+		
+		assertEquals("iss parse check map", "http://issuer.com", (String)all.get("iss"));
+		assertEquals("sub parse check map", "http://subject.com", (String)all.get("sub"));
+		assertEquals("aud parse check map", "http://audience.com", (String)((List)all.get("aud")).get(0));
+		assertEquals("exp parse check map", NOW, all.get("exp"));
+		assertEquals("nbf parse check map", NOW, all.get("nbf"));
+		assertEquals("iat parse check map", NOW, all.get("iat"));
+		assertEquals("jti parse check map", "123", (String)all.get("jti"));
+		assertEquals("abc", (String)all.get("x-custom"));
+		assertEquals(8, all.size());
 
 
 		// serialise
@@ -130,7 +143,7 @@ public class JWTClaimsSetTest extends TestCase {
 		assertEquals(8, claimsSet.getClaims().size());
 
 
-		Map<String,Object> all = claimsSet.getClaims();
+		all = claimsSet.getClaims();
 
 		assertEquals("iss parse check map", "http://issuer.com", (String)all.get("iss"));
 		assertEquals("sub parse check map", "http://subject.com", (String)all.get("sub"));
@@ -140,6 +153,7 @@ public class JWTClaimsSetTest extends TestCase {
 		assertEquals("iat parse check map", NOW, all.get("iat"));
 		assertEquals("jti parse check map", "123", (String)all.get("jti"));
 		assertEquals("abc", (String)all.get("x-custom"));
+		assertEquals(8, all.size());
 	}
 
 

@@ -72,7 +72,7 @@ import net.minidev.json.JSONObject;
  *
  * @author Vladimir Dzhuvinov
  * @author Justin Richer
- * @version 2019-04-15
+ * @version 2019-12-21
  */
 @Immutable
 public final class JWTClaimsSet implements Serializable {
@@ -293,6 +293,23 @@ public final class JWTClaimsSet implements Serializable {
 
 			claims.put(name, value);
 			return this;
+		}
+		
+		
+		/**
+		 * Gets the claims (registered and custom).
+		 *
+		 * <p>Note that the registered claims Expiration-Time
+		 * ({@code exp}), Not-Before-Time ({@code nbf}) and Issued-At
+		 * ({@code iat}) will be returned as {@code java.util.Date}
+		 * instances.
+		 *
+		 * @return The claims, as an unmodifiable map, empty map if
+		 *         none.
+		 */
+		public Map<String,Object> getClaims() {
+			
+			return Collections.unmodifiableMap(claims);
 		}
 
 
