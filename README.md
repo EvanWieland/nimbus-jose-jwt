@@ -1,3 +1,5 @@
+# Notice! This is a fork of the Nimbus JOSE + JWT repo. There are breaking code changes made in this repo.
+
 # Nimbus JOSE + JWT
 
 * The most popular and robust Java library for JSON Web Tokens (JWT)
