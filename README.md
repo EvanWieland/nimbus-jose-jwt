@@ -1,4 +1,4 @@
-# Warning! Do not delete! Repo is needed.
+# Warning! Do not delete! Repo is needed for LiNK.
 
 # Notice! This is a fork of the Nimbus JOSE + JWT repo. There are breaking code changes made in this repo.
 
